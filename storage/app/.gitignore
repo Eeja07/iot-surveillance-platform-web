@@ -1,0 +1,3 @@
+# Ignore isi upload public storage
+/storage/app/public/*
+!/storage/app/public/.gitignore

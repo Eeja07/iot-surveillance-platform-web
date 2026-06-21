@@ -1,0 +1,113 @@
+{
+  "menu": [
+    {
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "url": "/dashboard",
+      "slug": "dashboard-admin",
+      "role": [
+        "admin"
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "url": "/dashboard/user/dashboard",
+      "slug": "dashboard-user",
+      "role": [
+        "user"
+      ]
+    },
+    {
+      "name": "Camera Management",
+      "icon": "menu-icon tf-icons ti ti-camera",
+      "slug": "camera-management",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/admin/cameras",
+          "name": "Camera List",
+          "slug": "admin-cameras"
+        },
+        {
+          "url": "/dashboard/admin/notifications",
+          "name": "Notifications",
+          "slug": "admin-notifications"
+        }
+      ]
+    },
+    {
+      "name": "My Devices",
+      "icon": "menu-icon tf-icons ti ti-device-mobile",
+      "slug": "user-devices",
+      "role": [
+        "user"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/user/cameras/link",
+          "name": "Add Device",
+          "slug": "add-device"
+        },
+        {
+          "url": "/dashboard/user/my-cameras",
+          "name": "Device List",
+          "slug": "device-list"
+        }
+      ]
+    },
+    {
+      "name": "AI Analytics",
+      "icon": "menu-icon tf-icons ti ti-brain",
+      "slug": "ai-analytics",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/ml/detection-log",
+          "name": "Detection Log",
+          "slug": "detection-log"
+        }
+      ]
+    },
+    {
+      "name": "Event Logs",
+      "icon": "menu-icon tf-icons ti ti-file-text",
+      "slug": "event-logs",
+      "role": [
+        "admin",
+        "user"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/log/history",
+          "name": "Recording History",
+          "slug": "recording-history"
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "icon": "menu-icon tf-icons ti ti-settings",
+      "slug": "settings",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/settings/users",
+          "name": "User Management",
+          "slug": "settings-users"
+        },
+        {
+          "url": "/dashboard/settings/roles",
+          "name": "Role Management",
+          "slug": "settings-roles"
+        }
+      ]
+    }
+  ]
+}

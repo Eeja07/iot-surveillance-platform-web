@@ -1,0 +1,109 @@
+version: "3.9"
+
+x-env: &default-env
+  TZ: "Asia/Jakarta"
+
+networks:
+  laravel_net:
+    driver: bridge
+
+volumes:
+  db_data:
+  app_vendor:
+  app_node:
+  laravel_public:
+  laravel_storage:
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    image: laravel-php82:local
+    container_name: laravel_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    environment:
+      <<: *default-env
+      PHP_OPCACHE_ENABLE: "1"
+      APP_ENV: ${APP_ENV:-local}
+    volumes:
+      - app_vendor:/var/www/html/vendor
+      - app_node:/var/www/html/node_modules
+      - laravel_public:/var/www/html/public
+      - laravel_storage:/var/www/html/storage         # ✅ satu volume ke /storage
+    networks:
+      - laravel_net
+    healthcheck:
+      # tetap sederhana; php-fpm akan dicek oleh healthcheck web di bawah
+      test: ["CMD-SHELL", "php -v >/dev/null 2>&1 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    image: laravel-nginx:local
+    container_name: laravel_web
+    restart: unless-stopped
+    depends_on:
+      - app
+    volumes:
+      - laravel_public:/var/www/html/public:ro
+      - laravel_storage:/var/www/html/storage:ro      # ✅ sama persis path-nya
+    ports:
+      - "${HTTP_PORT:-8084}:80"                       # ✅ default aman (8084)
+    environment:
+      <<: *default-env
+    networks:
+      - laravel_net
+    healthcheck:
+      # fcgi sudah diinstall di image nginx:alpine kamu
+      test: ["CMD-SHELL", "SCRIPT_NAME=/health SCRIPT_FILENAME=/health REQUEST_METHOD=GET cgi-fcgi -bind -connect app:9000 || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  db:
+    image: mysql:8.0
+    container_name: laravel_db
+    restart: unless-stopped
+    environment:
+      <<: *default-env
+      MYSQL_DATABASE: ${DB_DATABASE:-laravel}
+      MYSQL_USER: ${DB_USERNAME:-laravel}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-laravel}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    command: >
+      mysqld --default-authentication-plugin=mysql_native_password
+             --character-set-server=utf8mb4
+             --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - laravel_net
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p${DB_ROOT_PASSWORD:-root} --silent"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: laravel_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      <<: *default-env
+      PMA_HOST: db
+      PMA_USER: ${DB_USERNAME:-laravel}
+      PMA_PASSWORD: ${DB_PASSWORD:-laravel}
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "${PHPMYADMIN_PORT:-8085}:80"                 # ✅ default aman (8085)
+    networks:
+      - laravel_net

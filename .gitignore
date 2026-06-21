@@ -1,0 +1,85 @@
+# /.phpunit.cache
+# /node_modules
+
+# /public/build
+# /public/hot
+# /public/storage
+# /storage/*.key
+# /vendor
+
+# # .env
+# .env.backup
+# .env.production
+# .phpunit.result.cache
+
+# docker-compose.override.yml
+
+# Homestead.json
+# Homestead.yaml
+# npm-debug.log
+# yarn-error.log
+# /.fleet
+# /.idea
+# /.vscode
+
+# !/public/assets
+# !/public/assets/*
+# /public/css
+# /public/js
+
+
+
+
+/.phpunit.cache
+/node_modules
+
+/public/build
+/public/hot
+/public/storage
+
+/storage/*.key
+/vendor
+
+# Abaikan semua isi storage kecuali storage/app/public
+/storage/*
+!/storage/app/
+!/storage/app/public/
+!/storage/app/public/**
+
+# Abaikan .env dan cache phpunit
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+
+docker-compose.override.yml
+
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.vscode
+
+!/public/assets
+!/public/assets/*
+/public/css
+/public/js
+/docker_backup_2025-12-29_03-58-50/*
+storage/app/public/*
+!storage/app/public/.gitignore
+
+# Local secrets
+backupenv
+.env.docker
+
+# Dumps
+*.sql
+database/Sql/*
+
+# Analysis files
+files.txt
+cleanup_candidates.txt
+docker_old/
+img/

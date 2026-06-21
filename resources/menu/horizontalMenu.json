@@ -1,0 +1,209 @@
+{
+  "menu": [
+    {
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons ti ti-smart-home",
+      "url": "/dashboard",
+      "slug": "dashboard-home",
+      "role": [
+        "admin"
+      ]
+    },
+    {
+      "url": "#",
+      "icon": "menu-icon tf-icons ti ti-user",
+      "name": "Admin",
+      "slug": "admin",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/admin/departemen",
+          "name": "Departemen",
+          "slug": "admin-departments"
+        },
+        {
+          "url": "/dashboard/admin/doctors",
+          "name": "Doctor",
+          "slug": "admin-doctors"
+        },
+        {
+          "url": "/dashboard/admin/employees",
+          "name": "Employee",
+          "slug": "admin-employees"
+        },
+        {
+          "url": "/dashboard/admin/packages",
+          "name": "Package Table",
+          "slug": "admin-packages"
+        },
+        {
+          "url": "/dashboard/admin/services",
+          "name": "Service Table",
+          "slug": "admin-services"
+        }
+      ]
+    },
+    {
+      "url": "#",
+      "name": "Patient",
+      "icon": "menu-icon tf-icons ti ti-users-group",
+      "slug": "patient",
+      "target": "_blank",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/patient/table",
+          "name": "Patient Table",
+          "slug": "patient-table"
+        },
+        {
+          "url": "/dashboard/patient/appointments",
+          "name": "Appointment Table",
+          "slug": "patient-appointments"
+        }
+      ]
+    },
+    {
+      "url": "#",
+      "name": "Report",
+      "icon": "menu-icon tf-icons ti ti-file-type-pdf",
+      "slug": "reports",
+      "target": "_blank",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/reports/opd",
+          "name": "OPD Reports",
+          "slug": "reports-opd"
+        },
+        {
+          "url": "/dashboard/reports/packages",
+          "name": "Package Reports",
+          "slug": "reports-packages"
+        }
+      ]
+    },
+    {
+      "url": "#",
+      "name": "Invoice/Bill",
+      "icon": "menu-icon tf-icons ti ti-file-dollar",
+      "slug": "invoice-bill",
+      "target": "_blank",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/invoice-bill/all",
+          "name": "All Report",
+          "slug": "invoice-bill-all-reports"
+        },
+        {
+          "url": "/dashboard/invoice-bill/service-reports",
+          "name": "Service Reports",
+          "slug": "invoice-bill-service-reports"
+        },
+        {
+          "url": "/dashboard/invoice-bill/total-collection",
+          "name": "Total Collection",
+          "slug": "invoice-bill-total-collection"
+        },
+        {
+          "url": "/dashboard/invoice-bill/opd-invoice",
+          "name": "OPD Invoice",
+          "slug": "invoice-bill-opd-invoice"
+        },
+        {
+          "url": "/dashboard/invoice-bill/package-invoice",
+          "name": "Package Invoice",
+          "slug": "invoice-bill-package-invoice"
+        },
+        {
+          "url": "/dashboard/invoice-bill/service-bill",
+          "name": "Service Bill",
+          "slug": "invoice-bill-service-bill"
+        }
+      ]
+    },
+    {
+      "url": "#",
+      "name": "Lab Test",
+      "icon": "menu-icon tf-icons ti ti-flask",
+      "slug": "lab-test",
+      "target": "_blank",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/lab-test/examination",
+          "name": "Examination Test",
+          "slug": "lab-test-examination"
+        },
+        {
+          "url": "/dashboard/lab-test/hematology",
+          "name": "Hematologi Test",
+          "slug": "lab-test-hematology"
+        },
+        {
+          "url": "/dashboard/lab-test/manage",
+          "name": "Manage Test",
+          "slug": "lab-test-manage"
+        },
+        {
+          "url": "/dashboard/lab-test/microbiology",
+          "name": "Microbiology Test",
+          "slug": "lab-test-microbiology"
+        },
+        {
+          "url": "/dashboard/lab-test/reports",
+          "name": "Report",
+          "slug": "lab-test-reports"
+        },
+        {
+          "url": "/dashboard/lab-test/stain",
+          "name": "Stain Test",
+          "slug": "lab-test-stain"
+        },
+        {
+          "url": "/dashboard/lab-test/references",
+          "name": "Test References",
+          "slug": "lab-test-references"
+        }
+      ]
+    },
+    {
+      "url": "#",
+      "name": "Setting",
+      "icon": "menu-icon tf-icons ti ti-settings",
+      "slug": "settings",
+      "target": "_blank",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/dashboard/settings/users",
+          "name": "Manage User",
+          "slug": "settings-users"
+        },
+        {
+          "url": "/dashboard/settings/hospital",
+          "name": "Hospital Settings",
+          "slug": "settings-hospital"
+        },
+        {
+          "url": "/dashboard/settings/roles",
+          "name": "Manage Role",
+          "slug": "settings-roles"
+        }
+      ]
+    }
+  ]
+}
