@@ -1,36 +1,8 @@
-# /.phpunit.cache
-# /node_modules
+# =========================
+# Laravel
+# =========================
 
-# /public/build
-# /public/hot
-# /public/storage
-# /storage/*.key
-# /vendor
-
-# # .env
-# .env.backup
-# .env.production
-# .phpunit.result.cache
-
-# docker-compose.override.yml
-
-# Homestead.json
-# Homestead.yaml
-# npm-debug.log
-# yarn-error.log
-# /.fleet
-# /.idea
-# /.vscode
-
-# !/public/assets
-# !/public/assets/*
-# /public/css
-# /public/js
-
-
-
-
-/.phpunit.cache
+/vendor
 /node_modules
 
 /public/build
@@ -38,47 +10,92 @@
 /public/storage
 
 /storage/*.key
-/vendor
 
-# Abaikan semua isi storage kecuali storage/app/public
+# Ignore all storage except placeholders
 /storage/*
 !/storage/app/
 !/storage/app/public/
-!/storage/app/public/**
+!/storage/app/public/.gitignore
 
-# Abaikan .env dan cache phpunit
+/storage/logs/*
+!/storage/logs/.gitignore
+
+bootstrap/cache/*.php
+bootstrap/cache/*.json
+
+# =========================
+# Environment
+# =========================
+
 .env
-.env.backup
-.env.production
-.phpunit.result.cache
+.env.*
+!.env.example
 
-docker-compose.override.yml
-
-Homestead.json
-Homestead.yaml
-npm-debug.log
-yarn-error.log
-/.fleet
-/.idea
-/.vscode
-
-!/public/assets
-!/public/assets/*
-/public/css
-/public/js
-/docker_backup_2025-12-29_03-58-50/*
-storage/app/public/*
-!storage/app/public/.gitignore
-
-# Local secrets
 backupenv
 .env.docker
 
-# Dumps
-*.sql
-database/Sql/*
+# =========================
+# PHPUnit
+# =========================
 
-# Analysis files
+.phpunit.cache/
+.phpunit.result.cache
+
+# =========================
+# IDE
+# =========================
+
+.vscode/
+.idea/
+.fleet/
+
+# =========================
+# Homestead
+# =========================
+
+Homestead.json
+Homestead.yaml
+
+# =========================
+# Docker
+# =========================
+
+docker-compose.override.yml
+docker_backup_*/
+
+# =========================
+# Logs
+# =========================
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =========================
+# SQL / Dumps
+# =========================
+
+*.sql
+*.sql.gz
+*.dump
+
+database/Sql/
+
+# =========================
+# Assets generated locally
+# =========================
+
+/public/css
+/public/js
+
+# Keep committed assets
+!/public/assets/
+!/public/assets/**
+
+# =========================
+# Analysis / Temporary
+# =========================
+
 files.txt
 cleanup_candidates.txt
 docker_old/

@@ -62,9 +62,8 @@ class CameraTelemetryController extends Controller
 
 
 
-        CameraTelemetry::create($payload);
-
-
+        $telemetryInstance = CameraTelemetry::create($payload);
+        broadcast(new \App\Events\TelemetryUpdated($camera, $telemetryInstance));
 
         return response()->json([
 

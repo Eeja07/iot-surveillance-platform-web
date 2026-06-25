@@ -42,7 +42,7 @@ class EmqxWebSocketController extends Controller
 
             Storage::disk('s3')->put($path, $imageData);
 
-            $camera->imageRecords()->create([
+            $imageRecord = $camera->imageRecords()->create([
                 'path' => $path,
                 'captured_at' => now()
             ]);
@@ -56,6 +56,8 @@ class EmqxWebSocketController extends Controller
             Log::info(
                 "WS_IMAGE_UPLOAD_SUCCESS dari {$camera->name}"
             );
+
+            broadcast(new \App\Events\NewImageReceived($camera, $imageRecord));
 
             return response()->json([
                 'status' => 'success'
@@ -183,7 +185,8 @@ class EmqxWebSocketController extends Controller
 	    JSON_UNESCAPED_UNICODE
 	);
 
-	CameraTelemetry::create($telemetry);
+	$telemetryInstance = CameraTelemetry::create($telemetry);
+	broadcast(new \App\Events\TelemetryUpdated($camera, $telemetryInstance));
             return response()->json([
                 'status' => 'success'
             ]);

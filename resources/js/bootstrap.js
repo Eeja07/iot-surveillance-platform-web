@@ -29,4 +29,4 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 // --- AKHIR BAGIAN YANG DINONAKTIFKAN ---
 
 // Anda bisa menghapus file import './echo'; jika ada dan tidak lagi digunakan.
-// import './echo';
+import './echo';

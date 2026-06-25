@@ -31,7 +31,6 @@ use App\Http\Controllers\Pages\User\UserManajemenKameraController;
 
 // Middleware 'auth' dan 'verified' digabung untuk rute-rute utama
 Route::middleware(['auth', 'verified'])->group(function () {
-
     // 1. Redirection Utama (Dashboard Gateway)
     Route::get('/', function () {
         return auth()->user()->hasRole('admin')
@@ -81,10 +80,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/history/kamera/{camera}/{date?}/{hour?}/{minute?}/{chunk?}', [RiwayatRekamanController::class, 'showExplorer'])
                 ->name('history.explorer')
                 ->where([
-                    'date'   => '[0-9]{4}-[0-9]{2}-[0-9]{2}',
-                    'hour'   => '[0-9]{2}',
+                    'date' => '[0-9]{4}-[0-9]{2}-[0-9]{2}',
+                    'hour' => '[0-9]{2}',
                     'minute' => '[0-9]{2}',
-                    'chunk'  => '[0-9]+',
+                    'chunk' => '[0-9]+',
                 ]);
             Route::delete('/history/kamera/{camera}/hapus-folder', [RiwayatRekamanController::class, 'destroyFolder'])->name('history.destroy.folder');
         });

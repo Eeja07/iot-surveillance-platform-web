@@ -43,4 +43,53 @@ class Camera extends Model
     {
         return $this->hasMany(ImageRecord::class);
     }
+
+    /**
+     * Relasi untuk mengambil telemetry terbaru
+     */
+    public function latestTelemetry()
+    {
+        return $this->hasOne(CameraTelemetry::class, 'camera_id')->latestOfMany();
+    }
+
+    public function getOperationalStatusAttribute(): string
+    {
+        if (empty($this->latest_image_at)) {
+            return 'OFFLINE';
+        }
+
+        $diffInSeconds = abs(now()->diffInSeconds($this->latest_image_at));
+
+        if ($diffInSeconds > 60) {
+            return 'OFFLINE';
+        }
+
+        $telemetry = $this->latestTelemetry;
+        $increasedRecently = false;
+        if ($telemetry) {
+            $increasedRecently = ($telemetry->reconnect_delta > 0 || $telemetry->publish_fail_delta > 0);
+        }
+
+        if ($diffInSeconds > 15 || $increasedRecently) {
+            return 'WARNING';
+        }
+
+        return 'ONLINE';
+    }
+
+    public function getFreshnessIndicatorAttribute(): string
+    {
+        if (empty($this->latest_image_at)) {
+            return 'Offline';
+        }
+
+        $diffInSeconds = abs(now()->diffInSeconds($this->latest_image_at));
+
+        if ($diffInSeconds < 60) {
+            return "Updated {$diffInSeconds} sec ago";
+        }
+
+        $diffInMinutes = round($diffInSeconds / 60);
+        return "Offline {$diffInMinutes} min";
+    }
 }

@@ -104,10 +104,22 @@ Route::prefix('ws-bridge')->group(function () {
 
 // Status & Sync Utils
 Route::get('/camera-statuses', function() {
-    return \App\Models\Camera::all()->mapWithKeys(function ($camera) {
+    return \App\Models\Camera::with(['latestTelemetry'])->get()->mapWithKeys(function ($camera) {
+        $telemetry = $camera->latestTelemetry;
         return [$camera->id => [
             'is_active' => $camera->is_active,
-            'mqtt_status' => $camera->mqtt_status ?? 'offline'
+            'mqtt_status' => $camera->mqtt_status ?? 'offline',
+            'health_status' => $camera->operational_status,
+            'freshness' => $camera->freshness_indicator,
+            'rssi' => $telemetry ? $telemetry->formatted_rssi : 'N/A',
+            'heap' => $telemetry ? $telemetry->formatted_heap : 'N/A',
+            'publish_ms' => $telemetry ? $telemetry->formatted_publish : 'N/A',
+            'mqtt_connected' => $telemetry ? $telemetry->mqtt_status_text : 'N/A',
+            'ws_connected' => $telemetry ? $telemetry->ws_status_text : 'N/A',
+            'mqtt_reconnect' => $telemetry ? $telemetry->reconnect_delta_text : '+0',
+            'ws_close_count' => $telemetry ? $telemetry->ws_close_delta_text : '+0',
+            'publish_fail' => $telemetry ? $telemetry->publish_fail_delta_text : '+0',
+            'uptime' => $telemetry ? $telemetry->formatted_uptime : 'N/A',
         ]];
     });
 });

@@ -81,12 +81,17 @@ class MqttWebhookController extends Controller
             // Update database record
             $camera = Camera::where('device_id', $deviceId)->first();
             if ($camera) {
-                $camera->update(['last_heartbeat_at' => now()]);
+                $camera->update([
+                    'last_heartbeat_at' => now(),
+                    'latest_image_path' => $path,
+                    'latest_image_at'   => now(),
+                ]);
                 if (method_exists($camera, 'imageRecords')) {
-                    $camera->imageRecords()->create([
+                    $imageRecord = $camera->imageRecords()->create([
                         'path' => $path,
                         'captured_at' => now()
                     ]);
+                    broadcast(new \App\Events\NewImageReceived($camera, $imageRecord));
                 }
             }
 

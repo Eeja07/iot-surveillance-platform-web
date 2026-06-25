@@ -28,7 +28,7 @@ class DashboardController extends Controller
          * latest_image_path dan latest_image_at sudah ada di tabel cameras.
          * Query ringan — hanya join ke tabel group, tidak ke image_records.
          */
-        $cameraQuery = Camera::where('user_id', $user->id)->with(['group']);
+        $cameraQuery = Camera::where('user_id', $user->id)->with(['group', 'latestTelemetry']);
 
         if ($selectedGroup !== 'Semua Kamera') {
             $cameraQuery->whereHas('group', function($q) use ($selectedGroup) {
@@ -37,14 +37,31 @@ class DashboardController extends Controller
         }
 
         $cameras = $cameraQuery->latest()->get();
-        $totalCameras = Camera::where('user_id', $user->id)->count();
-        $activeCameras = Camera::where('user_id', $user->id)->where('is_active', true)->count();
+        $totalCameras = $cameras->count();
+        
+        $onlineCameras = 0;
+        $warningCameras = 0;
+        $offlineCameras = 0;
+
+        foreach ($cameras as $camera) {
+            $status = $camera->operational_status;
+            if ($status === 'ONLINE') {
+                $onlineCameras++;
+            } elseif ($status === 'WARNING') {
+                $warningCameras++;
+            } else {
+                $offlineCameras++;
+            }
+        }
+
+        $activeCameras = $onlineCameras;
         $totalUsers = User::count();
         $currentGroup = $selectedGroup;
 
         return view('dashboard', compact(
             'totalCameras', 'activeCameras', 'totalUsers',
-            'cameras', 'groups', 'currentGroup'
+            'cameras', 'groups', 'currentGroup',
+            'onlineCameras', 'warningCameras', 'offlineCameras'
         ));
     }
 }

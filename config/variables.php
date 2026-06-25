@@ -1,10 +1,10 @@
 <?php
 // Variables
 return [
-  "creatorName" => "Ahmad Akmal Rijal",
-  "creatorUrl" => "https://ahmadakmal.com",
+  "creatorName" => "",
+  "creatorUrl" => "https://miot-its.org",
   "templateName" => "MiotVision",
-  "templateSuffix" => "Bootstrap Admin Template",
+  "templateSuffix" => "",
   "templateVersion" => "2.0.0",
   "templateFree" => false,
   "templateDescription" => "",

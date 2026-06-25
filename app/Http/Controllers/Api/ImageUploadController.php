@@ -44,7 +44,7 @@ class ImageUploadController extends Controller
         }
 
         try {
-            $camera->imageRecords()->create([
+            $imageRecord = $camera->imageRecords()->create([
                 'path'        => $path,
                 'captured_at' => now(),
             ]);
@@ -57,6 +57,8 @@ class ImageUploadController extends Controller
             ]);
 
             Log::info('SUCCESS: Image uploaded and latest_image updated.');
+
+            broadcast(new \App\Events\NewImageReceived($camera, $imageRecord));
         } catch (\Exception $e) {
             Log::error('!!! DATABASE INSERT FAILED !!!', ['error' => $e->getMessage()]);
             Storage::disk('s3')->delete($path);
