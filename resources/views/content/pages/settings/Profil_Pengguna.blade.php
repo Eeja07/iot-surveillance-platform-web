@@ -55,7 +55,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Tambah Item Menu Baru</h5>
-                <a href="{{ route('admin.menus.index') }}" class="btn btn-label-secondary">
+                    <a href="{{ route('admin.menus.index') }}" class="btn btn-outline-secondary">
                     <i class="ti ti-arrow-left me-1"></i> Kembali ke Daftar
                 </a>
             </div>
@@ -108,7 +108,7 @@
                     </div>
                     <div class="mt-4">
                         <button type="submit" class="btn btn-primary me-2">Simpan</button>
-                        <a href="{{ route('admin.menus.index') }}" class="btn btn-label-secondary">Batal</a>
+                        <a href="{{ route('admin.menus.index') }}" class="btn btn-outline-secondary">Batal</a>
                     </div>
                 </form>
             </div>
@@ -120,7 +120,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Edit Item Menu: {{ $menu->name }}</h5>
-                <a href="{{ route('admin.menus.index') }}" class="btn btn-label-secondary">
+                    <a href="{{ route('admin.menus.index') }}" class="btn btn-outline-secondary">
                     <i class="ti ti-arrow-left me-1"></i> Kembali ke Daftar
                 </a>
             </div>
@@ -179,7 +179,7 @@
                     </div>
                     <div class="mt-4">
                         <button type="submit" class="btn btn-primary me-2">Update</button>
-                        <a href="{{ route('admin.menus.index') }}" class="btn btn-label-secondary">Batal</a>
+                        <a href="{{ route('admin.menus.index') }}" class="btn btn-outline-secondary">Batal</a>
                     </div>
                 </form>
             </div>
@@ -218,7 +218,7 @@
                                     @forelse ($menuItem->roles as $role)
                                         <span class="badge bg-label-secondary me-1">{{ $role->name }}</span>
                                     @empty
-                                        <span class="badge bg-label-info">Semua</span>
+                                            <span class="badge bg-label-secondary">Semua</span>
                                     @endforelse
                                 </td>
                                 <td>
@@ -247,7 +247,7 @@
                                         @forelse ($child->roles as $role)
                                             <span class="badge bg-label-secondary me-1">{{ $role->name }}</span>
                                         @empty
-                                            <span class="badge bg-label-info">Semua</span>
+                                                <span class="badge bg-label-secondary">Semua</span>
                                         @endforelse
                                     </td>
                                     <td>

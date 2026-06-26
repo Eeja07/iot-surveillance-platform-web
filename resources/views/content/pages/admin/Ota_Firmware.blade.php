@@ -333,12 +333,13 @@
 
 <!-- Deployment History with Filters -->
 <div class="card mt-4">
-    <div class="card-header pb-2">
+    <div class="card-header d-flex justify-content-between align-items-center pb-2">
         <h5 class="mb-0">Deployment History</h5>
-        <!-- Filters Form -->
-        <form method="GET" action="{{ route('admin.ota.index') }}" class="row g-3 mt-2">
+    </div>
+    <div class="card-body py-2 border-bottom">
+        <form method="GET" action="{{ route('admin.ota.index') }}" class="row g-2 align-items-end">
             <div class="col-12 col-md-3">
-                <label class="form-label" for="filterCamera">Camera</label>
+                <label class="form-label mb-1" for="filterCamera">Camera</label>
                 <select class="form-select form-select-sm" id="filterCamera" name="camera_id">
                     <option value="">All Cameras</option>
                     @foreach($cameras as $cam)
@@ -349,7 +350,7 @@
                 </select>
             </div>
             <div class="col-12 col-md-3">
-                <label class="form-label" for="filterVersion">Version</label>
+                <label class="form-label mb-1" for="filterVersion">Version</label>
                 <select class="form-select form-select-sm" id="filterVersion" name="version">
                     <option value="">All Versions</option>
                     @foreach($firmwares->unique('version') as $fw)
@@ -360,7 +361,7 @@
                 </select>
             </div>
             <div class="col-12 col-md-3">
-                <label class="form-label" for="filterStatus">Status</label>
+                <label class="form-label mb-1" for="filterStatus">Status</label>
                 <select class="form-select form-select-sm" id="filterStatus" name="status">
                     <option value="">All Statuses</option>
                     <option value="Success" {{ request('status') == 'Success' ? 'selected' : '' }}>Success</option>
@@ -369,7 +370,7 @@
                 </select>
             </div>
             <div class="col-12 col-md-2">
-                <label class="form-label" for="filterDate">Date</label>
+                <label class="form-label mb-1" for="filterDate">Date</label>
                 <input type="date" class="form-control form-control-sm" id="filterDate" name="date" value="{{ request('date') }}">
             </div>
             <div class="col-12 col-md-1 d-flex align-items-end">
@@ -549,7 +550,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="btn-submit-deployment">Trigger Deployment</button>
             </div>
         </div>

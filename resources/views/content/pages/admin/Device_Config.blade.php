@@ -316,7 +316,7 @@
                                 <h6 class="mb-1"><strong>{{ $profile->name }}</strong></h6>
                                 <div>
                                     <!-- Actions -->
-                                    <button class="btn btn-xs btn-outline-info me-1 btn-edit-profile"
+                                    <button class="btn btn-xs btn-outline-secondary me-1 btn-edit-profile"
                                         data-id="{{ $profile->id }}"
                                         data-name="{{ $profile->name }}"
                                         data-quality="{{ $profile->jpeg_quality }}"
@@ -604,7 +604,7 @@
             <input type="hidden" name="camera_ids[]" id="config-single-camera-id">
             <div class="modal-header">
                 <h5 class="modal-title">Configure Camera: <span id="config-single-camera-name"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="row g-3">
