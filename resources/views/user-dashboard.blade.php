@@ -216,6 +216,39 @@
             // Subscribe to detections channel for real-time person detection updates
             window.Echo.channel('detections')
                 .listen('.person.detected', (data) => {
+                    // Show browser toast
+                    let toastContainer = document.querySelector('.toast-container');
+                    if (!toastContainer) {
+                        toastContainer = document.createElement('div');
+                        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                        toastContainer.style.zIndex = '1100';
+                        document.body.appendChild(toastContainer);
+                    }
+                    
+                    const toastId = 'toast-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                    const toastHTML = `
+                        <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header bg-danger text-white">
+                                <strong class="me-auto">🔴 Person detected</strong>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                <strong>${data.camera_name}</strong><br>
+                                Confidence: ${data.confidence}
+                            </div>
+                        </div>
+                    `;
+                    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+                    const toastElement = document.getElementById(toastId);
+                    const bs = window.bootstrap || bootstrap;
+                    if (bs && bs.Toast) {
+                        const toast = new bs.Toast(toastElement, { delay: 5000 });
+                        toast.show();
+                        toastElement.addEventListener('hidden.bs.toast', () => {
+                            toastElement.remove();
+                        });
+                    }
+
                     const detectionCard = document.getElementById('latest-person-detection-card');
                     if (detectionCard) {
                         detectionCard.style.display = 'flex';
