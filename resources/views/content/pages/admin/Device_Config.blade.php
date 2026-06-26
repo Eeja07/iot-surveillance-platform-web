@@ -374,7 +374,7 @@
 <div class="row g-4 mt-1">
     <!-- Fleet Operations Card -->
     <div class="col-12 col-xl-4">
-        <div class="card h-100">
+        <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">Fleet Operations</h5>
             </div>
@@ -470,7 +470,7 @@
 
     <!-- History list -->
     <div class="col-12 col-xl-8">
-        <div class="card h-100">
+        <div class="card">
             <div class="card-header pb-2">
                 <h5 class="mb-0">Configuration & Command History</h5>
             </div>
