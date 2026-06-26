@@ -93,6 +93,8 @@ class MqttWebhookController extends Controller
                         'captured_at' => now()
                     ]);
                     broadcast(new \App\Events\NewImageReceived($camera, $imageRecord));
+
+            \App\Jobs\DetectImageJob::dispatch($imageRecord);
                 }
             }
 

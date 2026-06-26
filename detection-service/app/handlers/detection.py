@@ -13,7 +13,7 @@ SUBC_CLEANUP_THRESHOLD = 3600 # Clean up subtractors inactive for 1 hour
 # Load YOLO11n model once at module initialization
 try:
     logger.info("Loading YOLO11n model...")
-    _yolo_model = YOLO("yolo11n.pt")
+    _yolo_model = YOLO("/app/models/yolo11n.pt")
     logger.info("YOLO11n model loaded successfully.")
 except Exception as e:
     logger.error(f"Error loading YOLO11n model: {str(e)}")

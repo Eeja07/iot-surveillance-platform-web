@@ -60,6 +60,8 @@ class EmqxWebSocketController extends Controller
 
             broadcast(new \App\Events\NewImageReceived($camera, $imageRecord));
 
+            \App\Jobs\DetectImageJob::dispatch($imageRecord);
+
             return response()->json([
                 'status' => 'success'
             ]);

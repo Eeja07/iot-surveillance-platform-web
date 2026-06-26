@@ -28,8 +28,11 @@ class PersonDetected implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
+        $camera = $this->detectionEvent->imageRecord?->camera;
+
         return [
             new Channel('detections'),
+            new Channel($camera?->websocket_channel_id ?? 'detections'),
         ];
     }
 
@@ -53,7 +56,9 @@ class PersonDetected implements ShouldBroadcastNow
 
         return [
             'id'          => $this->detectionEvent->id,
+            'camera_id'   => $camera?->id,
             'camera_name' => $camera?->name ?? 'Unknown Camera',
+            'channel'     => $camera?->websocket_channel_id,
             'confidence'  => number_format($this->detectionEvent->confidence * 100, 2) . '%',
             'image_url'   => $imageRecord ? Storage::disk('s3')->url($imageRecord->path) : '',
             'timestamp'   => $this->detectionEvent->created_at->format('Y-m-d H:i:s'),
