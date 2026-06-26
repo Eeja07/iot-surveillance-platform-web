@@ -529,7 +529,7 @@
                     style="{{ $latestDetection ? '' : 'display: none;' }}">
                     <div class="bg-dark rounded" style="width: 100px; height: 75px; overflow: hidden; flex-shrink: 0;">
                         <img id="detection-snapshot" class="w-100 h-100" style="object-fit: cover;"
-                            src="{{ $latestDetection ? Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}">
+                            src="{{ $latestDetection ? \Illuminate\Support\Facades\Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}">
                     </div>
                     <div class="flex-grow-1 min-w-0">
                         <div class="row g-2 align-items-center">

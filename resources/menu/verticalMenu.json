@@ -12,7 +12,7 @@
     {
       "name": "Dashboard",
       "icon": "menu-icon tf-icons ti ti-smart-home",
-      "url": "/dashboard/user/dashboard",
+      "url": "/user/dashboard",
       "slug": "dashboard-user",
       "role": [
         "user"
@@ -27,22 +27,22 @@
       ],
       "submenu": [
         {
-          "url": "/dashboard/admin/cameras",
+          "url": "/admin/cameras",
           "name": "Camera List",
           "slug": "admin-cameras"
         },
         {
-          "url": "/dashboard/admin/notifications",
+          "url": "/admin/notifications",
           "name": "Notifications",
           "slug": "admin-notifications"
         },
         {
-          "url": "/dashboard/admin/ota",
+          "url": "/admin/ota",
           "name": "OTA Firmware",
           "slug": "admin-ota"
         },
         {
-          "url": "/dashboard/admin/config",
+          "url": "/admin/config",
           "name": "Device Config",
           "slug": "admin-config"
         }
@@ -57,12 +57,12 @@
       ],
       "submenu": [
         {
-          "url": "/dashboard/user/cameras/link",
+          "url": "/user/cameras/link",
           "name": "Add Device",
           "slug": "add-device"
         },
         {
-          "url": "/dashboard/user/my-cameras",
+          "url": "/user/my-cameras",
           "name": "Device List",
           "slug": "device-list"
         }
@@ -77,7 +77,7 @@
       ],
       "submenu": [
         {
-          "url": "/dashboard/ml/detection-log",
+          "url": "/ml/detection-log",
           "name": "Detection Log",
           "slug": "detection-log"
         }
@@ -93,7 +93,7 @@
       ],
       "submenu": [
         {
-          "url": "/dashboard/log/history",
+          "url": "/log/history",
           "name": "Recording History",
           "slug": "recording-history"
         }
@@ -108,12 +108,12 @@
       ],
       "submenu": [
         {
-          "url": "/dashboard/settings/users",
+          "url": "/settings/users",
           "name": "User Management",
           "slug": "settings-users"
         },
         {
-          "url": "/dashboard/settings/roles",
+          "url": "/settings/roles",
           "name": "Role Management",
           "slug": "settings-roles"
         }

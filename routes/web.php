@@ -32,7 +32,7 @@ use App\Http\Controllers\Pages\User\UserManajemenKameraController;
 // Middleware 'auth' dan 'verified' digabung untuk rute-rute utama
 Route::middleware(['auth', 'verified'])->group(function () {
     // 1. Redirection Utama (Dashboard Gateway)
-    Route::get('/', function () {
+    Route::get('/dashboard', function () {
         return auth()->user()->hasRole('admin')
             ? redirect()->route('dashboard.index')
             : redirect()->route('user.dashboard');
@@ -45,7 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 
     // 2. Grup Utama Dashboard (Prefix /dashboard)
-    Route::prefix('dashboard')->group(function () {
+    
 
         // --- ADMIN AREA ---
         // Dashboard Admin
@@ -138,7 +138,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/my-cameras/data', [UserManajemenKameraController::class, 'getData'])->name('my-cameras.data');
             Route::resource('my-cameras', UserManajemenKameraController::class)->except(['create', 'store', 'show']);
         });
-    });
+    ;
 
     // 3. API Internal Terproteksi
     Route::prefix('api')->name('api.')->group(function () {

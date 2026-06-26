@@ -1112,7 +1112,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalEditProfile.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const profileId = button.getAttribute('data-id');
-            document.getElementById('form-edit-profile').action = `{{ url('/dashboard/admin/config/profiles') }}/${profileId}`;
+            document.getElementById('form-edit-profile').action = `{{ url('/admin/config/profiles') }}/${profileId}`;
             
             document.getElementById('edit-profile-name').value = button.getAttribute('data-name');
             document.getElementById('edit-profile-jpeg').value = button.getAttribute('data-quality');
