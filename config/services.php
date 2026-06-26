@@ -31,4 +31,10 @@ return [
     ],
   ],
 
+  'firebase' => [
+    'project_id' => env('FCM_PROJECT_ID'),
+    'credentials_path' => env('FIREBASE_CREDENTIALS_PATH', storage_path('app/firebase-service-account.json')),
+    'cooldown' => env('FCM_COOLDOWN', 30),
+  ],
+
 ];

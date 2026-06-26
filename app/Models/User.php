@@ -23,6 +23,7 @@ class User extends Authenticatable implements MustVerifyEmail // Implementasi di
     'name',
     'email',
     'password',
+    'fcm_token',
   ];
 
   /**

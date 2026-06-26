@@ -93,4 +93,23 @@ class ProfileApiController extends Controller
             'message' => 'Account deleted successfully.',
         ], 200);
     }
+
+    /**
+     * Update or register user's FCM token.
+     * Endpoint: POST /api/user/fcm-token
+     */
+    public function updateFcmToken(Request $request)
+    {
+        $validated = $request->validate([
+            'fcm_token' => ['required', 'string'],
+        ]);
+
+        $request->user()->update([
+            'fcm_token' => $validated['fcm_token'],
+        ]);
+
+        return response()->json([
+            'message' => 'FCM token updated successfully.',
+        ], 200);
+    }
 }

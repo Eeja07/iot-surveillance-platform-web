@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/profile', [ProfileApiController::class, 'updateProfile']);
     Route::put('/password', [ProfileApiController::class, 'updatePassword']);
     Route::delete('/profile', [ProfileApiController::class, 'destroy']);
+    Route::post('/user/fcm-token', [ProfileApiController::class, 'updateFcmToken']);
 
     // Camera & Image Management
     Route::get('/cameras/{camera}/latest-image', LatestImageController::class);
@@ -85,9 +86,9 @@ Route::middleware('auth:sanctum')->group(function () {
 // --- 4. Rute IoT & Webhook (Tanpa Auth Sanctum biasanya) ---
 Route::post('/camera/upload', [ImageUploadController::class, 'store']);
 Route::post('/heartbeat', HeartbeatController::class);
-Route::post('/camera/upload', [ImageUploadController::class, 'store']);
-Route::post('/heartbeat', HeartbeatController::class);
 Route::post('/camera-telemetry', [CameraTelemetryController::class, 'store']);
+Route::post('/motion-events', [\App\Http\Controllers\Api\MotionEventController::class, 'store']);
+Route::post('/detection-events', [\App\Http\Controllers\Api\DetectionEventController::class, 'store']);
 
 
 // MQTT & EMQX Bridge

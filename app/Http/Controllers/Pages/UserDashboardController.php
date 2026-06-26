@@ -55,10 +55,20 @@ class UserDashboardController extends Controller
         $activeCameras = $onlineCameras;
         $currentGroup = $selectedGroup;
 
+        $cameraIds = $cameras->pluck('id')->toArray();
+        $latestDetection = \App\Models\DetectionEvent::where('object_class', 'person')
+            ->whereHas('imageRecord', function($q) use ($cameraIds) {
+                $q->whereIn('camera_id', $cameraIds);
+            })
+            ->with('imageRecord.camera')
+            ->latest()
+            ->first();
+
         return view('user-dashboard', compact(
             'totalCameras', 'activeCameras',
             'cameras', 'groups', 'currentGroup',
-            'onlineCameras', 'warningCameras', 'offlineCameras'
+            'onlineCameras', 'warningCameras', 'offlineCameras',
+            'latestDetection'
         ));
     }
 }

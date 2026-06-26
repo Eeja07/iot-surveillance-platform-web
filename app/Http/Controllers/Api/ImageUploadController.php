@@ -51,7 +51,7 @@ class ImageUploadController extends Controller
 
             // SOLUSI JANGKA PANJANG: Update kolom latest_image di tabel cameras
             $camera->update([
-                'last_heartbeat_at => now(),
+                'last_heartbeat_at' => now(),
                 'is_active' => true,
                 'latest_image_path' => $path,
                 'latest_image_at'   => now(),
@@ -60,6 +60,8 @@ class ImageUploadController extends Controller
             Log::info('SUCCESS: Image uploaded and latest_image updated.');
 
             broadcast(new \App\Events\NewImageReceived($camera, $imageRecord));
+
+            \App\Jobs\DetectImageJob::dispatch($imageRecord);
         } catch (\Exception $e) {
             Log::error('!!! DATABASE INSERT FAILED !!!', ['error' => $e->getMessage()]);
             Storage::disk('s3')->delete($path);

@@ -213,6 +213,30 @@
 
         // 2. Subscribe ke channel kamera masing-masing menggunakan WebSocket (Reverb)
         if (window.Echo) {
+            // Subscribe to detections channel for real-time person detection updates
+            window.Echo.channel('detections')
+                .listen('.person.detected', (data) => {
+                    const detectionCard = document.getElementById('latest-person-detection-card');
+                    if (detectionCard) {
+                        detectionCard.style.display = 'flex';
+                    }
+                    
+                    const cameraNameEl = document.getElementById('detection-camera-name');
+                    if (cameraNameEl) cameraNameEl.textContent = data.camera_name;
+                    
+                    const confidenceEl = document.getElementById('detection-confidence');
+                    if (confidenceEl) confidenceEl.textContent = data.confidence;
+                    
+                    const timeEl = document.getElementById('detection-time');
+                    if (timeEl) timeEl.textContent = data.timestamp;
+                    
+                    const snapshotEl = document.getElementById('detection-snapshot');
+                    if (snapshotEl) snapshotEl.src = data.image_url;
+                    
+                    const noDetectionEl = document.getElementById('no-person-detection-placeholder');
+                    if (noDetectionEl) noDetectionEl.style.display = 'none';
+                });
+
             allCameraCards.forEach(cameraCard => {
                 const imgElement = cameraCard.querySelector('.camera-feed-image');
                 const timestampElement = cameraCard.querySelector('.camera-timestamp');
@@ -569,6 +593,52 @@
                     <span class="badge bg-label-danger rounded p-2">
                         <i class="ti ti-circle-x ti-sm"></i>
                     </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Latest Person Detection Card --}}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header d-flex justify-content-between align-items-center bg-transparent border-0 pb-0">
+                <h5 class="mb-0 fw-bold"><i class="ti ti-user-search me-2 text-danger"></i>Latest Person Detection</h5>
+                <span class="badge bg-label-danger" id="detection-realtime-badge">
+                    <span class="spinner-grow spinner-grow-sm text-danger me-1" role="status" style="width: 8px; height: 8px;"></span>Realtime active
+                </span>
+            </div>
+            <div class="card-body mt-2">
+                <div id="no-person-detection-placeholder" style="{{ $latestDetection ? 'display: none;' : '' }}">
+                    <div class="text-center py-4 text-muted">
+                        <i class="ti ti-info-circle ti-lg mb-2"></i>
+                        <p class="mb-0">No person detection events recorded yet.</p>
+                    </div>
+                </div>
+                
+                <div id="latest-person-detection-card" class="row align-items-center" style="{{ $latestDetection ? '' : 'display: none;' }}">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0 text-center bg-dark rounded d-flex align-items-center justify-content-center" style="overflow: hidden; max-height: 240px; aspect-ratio: 4 / 3;">
+                        <img id="detection-snapshot" class="img-fluid" src="{{ $latestDetection ? Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}" style="max-height: 240px; object-fit: contain;">
+                    </div>
+                    <div class="col-12 col-md-8 ps-md-4">
+                        <div class="row g-3">
+                            <div class="col-6 col-sm-4">
+                                <span class="text-muted d-block" style="font-size: 0.8rem;">Camera</span>
+                                <strong id="detection-camera-name" style="font-size: 1.1rem;">{{ $latestDetection->imageRecord->camera->name ?? 'N/A' }}</strong>
+                            </div>
+                            <div class="col-6 col-sm-4">
+                                <span class="text-muted d-block" style="font-size: 0.8rem;">Confidence</span>
+                                <span class="badge bg-label-danger" id="detection-confidence" style="font-size: 1rem;">
+                                    {{ $latestDetection ? number_format($latestDetection->confidence * 100, 2) . '%' : '0.00%' }}
+                                </span>
+                            </div>
+                            <div class="col-12 col-sm-4">
+                                <span class="text-muted d-block" style="font-size: 0.8rem;">Timestamp</span>
+                                <strong id="detection-time">{{ $latestDetection ? $latestDetection->created_at->format('Y-m-d H:i:s') : 'N/A' }}</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

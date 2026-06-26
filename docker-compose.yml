@@ -136,3 +136,23 @@ services:
       - ./:/var/www/html
     networks:
       - laravel_net
+
+  detection-service:
+    build:
+      context: ./detection-service
+      dockerfile: Dockerfile
+    container_name: cctv-detection-service
+    restart: unless-stopped
+    ports:
+      - "8086:8000"
+    volumes:
+      - ./detection-service:/app
+    environment:
+      <<: *default-env
+      QUEUE_PROVIDER: "redis"
+      QUEUE_HOST: "redis"
+      QUEUE_PORT: 6379
+      QUEUE_NAME: "detection_queue"
+    networks:
+      - laravel_net
+
