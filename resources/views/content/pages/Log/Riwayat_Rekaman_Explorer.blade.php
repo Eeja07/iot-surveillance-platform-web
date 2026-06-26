@@ -13,17 +13,17 @@
     <style>
         .folder-item,
         .gallery-item {
-            border: 1px solid #dbdade;
-            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
             padding: 1.25rem;
             transition: all 0.2s ease-in-out;
-            background-color: #fff;
+            background-color: var(--surface);
         }
 
         .folder-item:hover {
             transform: translateY(-4px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-            border-color: var(--bs-primary);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
         }
 
         .folder-icon {
@@ -32,43 +32,29 @@
         }
 
         .folder-item:hover .folder-icon {
-            color: var(--bs-primary);
+            color: var(--primary);
         }
 
         .gallery-item img {
             width: 100%;
             height: 180px;
             object-fit: cover;
-            border-radius: 0.25rem;
+            border-radius: var(--radius-sm);
             cursor: pointer;
         }
 
         .breadcrumb-item a {
-            color: var(--bs-primary);
+            color: var(--primary);
         }
 
         .breadcrumb-item.active {
-            color: #6f6b7d;
+            color: var(--muted);
         }
 
         .delete-form {
             position: absolute;
             top: 10px;
             right: 10px;
-        }
-
-        /* [BARU] CSS untuk memberikan tanda/marker pada tanggal di kalender */
-        .flatpickr-day.has-records {
-            background: #e9defb;
-            border-color: #e9defb;
-            color: #7367f0;
-            font-weight: bold;
-        }
-
-        .flatpickr-day.today.has-records {
-            background: #7367f0;
-            border-color: #7367f0;
-            color: #fff;
         }
     </style>
 @endsection
@@ -118,7 +104,7 @@
                         @for ($h = 0; $h < 24; $h++)
                             @php $hourKey = str_pad($h, 2, '0', STR_PAD_LEFT); @endphp
                             <option value="{{ $hourKey }}" {{ !isset($availableTimes[$hourKey]) ? 'disabled' : '' }}>
-                                {{ $hourKey }}:00 {{ isset($availableTimes[$hourKey]) ? '✔' : '' }}
+                                {{ $hourKey }}:00 {{ isset($availableTimes[$hourKey]) ? ' (Available)' : '' }}
                             </option>
                         @endfor
                     </select>
@@ -292,7 +278,7 @@
                         if (option.value === '') continue;
                         if (availableMinutesForHour.includes(option.value)) {
                             option.disabled = false;
-                            option.textContent = `${option.value} ✔`;
+                            option.textContent = `${option.value} (Available)`;
                         } else {
                             option.disabled = true;
                             option.textContent = option.value;

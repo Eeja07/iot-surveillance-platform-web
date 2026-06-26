@@ -2,59 +2,7 @@
 
 @section('title', 'Manajemen Grup Kamera')
 
-@section('vendor-style')
-<style>
-.group-card {
-    transition: all 0.3s ease;
-    border-left: 4px solid #667eea;
-}
 
-.group-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-}
-
-.camera-badge {
-    display: inline-flex;
-    align-items: center;
-    margin: 4px;
-    padding: 6px 10px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    border: 1px solid #dee2e6;
-    max-width: 100%;
-}
-
-.camera-badge span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 150px;
-}
-
-.camera-badge:hover {
-    background: #e9ecef;
-}
-
-.ungrouped-area {
-    background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
-    border-radius: 8px;
-    padding: 20px;
-    min-height: 150px;
-}
-
-.group-header-custom {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px;
-    border-radius: 8px 8px 0 0;
-}
-
-.min-w-0 {
-    min-width: 0;
-}
-</style>
-@endsection
 
 @section('content')
 {{-- Header Halaman --}}
@@ -90,7 +38,7 @@
 @if($ungroupedCameras->count() > 0)
 <div class="card mb-4">
     <div class="card-body ungrouped-area">
-        <h5 class="mb-3">
+        <h5 class="mb-3 text-warning fw-semibold">
             <i class="ti ti-alert-circle me-2"></i>
             Kamera Tanpa Grup ({{ $ungroupedCameras->count() }})
         </h5>
@@ -119,16 +67,15 @@
     @forelse($groups as $group)
     <div class="col-md-6 col-xl-4">
         <div class="card group-card h-100 {{ $group->cameras->count() === 0 ? 'border-warning' : '' }}">
-            <div class="group-header-custom d-flex justify-content-between align-items-center"
-                 style="{{ $group->cameras->count() === 0 ? 'background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);' : '' }}">
+            <div class="group-header-custom d-flex justify-content-between align-items-center">
                 <div class="min-w-0 me-2">
-                    <h5 class="mb-0 text-white text-truncate" title="{{ $group->name }}">
-                        <i class="ti ti-folder me-2"></i>{{ $group->name }}
+                    <h5 class="mb-0 text-dark text-truncate" title="{{ $group->name }}">
+                        <i class="ti ti-folder me-2 text-secondary"></i>{{ $group->name }}
                     </h5>
-                    <small class="text-white-50">{{ $group->cameras->count() }} Kamera</small>
+                    <small class="text-muted">{{ $group->cameras->count() }} Kamera</small>
                 </div>
                 <div class="dropdown flex-shrink-0">
-                    <button class="btn btn-sm btn-light bg-white bg-opacity-25 border-0 text-white" type="button" data-bs-toggle="dropdown">
+                    <button class="btn btn-sm btn-light border-0 text-dark" type="button" data-bs-toggle="dropdown">
                         <i class="ti ti-dots-vertical"></i>
                     </button>
                     <ul class="dropdown-menu">

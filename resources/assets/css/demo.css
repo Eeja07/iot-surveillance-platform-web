@@ -3,6 +3,235 @@
 * File include item demo only specific css only
 ******************************************************************************/
 
+/* --- Reusable Design System Variables --- */
+:root {
+  --primary: #2563eb;
+  --primary-rgb: 37, 99, 235;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --text: #0f172a;
+  --muted: #64748b;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+
+  /* Standardized styling helpers */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+/* --- Global Overrides for Enterprise Look --- */
+body {
+  background-color: var(--background) !important;
+  color: var(--text) !important;
+}
+
+/* Standardize Card Styles */
+.card {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  background-color: var(--surface) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Standardize Button Styles */
+.btn-primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #ffffff !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+.btn-outline-primary {
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  border-radius: var(--radius-md) !important;
+}
+.btn-outline-primary:hover {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+}
+.btn-secondary {
+  border-radius: var(--radius-md) !important;
+}
+
+/* Standardize Badge Styles */
+.badge {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 500 !important;
+}
+
+/* Standardize Colors & Label utilities */
+.text-primary { color: var(--primary) !important; }
+.text-success { color: var(--success) !important; }
+.text-warning { color: var(--warning) !important; }
+.text-danger { color: var(--danger) !important; }
+
+.bg-label-primary {
+  background-color: #eff6ff !important;
+  color: var(--primary) !important;
+}
+.bg-label-success {
+  background-color: #f0fdf4 !important;
+  color: var(--success) !important;
+}
+.bg-label-warning {
+  background-color: #fef3c7 !important;
+  color: var(--warning) !important;
+}
+.bg-label-danger {
+  background-color: #fef2f2 !important;
+  color: var(--danger) !important;
+}
+
+/* --- Shared Surveillance Styles --- */
+.group-header {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.group-header h5 {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.group-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.group-filter-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.group-filter-label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.camera-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.camera-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md) !important;
+}
+
+.camera-card.active-card .card {
+  border: 1px solid var(--primary) !important;
+}
+
+.sticky-preview {
+  position: sticky;
+  top: 1rem;
+  z-index: 10;
+  height: fit-content;
+}
+
+.toggle-icon {
+  transition: transform 0.3s ease;
+}
+
+.toggle-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Camera Groups Management Styles */
+.group-card {
+  transition: all 0.2s ease-in-out;
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md) !important;
+}
+
+.group-card.border-warning {
+  border-left-color: var(--warning) !important;
+}
+
+.group-card:hover {
+  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-2px);
+}
+
+.camera-badge {
+  display: inline-flex;
+  align-items: center;
+  margin: 4px;
+  padding: 6px 10px;
+  background: var(--background);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  max-width: 100%;
+}
+
+.camera-badge span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.camera-badge:hover {
+  background: #f1f5f9;
+}
+
+.ungrouped-area {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  min-height: 150px;
+}
+
+.group-header-custom {
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  padding: 15px;
+  border-top-left-radius: var(--radius-md) !important;
+  border-top-right-radius: var(--radius-md) !important;
+}
+
+/* Riwayat Rekaman flatpickr styling */
+.flatpickr-day.has-records {
+  background: #eff6ff;
+  border-color: #eff6ff;
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.flatpickr-day.today.has-records {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* Original Demo Layout Styles */
 .light-style .menu .app-brand.demo {
   height: 64px;
 }
@@ -43,10 +272,6 @@
   z-index: auto;
 }
 
-/*
-* Content
-******************************************************************************/
-
 .demo-blocks > * {
   display: block !important;
 }
@@ -55,7 +280,6 @@
   margin: 1rem 0.375rem 0 0 !important;
 }
 
-/* ? .demo-vertical-spacing class is used to have vertical margins between elements. To remove margin-top from the first-child, use .demo-only-element class with .demo-vertical-spacing class. For example, we have used this class in forms-input-groups.html file. */
 .demo-vertical-spacing > * {
   margin-top: 1rem !important;
   margin-bottom: 0 !important;
@@ -90,7 +314,6 @@
   display: block !important;
 }
 
-/* Dropdown buttons going out of small screens */
 @media (max-width: 576px) {
   #dropdown-variation-demo .btn-group .text-truncate {
     width: 254px;
@@ -102,10 +325,6 @@
     right: 0.65rem;
   }
 }
-
-/*
-* Layout demo
-******************************************************************************/
 
 .layout-demo-wrapper {
   display: -webkit-box;
