@@ -21,7 +21,7 @@ order: [
 dom: '<"card-header flex-column flex-md-row"<"head-label text-center"><"dt-action-buttons text-end pt-3 pt-md-0"B>><"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
 buttons: [{
 extend: 'collection',
-className: 'btn btn-label-primary dropdown-toggle me-2',
+className: 'btn btn-outline-secondary dropdown-toggle me-2',
 text: '<i class="ti ti-file-export me-sm-1"></i> <span class="d-none d-sm-inline-block">Export</span>',
 buttons: [{
 extend: 'print',
@@ -77,7 +77,7 @@ $('div.head-label').html('<h5 class="card-title mb-0">Daftar User</h5>');
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Tambah User Baru</h5>
-            <a href="{{ route('settings.users.index') }}" class="btn btn-label-secondary">
+            <a href="{{ route('settings.users.index') }}" class="btn btn-outline-secondary">
                 <i class="ti ti-arrow-left me-1"></i> Kembali ke Daftar
             </a>
         </div>
@@ -139,8 +139,8 @@ $('div.head-label').html('<h5 class="card-title mb-0">Daftar User</h5>');
                     @enderror
                 </div>
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-primary me-2">Simpan User</button>
-                    <a href="{{ route('settings.users.index') }}" class="btn btn-label-secondary">Batal</a>
+                    <button type="submit" class="btn btn-outline-secondary me-2">Simpan User</button>
+                    <a href="{{ route('settings.users.index') }}" class="btn btn-outline-secondary">Batal</a>
                 </div>
             </form>
         </div>
@@ -152,7 +152,7 @@ $('div.head-label').html('<h5 class="card-title mb-0">Daftar User</h5>');
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Edit User: {{ $editingUser->name }}</h5>
-            <a href="{{ route('settings.users.index') }}" class="btn btn-label-secondary">
+            <a href="{{ route('settings.users.index') }}" class="btn btn-outline-secondary">
                 <i class="ti ti-arrow-left me-1"></i> Kembali ke Daftar
             </a>
         </div>
@@ -218,8 +218,8 @@ $('div.head-label').html('<h5 class="card-title mb-0">Daftar User</h5>');
                     @enderror
                 </div>
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-primary me-2">Update User</button>
-                    <a href="{{ route('settings.users.index') }}" class="btn btn-label-secondary">Batal</a>
+                    <button type="submit" class="btn btn-outline-secondary me-2">Update User</button>
+                    <a href="{{ route('settings.users.index') }}" class="btn btn-outline-secondary">Batal</a>
                 </div>
             </form>
         </div>
@@ -230,7 +230,7 @@ $('div.head-label').html('<h5 class="card-title mb-0">Daftar User</h5>');
 @if (!$showCreateForm && !$showEditForm)
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="mb-0">Daftar User</h5>
-        <a href="{{ route('settings.users.index', ['action' => 'create']) }}" class="btn btn-primary">
+        <a href="{{ route('settings.users.index', ['action' => 'create']) }}" class="btn btn-outline-secondary">
             <i class="ti ti-plus me-1"></i> Tambah User Baru
         </a>
     </div>
@@ -253,15 +253,15 @@ $('div.head-label').html('<h5 class="card-title mb-0">Daftar User</h5>');
                             <td>{{ $user->email }}</td>
                             <td>
                                 @forelse ($user->getRoleNames() as $role)
-                                    <span class="badge bg-label-primary me-1">{{ $role }}</span>
+                                    <span class="badge bg-label-secondary border me-1">{{ $role }}</span>
                                 @empty
-                                    <span class="badge bg-label-warning">Belum Ada Role</span>
+                                    <span class="badge bg-label-warning border border-warning">Belum Ada Role</span>
                                 @endforelse
                             </td>
                             <td>
                                 <div class="d-inline-flex">
                                     <a href="{{ route('settings.users.index', ['action' => 'edit', 'user_id' => $user->id]) }}"
-                                        class="btn btn-sm btn-icon btn-info me-2" data-bs-toggle="tooltip"
+                                        class="btn btn-sm btn-icon btn-outline-secondary me-2" data-bs-toggle="tooltip"
                                         data-bs-placement="top" title="Edit">
                                         <i class="ti ti-pencil"></i>
                                     </a>
@@ -270,7 +270,7 @@ $('div.head-label').html('<h5 class="card-title mb-0">Daftar User</h5>');
                                         class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-icon btn-danger"
+                                        <button type="submit" class="btn btn-sm btn-icon btn-outline-danger"
                                             data-bs-toggle="tooltip" data-bs-placement="top" title="Hapus">
                                             <i class="ti ti-trash"></i>
                                         </button>

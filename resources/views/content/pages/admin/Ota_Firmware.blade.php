@@ -29,7 +29,7 @@
         <div class="card h-100">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Firmware Library</h5>
-                <span class="badge bg-label-primary">{{ $firmwares->count() }} Available</span>
+                <span class="badge bg-label-secondary border">{{ $firmwares->count() }} Available</span>
             </div>
             <div class="table-responsive text-nowrap">
                 <table class="table table-hover">
@@ -55,7 +55,7 @@
                                 <td>
                                     <strong>v{{ $fw->version }}</strong>
                                     @if($fw->mandatory)
-                                        <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">Mandatory</span>
+                                        <span class="badge bg-label-danger border border-danger ms-1" style="font-size: 0.65rem;">Mandatory</span>
                                     @endif
                                 </td>
                                 <td><small class="text-muted">{{ $fw->build ?: 'N/A' }}</small></td>
@@ -74,10 +74,10 @@
                                 <td>{{ $fw->deploy_count }}</td>
                                 <td>
                                     <div class="d-flex gap-2">
-                                        <a href="{{ route('admin.ota.download', $fw->id) }}" class="btn btn-sm btn-icon btn-label-secondary" title="Download Binary">
+                                        <a href="{{ route('admin.ota.download', $fw->id) }}" class="btn btn-sm btn-icon btn-outline-secondary" title="Download Binary">
                                             <i class="ti ti-download"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-icon btn-label-primary btn-deploy-fw" 
+                                        <button class="btn btn-sm btn-icon btn-outline-secondary btn-deploy-fw" 
                                                 data-id="{{ $fw->id }}" 
                                                 data-version="{{ $fw->version }}"
                                                 data-board="{{ $fw->board }}"
@@ -88,7 +88,7 @@
                                         <form action="{{ route('admin.ota.destroy', $fw->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete version v{{ $fw->version }}? This cannot be undone.');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-icon btn-label-danger" title="Delete">
+                                            <button type="submit" class="btn btn-sm btn-icon btn-outline-danger" title="Delete">
                                                 <i class="ti ti-trash"></i>
                                             </button>
                                         </form>
@@ -169,7 +169,7 @@
 <div class="card mt-4">
     <div class="card-header d-flex justify-content-between align-items-center pb-2">
         <h5 class="mb-0">Fleet OTA Live Monitor</h5>
-        <span class="badge bg-label-warning animate-pulse" id="live-indicator"><i class="ti ti-wifi me-1"></i>Listening...</span>
+        <span class="badge bg-label-secondary border animate-pulse" id="live-indicator"><i class="ti ti-wifi me-1"></i>Listening...</span>
     </div>
     <div class="table-responsive text-nowrap">
         <table class="table table-hover">
@@ -233,13 +233,20 @@
                         <td class="text-danger count-failed">{{ $failedCount }}</td>
                         <td class="text-secondary count-cancelled">{{ $cancelledCount }}</td>
                         <td>
-                            <span class="badge bg-label-{{ $deploy->status === 'Success' ? 'success' : ($deploy->status === 'Failed' ? 'danger' : ($deploy->status === 'Cancelled' ? 'secondary' : 'info')) }} status-text">
-                                {{ $deploy->status }}
+                            @php
+                                $dStatus = $deploy->status;
+                                $dClass = 'bg-label-secondary border';
+                                if ($dStatus === 'Success') $dClass = 'bg-label-success border border-success';
+                                elseif ($dStatus === 'Failed') $dClass = 'bg-label-danger border border-danger';
+                                elseif ($dStatus === 'Cancelled') $dClass = 'bg-label-secondary border';
+                            @endphp
+                            <span class="badge {{ $dClass }} status-text">
+                                {{ $dStatus }}
                             </span>
                         </td>
                         <td>
                             @if(in_array($deploy->status, ['Pending', 'Running', 'Scheduled']))
-                                <button class="btn btn-xs btn-label-danger btn-cancel-ota" data-id="{{ $deploy->id }}">Cancel</button>
+                                <button class="btn btn-xs btn-outline-danger btn-cancel-ota" data-id="{{ $deploy->id }}">Cancel</button>
                             @else
                                 -
                             @endif
@@ -286,8 +293,15 @@
                         <td><strong>{{ $camRun->camera->name }}</strong></td>
                         <td>v{{ $camRun->target_version }}</td>
                         <td>
-                            <span class="badge bg-label-{{ $camRun->status === 'Success' ? 'success' : ($camRun->status === 'Failed' ? 'danger' : ($camRun->status === 'Cancelled' ? 'secondary' : 'info')) }} status-text">
-                                {{ $camRun->status }}
+                            @php
+                                $cStatus = $camRun->status;
+                                $cClass = 'bg-label-secondary border';
+                                if ($cStatus === 'Success') $cClass = 'bg-label-success border border-success';
+                                elseif ($cStatus === 'Failed') $cClass = 'bg-label-danger border border-danger';
+                                elseif ($cStatus === 'Cancelled') $cClass = 'bg-label-secondary border';
+                            @endphp
+                            <span class="badge {{ $cClass }} status-text">
+                                {{ $cStatus }}
                             </span>
                         </td>
                         <td style="width: 200px;">
@@ -359,7 +373,7 @@
                 <input type="date" class="form-control form-control-sm" id="filterDate" name="date" value="{{ request('date') }}">
             </div>
             <div class="col-12 col-md-1 d-flex align-items-end">
-                <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
+                <button type="submit" class="btn btn-sm btn-outline-secondary w-100">Filter</button>
             </div>
         </form>
     </div>
@@ -382,8 +396,15 @@
                         <td><strong>{{ $record->camera ? $record->camera->name : 'Unknown' }}</strong></td>
                         <td>v{{ $record->target_version }}</td>
                         <td>
-                            <span class="badge bg-label-{{ $record->status === 'Success' ? 'success' : ($record->status === 'Failed' ? 'danger' : ($record->status === 'Cancelled' ? 'secondary' : 'warning')) }}">
-                                {{ $record->status }}
+                            @php
+                                $rStatus = $record->status;
+                                $rClass = 'bg-label-secondary border';
+                                if ($rStatus === 'Success') $rClass = 'bg-label-success border border-success';
+                                elseif ($rStatus === 'Failed') $rClass = 'bg-label-danger border border-danger';
+                                elseif ($rStatus === 'Cancelled') $rClass = 'bg-label-secondary border';
+                            @endphp
+                            <span class="badge {{ $rClass }}">
+                                {{ $rStatus }}
                             </span>
                         </td>
                         <td><small class="text-wrap d-block" style="max-width: 250px;">{{ $record->message ?: '-' }}</small></td>
@@ -834,13 +855,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         tbody.prepend(row);
                     }
 
-                    let badgeClass = 'info';
-                    if (e.status === 'Success') badgeClass = 'success';
-                    else if (e.status === 'Failed') badgeClass = 'danger';
-                    else if (e.status === 'Cancelled') badgeClass = 'secondary';
+                    let badgeClass = 'bg-label-secondary border';
+                    if (e.status === 'Success') badgeClass = 'bg-label-success border border-success';
+                    else if (e.status === 'Failed') badgeClass = 'bg-label-danger border border-danger';
+                    else if (e.status === 'Cancelled') badgeClass = 'bg-label-secondary border';
 
                     const actionCellHtml = ['Pending', 'Running', 'Scheduled'].includes(e.status)
-                        ? `<button class="btn btn-xs btn-label-danger btn-cancel-ota" data-id="${e.deployment_id}">Cancel</button>`
+                        ? `<button class="btn btn-xs btn-outline-danger btn-cancel-ota" data-id="${e.deployment_id}">Cancel</button>`
                         : '-';
 
                     row.innerHTML = `
@@ -871,7 +892,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td class="text-danger count-failed">${e.failed_count}</td>
                         <td class="text-secondary count-cancelled">${e.cancelled_count}</td>
                         <td>
-                            <span class="badge bg-label-${badgeClass} status-text">
+                            <span class="badge ${badgeClass} status-text">
                                 ${e.status}
                             </span>
                         </td>
@@ -890,10 +911,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         tbody.prepend(row);
                     }
 
-                    let badgeClass = 'info';
-                    if (e.status === 'Success') badgeClass = 'success';
-                    else if (e.status === 'Failed') badgeClass = 'danger';
-                    else if (e.status === 'Cancelled') badgeClass = 'secondary';
+                    let badgeClass = 'bg-label-secondary border';
+                    if (e.status === 'Success') badgeClass = 'bg-label-success border border-success';
+                    else if (e.status === 'Failed') badgeClass = 'bg-label-danger border border-danger';
+                    else if (e.status === 'Cancelled') badgeClass = 'bg-label-secondary border';
 
                     let progressClass = 'info';
                     if (e.status === 'Success') progressClass = 'success';
@@ -903,7 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td><strong>${e.camera_name}</strong></td>
                         <td>v${e.version}</td>
                         <td>
-                            <span class="badge bg-label-${badgeClass} status-text">
+                            <span class="badge ${badgeClass} status-text">
                                 ${e.status}
                             </span>
                         </td>

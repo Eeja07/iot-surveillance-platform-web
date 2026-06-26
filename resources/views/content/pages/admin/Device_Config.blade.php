@@ -27,42 +27,42 @@
 <div class="row g-4 mb-4">
     <!-- Camera Configurations Overview -->
     <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100">
+        <div class="card h-100 shadow-sm border-0">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h4 class="mb-1" id="stat-total-cameras">{{ $cameras->filter(fn($c) => $c->is_active)->count() }} / {{ $cameras->count() }}</h4>
-                        <p class="mb-0 text-muted">Online / Total Devices</p>
+                        <h4 class="mb-1 fw-bold" id="stat-total-cameras">{{ $cameras->filter(fn($c) => $c->is_active)->count() }} / {{ $cameras->count() }}</h4>
+                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Online / Total Devices</p>
                     </div>
-                    <div class="avatar bg-light-primary rounded">
-                        <span class="avatar-initial"><i class="ti ti-camera ti-md"></i></span>
+                    <div class="avatar bg-label-secondary border rounded p-2">
+                        <span class="avatar-initial text-secondary"><i class="ti ti-camera ti-md"></i></span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100">
+        <div class="card h-100 shadow-sm border-0">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         @php
                             $driftCount = $cameras->filter(fn($c) => app(\App\Services\DeviceConfigurationService::class)->isDrifted($c))->count();
                         @endphp
-                        <h4 class="mb-1 {{ $driftCount > 0 ? 'text-danger' : 'text-success' }}" id="stat-drifted-cameras">
+                        <h4 class="mb-1 fw-bold" id="stat-drifted-cameras">
                             {{ $driftCount }}
                         </h4>
-                        <p class="mb-0 text-muted">Configuration Drift</p>
+                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Configuration Drift</p>
                     </div>
-                    <div class="avatar bg-light-{{ $driftCount > 0 ? 'danger' : 'success' }} rounded">
-                        <span class="avatar-initial"><i class="ti ti-alert-triangle ti-md"></i></span>
+                    <div class="avatar bg-label-secondary border rounded p-2">
+                        <span class="avatar-initial text-secondary"><i class="ti ti-alert-triangle ti-md"></i></span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100">
+        <div class="card h-100 shadow-sm border-0">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
@@ -70,26 +70,26 @@
                             $pendingCount = $cameras->filter(fn($c) => in_array($c->last_config_status, ['Pending', 'Queued', 'Sending']))->count();
                             $failedCount = $cameras->filter(fn($c) => in_array($c->last_config_status, ['Failed', 'Rejected', 'Timeout']))->count();
                         @endphp
-                        <h4 class="mb-1 text-warning" id="stat-pending-changes">{{ $pendingCount }}</h4>
-                        <p class="mb-0 text-muted">Queue: {{ $pendingCount }} Active / {{ $failedCount }} Failed</p>
+                        <h4 class="mb-1 fw-bold" id="stat-pending-changes">{{ $pendingCount }}</h4>
+                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Queue: {{ $pendingCount }} Active / {{ $failedCount }} Failed</p>
                     </div>
-                    <div class="avatar bg-light-warning rounded">
-                        <span class="avatar-initial"><i class="ti ti-refresh ti-md"></i></span>
+                    <div class="avatar bg-label-secondary border rounded p-2">
+                        <span class="avatar-initial text-secondary"><i class="ti ti-refresh ti-md"></i></span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100">
+        <div class="card h-100 shadow-sm border-0">
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <h4 class="mb-1 text-info">{{ $profiles->count() }}</h4>
-                        <p class="mb-0 text-muted">Profiles Defined</p>
+                        <h4 class="mb-1 fw-bold">{{ $profiles->count() }}</h4>
+                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Profiles Defined</p>
                     </div>
-                    <div class="avatar bg-light-info rounded">
-                        <span class="avatar-initial"><i class="ti ti-settings-automation ti-md"></i></span>
+                    <div class="avatar bg-label-secondary border rounded p-2">
+                        <span class="avatar-initial text-secondary"><i class="ti ti-settings-automation ti-md"></i></span>
                     </div>
                 </div>
             </div>
@@ -166,12 +166,12 @@
 
                                     // Map status
                                     $status = $camera->last_config_status ?: 'Applied';
-                                    $statusClass = 'bg-label-secondary';
-                                    if (in_array($status, ['Applied'])) $statusClass = 'bg-label-success';
-                                    elseif (in_array($status, ['Pending'])) $statusClass = 'bg-label-warning';
-                                    elseif (in_array($status, ['Queued'])) $statusClass = 'bg-label-info';
-                                    elseif (in_array($status, ['Sending'])) $statusClass = 'bg-label-primary';
-                                    elseif (in_array($status, ['Failed', 'Rejected', 'Timeout'])) $statusClass = 'bg-label-danger';
+                                    $statusClass = 'bg-label-secondary border';
+                                    if (in_array($status, ['Applied'])) $statusClass = 'bg-label-success border border-success';
+                                    elseif (in_array($status, ['Pending'])) $statusClass = 'bg-label-warning border border-warning';
+                                    elseif (in_array($status, ['Queued'])) $statusClass = 'bg-label-secondary border';
+                                    elseif (in_array($status, ['Sending'])) $statusClass = 'bg-label-secondary border';
+                                    elseif (in_array($status, ['Failed', 'Rejected', 'Timeout'])) $statusClass = 'bg-label-danger border border-danger';
                                 @endphp
                                 <tr id="camera-row-{{ $camera->id }}">
                                     <td>
@@ -185,28 +185,28 @@
                                     </td>
                                     <td>
                                         @if($camera->is_active)
-                                            <span class="badge bg-label-success">Online</span>
+                                            <span class="badge bg-label-success border border-success">Online</span>
                                         @else
-                                            <span class="badge bg-label-secondary">Offline</span>
+                                            <span class="badge bg-label-danger border border-danger">Offline</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($camera->assignedProfile)
-                                            <span class="badge bg-label-info">{{ $camera->assignedProfile->name }}</span>
+                                            <span class="badge bg-label-secondary border">{{ $camera->assignedProfile->name }}</span>
                                             @if($camera->assignedProfile->restart_required)
-                                                <span class="badge bg-label-warning btn-xs ms-1" data-bs-toggle="tooltip" title="Profile requires restart on apply"><i class="ti ti-refresh" style="font-size: 0.8rem;"></i></span>
+                                                <span class="badge bg-label-secondary border btn-xs ms-1" data-bs-toggle="tooltip" title="Profile requires restart on apply"><i class="ti ti-refresh" style="font-size: 0.8rem;"></i></span>
                                             @endif
                                         @else
-                                            <span class="badge bg-label-secondary">None</span>
+                                            <span class="badge bg-label-secondary border">None</span>
                                         @endif
                                     </td>
                                     <td class="drift-status-cell">
                                         @if($drifted)
-                                            <span class="badge bg-label-danger" data-bs-toggle="tooltip" data-bs-html="true" title="Drifted fields: {{ implode(', ', $driftFields) }}">
-                                                Configuration Drift
+                                            <span class="badge bg-label-warning border border-warning" data-bs-toggle="tooltip" data-bs-html="true" title="Drifted fields: {{ implode(', ', $driftFields) }}">
+                                                Drifted
                                             </span>
                                         @else
-                                            <span class="badge bg-label-success">In Sync</span>
+                                            <span class="badge bg-label-success border border-success">In Sync</span>
                                         @endif
                                     </td>
                                     <td class="pending-changes-cell">
@@ -349,16 +349,16 @@
                                 </div>
                             </div>
                             <small class="text-muted d-block mt-2">
-                                <span class="badge bg-label-secondary me-1">JPEG: {{ $profile->jpeg_quality }}</span>
-                                <span class="badge bg-label-secondary me-1">Size: {{ $profile->frame_size }}</span>
-                                <span class="badge bg-label-secondary me-1">Cap: {{ $profile->capture_interval_ms }}ms</span>
-                                <span class="badge bg-label-secondary me-1">Telem: {{ $profile->telemetry_interval_ms }}ms</span>
+                                <span class="badge bg-label-secondary border me-1">JPEG: {{ $profile->jpeg_quality }}</span>
+                                <span class="badge bg-label-secondary border me-1">Size: {{ $profile->frame_size }}</span>
+                                <span class="badge bg-label-secondary border me-1">Cap: {{ $profile->capture_interval_ms }}ms</span>
+                                <span class="badge bg-label-secondary border me-1">Telem: {{ $profile->telemetry_interval_ms }}ms</span>
                             </small>
                             <small class="text-muted d-block mt-1">
-                                <span class="badge bg-label-secondary me-1">Buffer: {{ $profile->mqtt_buffer }}</span>
-                                <span class="badge bg-{{ $profile->image_enabled ? 'label-success' : 'label-danger' }} me-1">Img: {{ $profile->image_enabled ? 'On' : 'Off' }}</span>
-                                <span class="badge bg-{{ $profile->telemetry_enabled ? 'label-success' : 'label-danger' }} me-1">Telem: {{ $profile->telemetry_enabled ? 'On' : 'Off' }}</span>
-                                <span class="badge bg-{{ $profile->ota_enabled ? 'label-success' : 'label-danger' }} me-1">OTA: {{ $profile->ota_enabled ? 'On' : 'Off' }}</span>
+                                <span class="badge bg-label-secondary border me-1">Buffer: {{ $profile->mqtt_buffer }}</span>
+                                <span class="badge bg-label-secondary border me-1">Img: {{ $profile->image_enabled ? 'On' : 'Off' }}</span>
+                                <span class="badge bg-label-secondary border me-1">Telem: {{ $profile->telemetry_enabled ? 'On' : 'Off' }}</span>
+                                <span class="badge bg-label-secondary border me-1">OTA: {{ $profile->ota_enabled ? 'On' : 'Off' }}</span>
                             </small>
                         </div>
                     @empty
@@ -391,7 +391,7 @@
                                 <option value="{{ $p->id }}">{{ $p->name }}</option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">Apply</button>
                     </div>
                 </form>
 
@@ -402,7 +402,7 @@
                     @csrf
                     <input type="hidden" name="operation" value="reapply_desired">
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-outline-success btn-sm">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
                             <i class="ti ti-check me-1"></i> Reapply Desired Config
                         </button>
                     </div>
@@ -413,7 +413,7 @@
                     @csrf
                     <input type="hidden" name="operation" value="retry_failed">
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
                             <i class="ti ti-rotate me-1"></i> Retry Failed Configs
                         </button>
                     </div>
@@ -424,7 +424,7 @@
                     @csrf
                     <input type="hidden" name="operation" value="retry_pending">
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-outline-info btn-sm">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm">
                             <i class="ti ti-refresh me-1"></i> Retry Pending Configs
                         </button>
                     </div>
@@ -448,7 +448,7 @@
                     @csrf
                     <input type="hidden" name="operation" value="restart">
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-warning btn-sm">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
                             <i class="ti ti-refresh me-1"></i> Restart Entire Fleet
                         </button>
                     </div>
@@ -459,7 +459,7 @@
                     @csrf
                     <input type="hidden" name="operation" value="factory_reset">
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-danger btn-sm">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
                             <i class="ti ti-trash-x me-1"></i> Factory Reset Fleet
                         </button>
                     </div>
@@ -529,13 +529,13 @@
                                 <td class="status-cell">
                                     @php
                                         $hStatus = $history->status;
-                                        $hClass = 'bg-label-secondary';
-                                        if ($hStatus === 'Applied') $hClass = 'bg-label-success';
-                                        elseif ($hStatus === 'Sent') $hClass = 'bg-label-primary';
-                                        elseif ($hStatus === 'Pending') $hClass = 'bg-label-warning';
-                                        elseif ($hStatus === 'Queued') $hClass = 'bg-label-info';
-                                        elseif ($hStatus === 'Sending') $hClass = 'bg-label-primary';
-                                        elseif (in_array($hStatus, ['Failed', 'Rejected', 'Timeout'])) $hClass = 'bg-label-danger';
+                                        $hClass = 'bg-label-secondary border';
+                                        if ($hStatus === 'Applied') $hClass = 'bg-label-success border border-success';
+                                        elseif ($hStatus === 'Sent') $hClass = 'bg-label-secondary border';
+                                        elseif ($hStatus === 'Pending') $hClass = 'bg-label-warning border border-warning';
+                                        elseif ($hStatus === 'Queued') $hClass = 'bg-label-secondary border';
+                                        elseif ($hStatus === 'Sending') $hClass = 'bg-label-secondary border';
+                                        elseif (in_array($hStatus, ['Failed', 'Rejected', 'Timeout'])) $hClass = 'bg-label-danger border border-danger';
                                     @endphp
                                     <span class="badge {{ $hClass }}">{{ $hStatus }}</span>
                                 </td>
@@ -550,7 +550,7 @@
                                 <td>
                                     @if(!empty($history->changed_fields))
                                         @foreach($history->changed_fields as $f)
-                                            <span class="badge bg-label-secondary" style="font-size: 0.65rem;">{{ $f }}</span>
+                                            <span class="badge bg-label-secondary border" style="font-size: 0.65rem;">{{ $f }}</span>
                                         @endforeach
                                     @else
                                         -

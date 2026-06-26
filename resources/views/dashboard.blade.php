@@ -514,7 +514,7 @@
                             @if($showHeaders)
                                 <div class="group-header">
                                     <h5><i class="ti ti-folder me-2"></i>{{ $groupName }}</h5>
-                                    <span class="badge bg-label-primary border" style="border-color: #dbeafe !important;">{{ $items->count() }} Kamera</span>
+                                    <span class="badge bg-label-secondary border">{{ $items->count() }} Kamera</span>
                                 </div>
                             @endif
 
@@ -525,85 +525,84 @@
                                         data-latest-image-timestamp="{{ $camera->latest_image_at ? $camera->latest_image_at->timestamp * 1000 : 0 }}"
                                         data-reconnect-delta="{{ $telemetry ? $telemetry->reconnect_delta : 0 }}"
                                         data-publish-fail-delta="{{ $telemetry ? $telemetry->publish_fail_delta : 0 }}">
+                                        
                                         <div class="card h-100 shadow-sm border-0">
-                                            <div
-                                                class="card-header d-flex justify-content-between align-items-center py-2 px-3 border-0 pb-0 bg-transparent">
-                                                <h6 class="mb-0 text-truncate fw-bold" style="max-width: 70%;">{{ $camera->name }}</h6>
-                                                {{-- Tambahkan ID pada badge status --}}
-                                                <span class="badge {{ $camera->is_active ? 'bg-label-success' : 'bg-label-danger' }}"
-                                                    id="status-badge-{{ $camera->id }}">
-                                                    {{ $camera->is_active ? 'Online' : 'Offline' }}
+                                            <!-- Hidden status badge for JS to update without throwing errors -->
+                                            <span id="status-badge-{{ $camera->id }}" class="d-none"></span>
+
+                                            <div class="card-header d-flex justify-content-between align-items-center py-2 px-3 border-0 pb-0 bg-transparent">
+                                                <div class="min-w-0">
+                                                    <h6 class="mb-0 text-truncate fw-bold" style="max-width: 100%;">{{ $camera->name }}</h6>
+                                                    @if($camera->group)
+                                                        <small class="text-muted d-block text-truncate" style="font-size: 0.7rem;">
+                                                            <i class="ti ti-map-pin me-1" style="font-size: 0.75rem;"></i>{{ $camera->group->name }}
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                                
+                                                @php
+                                                    $lastDetection = \App\Models\DetectionEvent::whereHas('imageRecord', function($q) use ($camera) {
+                                                        $q->where('camera_id', $camera->id);
+                                                    })->latest()->first();
+
+                                                    $status = $camera->operational_status;
+                                                    $badgeText = $status;
+                                                    $badgeClass = 'bg-label-secondary';
+
+                                                    if ($status === 'ONLINE') {
+                                                        if ($lastDetection && now()->diffInSeconds($lastDetection->created_at) < 15) {
+                                                            $badgeText = 'DETECTING';
+                                                            $badgeClass = 'bg-label-danger';
+                                                        } else {
+                                                            $badgeText = 'ONLINE';
+                                                            $badgeClass = 'bg-label-success';
+                                                        }
+                                                    } elseif ($status === 'WARNING') {
+                                                        $badgeText = 'WARNING';
+                                                        $badgeClass = 'bg-label-warning';
+                                                    } else {
+                                                        $badgeText = 'OFFLINE';
+                                                        $badgeClass = 'bg-label-danger';
+                                                    }
+                                                @endphp
+                                                <span class="badge {{ $badgeClass }} telemetry-health-badge"
+                                                    id="health-badge-{{ $camera->id }}" style="font-size: 0.65rem;">
+                                                    {{ $badgeText }}
                                                 </span>
                                             </div>
+                                            
                                             <div class="card-body p-0 text-center bg-dark d-flex align-items-center justify-content-center"
                                                 style="overflow: hidden; background-color: #111 !important; aspect-ratio: 4 / 3; width: 100%;">
-                                                @php $latest = $camera; @endphp
                                                 <img class="camera-feed-image" data-camera-id="{{ $camera->id }}"
                                                     data-websocket-channel="{{ $camera->websocket_channel_id }}"
                                                     style="width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain;"
                                                     src="{{ $camera->latest_image_path ? asset('https://apiminio.miot-its.org/cctv/' . $camera->latest_image_path) : 'https://placehold.co/640x480/293445/FFFFFF?text=No+Feed' }}">
                                             </div>
-                                            <div class="card-body p-2 border-top">
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    @php
-                                                        $status = $camera->operational_status;
-                                                        $badgeClass = 'bg-label-danger';
-                                                        if ($status === 'ONLINE')
-                                                            $badgeClass = 'bg-label-success';
-                                                        elseif ($status === 'WARNING')
-                                                            $badgeClass = 'bg-label-warning';
-                                                    @endphp
-                                                    <span class="badge {{ $badgeClass }} telemetry-health-badge py-0 px-1"
-                                                        id="health-badge-{{ $camera->id }}" style="font-size: 0.65rem;">
-                                                        {{ $status }}
-                                                    </span>
-                                                    <small class="text-muted text-end fw-semibold text-truncate ms-2"
-                                                        id="freshness-{{ $camera->id }}" style="max-width: 120px; font-size: 0.7rem;">
-                                                        {{ $camera->freshness_indicator }}
-                                                    </small>
-                                                </div>
-                                                <div class="row g-1 text-start" style="font-size: 0.7rem; line-height: 1.2;">
-                                                    <div class="col-6">
-                                                        <div class="text-truncate"><span class="text-muted">RSSI:</span> <strong
-                                                                id="telemetry-rssi-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_rssi : 'N/A' }}</strong>
-                                                        </div>
-                                                        <div class="text-truncate"><span class="text-muted">Heap:</span> <strong
-                                                                id="telemetry-heap-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_heap : 'N/A' }}</strong>
-                                                        </div>
-                                                        <div class="text-truncate"><span class="text-muted">Publish:</span> <strong
-                                                                id="telemetry-publish-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_publish : 'N/A' }}</strong>
-                                                        </div>
-                                                        <div class="text-truncate"><span class="text-muted">MQTT:</span> <strong
-                                                                id="telemetry-mqtt-{{ $camera->id }}">{{ $telemetry ? $telemetry->mqtt_status_text : 'N/A' }}</strong>
-                                                        </div>
-                                                        <div class="text-truncate"><span class="text-muted">WS:</span> <strong
-                                                                id="telemetry-ws-{{ $camera->id }}">{{ $telemetry ? $telemetry->ws_status_text : 'N/A' }}</strong>
-                                                        </div>
+                                            
+                                            <div class="card-body p-3 border-top">
+                                                <div class="row g-2" style="font-size: 0.75rem;">
+                                                    <div class="col-12 d-flex justify-content-between align-items-center">
+                                                        <span class="text-muted"><i class="ti ti-activity me-1"></i>Last Heartbeat</span>
+                                                        <small class="text-muted fw-semibold text-truncate ms-2" id="freshness-{{ $camera->id }}" style="max-width: 150px;">
+                                                            {{ $camera->freshness_indicator }}
+                                                        </small>
                                                     </div>
-                                                    <div class="col-6">
-                                                        <div class="text-truncate"><span class="text-muted">Rec:</span> <strong
-                                                                id="telemetry-reconnect-{{ $camera->id }}">{{ $telemetry ? $telemetry->reconnect_delta_text : '+0' }}</strong>
-                                                        </div>
-                                                        <div class="text-truncate"><span class="text-muted">Close:</span> <strong
-                                                                id="telemetry-ws-close-{{ $camera->id }}">{{ $telemetry ? $telemetry->ws_close_delta_text : '+0' }}</strong>
-                                                        </div>
-                                                        <div class="text-truncate"><span class="text-muted">Fail:</span> <strong
-                                                                id="telemetry-pub-fail-{{ $camera->id }}">{{ $telemetry ? $telemetry->publish_fail_delta_text : '+0' }}</strong>
-                                                        </div>
-                                                        <div class="text-truncate"><span class="text-muted">Uptime:</span> <strong
-                                                                id="telemetry-uptime-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_uptime : 'N/A' }}</strong>
-                                                        </div>
+                                                    <div class="col-12 d-flex justify-content-between align-items-center mt-1">
+                                                        <span class="text-muted"><i class="ti ti-alert-triangle me-1"></i>Last Detection</span>
+                                                        <small class="text-muted fw-semibold text-truncate ms-2" style="max-width: 150px;">
+                                                            {{ $lastDetection ? $lastDetection->created_at->diffForHumans() : 'None' }}
+                                                        </small>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div
-                                                class="card-footer d-flex justify-content-between align-items-center py-1 px-2 border-0 bg-transparent">
-                                                <button type="button" class="btn btn-xs btn-outline-info" data-bs-toggle="modal"
+                                            
+                                            <div class="card-footer d-flex justify-content-between align-items-center py-2 px-3 border-top bg-transparent">
+                                                <button type="button" class="btn btn-xs btn-outline-secondary" data-bs-toggle="modal"
                                                     data-bs-target="#telemetryModal-{{ $camera->id }}">
                                                     Health Details
                                                 </button>
                                                 <a href="{{ route('log.history.explorer', $camera->id) }}"
-                                                    class="btn btn-xs btn-primary">Detail</a>
+                                                    class="btn btn-xs btn-outline-secondary">Detail</a>
                                             </div>
                                         </div>
                                     </div>
@@ -986,10 +985,10 @@
                         <div class="d-flex align-items-start justify-content-between w-100">
                             <div class="content-left">
                                 <span class="text-muted">Total Cameras</span>
-                                <h3 class="mb-0 mt-1" id="summary-total">{{ $totalCameras ?? 0 }}</h3>
+                                <h3 class="mb-0 mt-1 fw-bold" id="summary-total">{{ $totalCameras ?? 0 }}</h3>
                                 <small class="text-muted fw-semibold">Active Fleet</small>
                             </div>
-                            <span class="badge bg-label-primary rounded p-2"><i class="ti ti-camera ti-sm"></i></span>
+                            <span class="badge bg-label-secondary border rounded p-2"><i class="ti ti-camera ti-sm text-secondary"></i></span>
                         </div>
                     </div>
                 </div>
@@ -1000,14 +999,14 @@
                         <div class="d-flex align-items-start justify-content-between w-100">
                             <div class="content-left">
                                 <span class="text-muted">Online Cameras</span>
-                                <h3 class="mb-0 mt-1 text-success">
+                                <h3 class="mb-0 mt-1 fw-bold">
                                     <span id="summary-online">{{ $onlineCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator">{{ $totalCameras ?? 0 }}</span>
+                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
                                 </h3>
-                                <small class="text-success fw-semibold"
+                                <small class="text-muted fw-semibold"
                                     id="summary-online-percent">{{ $onlinePercent }}%</small>
                             </div>
-                            <span class="badge bg-label-success rounded p-2"><i class="ti ti-circle-check ti-sm"></i></span>
+                            <span class="badge bg-label-secondary border rounded p-2"><i class="ti ti-circle-check ti-sm text-secondary"></i></span>
                         </div>
                     </div>
                 </div>
@@ -1018,14 +1017,14 @@
                         <div class="d-flex align-items-start justify-content-between w-100">
                             <div class="content-left">
                                 <span class="text-muted">Warning Cameras</span>
-                                <h3 class="mb-0 mt-1 text-warning">
+                                <h3 class="mb-0 mt-1 fw-bold">
                                     <span id="summary-warning">{{ $warningCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator">{{ $totalCameras ?? 0 }}</span>
+                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
                                 </h3>
-                                <small class="text-warning fw-semibold"
+                                <small class="text-muted fw-semibold"
                                     id="summary-warning-percent">{{ $warningPercent }}%</small>
                             </div>
-                            <span class="badge bg-label-warning rounded p-2"><i class="ti ti-alert-circle ti-sm"></i></span>
+                            <span class="badge bg-label-secondary border rounded p-2"><i class="ti ti-alert-circle ti-sm text-secondary"></i></span>
                         </div>
                     </div>
                 </div>
@@ -1036,14 +1035,14 @@
                         <div class="d-flex align-items-start justify-content-between w-100">
                             <div class="content-left">
                                 <span class="text-muted">Offline Cameras</span>
-                                <h3 class="mb-0 mt-1 text-danger">
+                                <h3 class="mb-0 mt-1 fw-bold">
                                     <span id="summary-offline">{{ $offlineCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator">{{ $totalCameras ?? 0 }}</span>
+                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
                                 </h3>
-                                <small class="text-danger fw-semibold"
+                                <small class="text-muted fw-semibold"
                                     id="summary-offline-percent">{{ $offlinePercent }}%</small>
                             </div>
-                            <span class="badge bg-label-danger rounded p-2"><i class="ti ti-circle-x ti-sm"></i></span>
+                            <span class="badge bg-label-secondary border rounded p-2"><i class="ti ti-circle-x ti-sm text-secondary"></i></span>
                         </div>
                     </div>
                 </div>
