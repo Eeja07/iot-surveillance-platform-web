@@ -14,14 +14,33 @@
 # Ignore all storage except placeholders
 /storage/*
 !/storage/app/
+!/storage/framework/
+!/storage/logs/
+
+/storage/app/*
 !/storage/app/public/
 !/storage/app/public/.gitignore
+
+/storage/framework/*
+!/storage/framework/cache/
+!/storage/framework/sessions/
+!/storage/framework/views/
+!/storage/framework/.gitignore
+
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
 
 /storage/logs/*
 !/storage/logs/.gitignore
 
-bootstrap/cache/*.php
-bootstrap/cache/*.json
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
 
 # =========================
 # Environment

@@ -58,8 +58,10 @@ class DetectImageJob implements ShouldQueue
             'path'            => $this->imageRecord->path,
         ]);
 
+        $url = config('services.detection_service.url', 'http://detection-service:8000') . '/process-image';
+
         try {
-            $response = Http::timeout(10)->post('http://detection-service:8000/process-image', [
+            $response = Http::timeout(10)->post($url, [
                 'image_id'   => $this->imageRecord->id,
                 'image_path' => $this->imageRecord->path,
                 'camera_id'  => $this->imageRecord->camera_id,

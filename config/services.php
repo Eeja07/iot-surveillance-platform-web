@@ -37,4 +37,8 @@ return [
     'cooldown' => env('FCM_COOLDOWN', 30),
   ],
 
+  'detection_service' => [
+    'url' => env('DETECTION_SERVICE_URL', 'http://detection-service:8000'),
+  ],
+
 ];

@@ -21,6 +21,8 @@ services:
     container_name: cctv-app
     restart: unless-stopped
     working_dir: /var/www/html
+    entrypoint: /var/www/html/docker/start.sh
+    command: php-fpm
     environment:
       <<: *default-env
       APP_ENV: local
@@ -129,6 +131,7 @@ services:
     container_name: cctv-reverb
     restart: unless-stopped
     working_dir: /var/www/html
+    entrypoint: /var/www/html/docker/start.sh
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
     depends_on:
       - app
