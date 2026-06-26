@@ -467,27 +467,118 @@
         </div>
 
         <div>
-            <a href="{{ route('user.camera-groups.index') }}" class="btn btn-outline-primary shadow-sm">
+            <a href="{{ route('user.camera-groups.index') }}" class="btn btn-outline-primary">
                 <i class="ti ti-settings me-1"></i> Kelola Grup
             </a>
         </div>
     </div>
 
     @php
-        $totalCountVal = $totalCameras ?? 0;
-        $onlinePercent = $totalCountVal > 0 ? round(($onlineCameras ?? 0) / $totalCountVal * 100) : 0;
-        $warningPercent = $totalCountVal > 0 ? round(($warningCameras ?? 0) / $totalCountVal * 100) : 0;
-        $offlinePercent = $totalCountVal > 0 ? round(($offlineCameras ?? 0) / $totalCountVal * 100) : 0;
         $groupedCameras = $cameras->groupBy(function ($camera) {
             return $camera->group ? $camera->group->name : 'Tanpa Grup';
         });
         $showGroupHeaders = ($currentGroup ?? 'Semua Kamera') == 'Semua Kamera';
     @endphp
 
-    {{-- Section 1: Realtime Cameras --}}
-    <div class="mb-5">
+    {{-- Section: Overview --}}
+    <div class="mb-4">
+        <h5 class="mb-3 fw-bold">Overview</h5>
+        <div class="row g-3">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card border shadow-none p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small d-block">Total Cameras</span>
+                            <h4 class="mb-0 fw-bold" id="summary-total">{{ $totalCameras ?? 0 }}</h4>
+                        </div>
+                        <i class="ti ti-video fs-5 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card border shadow-none p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small d-block">Online Cameras</span>
+                            <h4 class="mb-0 fw-bold" id="summary-online">{{ $onlineCameras ?? 0 }}</h4>
+                        </div>
+                        <i class="ti ti-circle-check fs-5 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card border shadow-none p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small d-block">Warning Cameras</span>
+                            <h4 class="mb-0 fw-bold" id="summary-warning">{{ $warningCameras ?? 0 }}</h4>
+                        </div>
+                        <i class="ti ti-alert-triangle fs-5 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card border shadow-none p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small d-block">Offline Cameras</span>
+                            <h4 class="mb-0 fw-bold" id="summary-offline">{{ $offlineCameras ?? 0 }}</h4>
+                        </div>
+                        <i class="ti ti-video-off fs-5 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Section: Recent Detection --}}
+    <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0 fw-bold"><i class="ti ti-video me-2 text-primary"></i>Realtime Cameras</h5>
+            <h5 class="mb-0 fw-bold">Recent Detection</h5>
+            <span class="badge bg-label-danger" id="detection-realtime-badge" style="font-size: 0.75rem;">
+                <span class="spinner-grow spinner-grow-sm text-danger me-1" role="status" style="width: 6px; height: 6px;"></span>Realtime Active
+            </span>
+        </div>
+
+        <div class="card shadow-none border">
+            <div class="card-body p-3">
+                <div id="no-person-detection-placeholder" style="{{ $latestDetection ? 'display: none;' : '' }}">
+                    <p class="text-muted mb-0 py-3 text-center">No person detection events recorded yet.</p>
+                </div>
+
+                <div id="latest-person-detection-card" class="d-flex align-items-center gap-3"
+                    style="{{ $latestDetection ? '' : 'display: none;' }}">
+                    <div class="bg-dark rounded" style="width: 100px; height: 75px; overflow: hidden; flex-shrink: 0;">
+                        <img id="detection-snapshot" class="w-100 h-100" style="object-fit: cover;"
+                            src="{{ $latestDetection ? \Illuminate\Support\Facades\Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}">
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-sm-4">
+                                <small class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Camera</small>
+                                <span class="fw-semibold text-truncate d-block" id="detection-camera-name">{{ $latestDetection->imageRecord->camera->name ?? 'N/A' }}</span>
+                            </div>
+                            <div class="col-sm-4">
+                                <small class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Confidence</small>
+                                <span class="badge bg-label-danger py-1" id="detection-confidence" style="font-size: 0.75rem;">
+                                    {{ $latestDetection ? number_format($latestDetection->confidence * 100, 2) . '%' : '0.00%' }}
+                                </span>
+                            </div>
+                            <div class="col-sm-4">
+                                <small class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Timestamp</small>
+                                <span class="text-muted" id="detection-time" style="font-size: 0.8rem;">{{ $latestDetection ? $latestDetection->created_at->format('Y-m-d H:i:s') : 'N/A' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Section: Realtime Cameras --}}
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 fw-bold">Realtime Cameras</h5>
             @if(($currentGroup ?? 'Semua Kamera') != 'Semua Kamera')
                 <span class="badge bg-label-primary border ms-2"
                     style="border-color: #dbeafe !important;">{{ $currentGroup }}</span>
@@ -496,20 +587,19 @@
 
         {{-- Filter Grup --}}
         @if(count($groups ?? []) > 1)
-            <div class="card mb-4 border-0 shadow-sm">
-                <div class="card-body py-3 px-4">
-                    <form method="POST" action="{{ route('user.dashboard.groups') }}" id="groupFilterForm">
+            <div class="card mb-3 border shadow-none">
+                <div class="card-body py-2 px-3">
+                    <form method="POST" action="{{ url('/dashboard/groups') }}">
                         @csrf
-                        <div class="row align-items-center">
+                        <div class="row align-items-center g-2">
                             <div class="col-auto">
-                                <label class="form-label mb-0 fw-semibold"><i class="ti ti-filter me-1 text-primary"></i> Filter
-                                    Grup:</label>
+                                <label class="form-label mb-0 fw-semibold" style="font-size: 0.85rem;">Filter Grup:</label>
                             </div>
                             <div class="col-md-4">
-                                <select name="group" id="groupFilter" class="form-select border-0 bg-light">
-                                    @foreach($groups as $group)
-                                        <option value="{{ $group }}" {{ ($currentGroup ?? '') == $group ? 'selected' : '' }}>
-                                            {{ $group }}
+                                <select name="group" id="groupFilter" class="form-select form-select-sm border-0 bg-light">
+                                    @foreach($groups as $name)
+                                        <option value="{{ $name }}" {{ $currentGroup == $name ? 'selected' : '' }}>
+                                            {{ $name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -522,503 +612,431 @@
 
         {{-- Grid Kamera --}}
         @if($cameras->count() > 0)
-            <div class="row g-3">
+            <div class="row g-2">
                 <div class="col-12">
-                    @foreach($groupedCameras as $groupName => $groupCameras)
-                        <div class="mb-3">
+                    @foreach($groupedCameras as $groupName => $items)
+                        <div class="mb-4">
                             @if($showGroupHeaders)
-                                <div class="group-header">
-                                    <h5>
-                                        <i class="ti ti-folder me-2"></i>
-                                        {{ $groupName }}
-                                        <span class="badge bg-label-primary border ms-2"
-                                            style="border-color: #dbeafe !important;">{{ $groupCameras->count() }}</span>
-                                    </h5>
-                                    <div class="group-actions">
-                                        <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#group-{{ \Illuminate\Support\Str::slug($groupName) }}"
-                                            aria-expanded="true">
-                                            <i class="ti ti-chevron-down toggle-icon"></i>
-                                        </button>
-                                    </div>
+                                <div class="group-header d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0 fw-bold"><i class="ti ti-folder me-1"></i>{{ $groupName }}</h6>
+                                    <span class="badge bg-label-secondary border" style="font-size: 0.7rem;">{{ $items->count() }} Kamera</span>
                                 </div>
                             @endif
 
-                            <div class="collapse show" id="group-{{ \Illuminate\Support\Str::slug($groupName) }}">
-                                <div class="row g-3">
-                                    @foreach($groupCameras as $camera)
-                                        @php $telemetry = $camera->latestTelemetry; @endphp
-                                        <div class="col-12 col-md-6 col-lg-4 col-xl-3 camera-card" data-camera-id="{{ $camera->id }}"
-                                            data-latest-image-timestamp="{{ $camera->latest_image_at ? $camera->latest_image_at->timestamp * 1000 : 0 }}"
-                                            data-reconnect-delta="{{ $telemetry ? $telemetry->reconnect_delta : 0 }}"
-                                            data-publish-fail-delta="{{ $telemetry ? $telemetry->publish_fail_delta : 0 }}">
+                            <div class="row g-2">
+                                @foreach($items as $camera)
+                                    @php $telemetry = $camera->latestTelemetry; @endphp
+                                    <div class="col-12 col-md-6 col-lg-4 col-xl-3 camera-card" data-camera-id="{{ $camera->id }}"
+                                        data-latest-image-timestamp="{{ $camera->latest_image_at ? $camera->latest_image_at->timestamp * 1000 : 0 }}"
+                                        data-reconnect-delta="{{ $telemetry ? $telemetry->reconnect_delta : 0 }}"
+                                        data-publish-fail-delta="{{ $telemetry ? $telemetry->publish_fail_delta : 0 }}">
 
-                                            <div class="card h-100 shadow-sm border-0">
+                                        <div class="card h-100 border shadow-none bg-transparent">
+                                            <div class="card-header d-flex justify-content-between align-items-center p-2 border-0 bg-transparent">
+                                                <div class="min-w-0">
+                                                    <h6 class="mb-0 text-truncate fw-bold" style="font-size: 0.85rem; max-width: 100%;">{{ $camera->name }}</h6>
+                                                    <small class="text-muted d-block text-truncate" id="freshness-{{ $camera->id }}" style="font-size: 0.7rem;">
+                                                        {{ $camera->freshness_indicator }}
+                                                    </small>
+                                                </div>
 
-                                                <div
-                                                    class="card-header d-flex justify-content-between align-items-center bg-transparent border-0 pb-0 px-3 pt-3">
-                                                    <div class="min-w-0">
-                                                        <h6 class="card-title mb-0 fw-bold text-truncate" style="max-width: 100%;">
-                                                            {{ $camera->name }}</h6>
-                                                        @if($camera->group)
-                                                            <small class="text-muted d-block text-truncate" style="font-size: 0.7rem;">
-                                                                <i class="ti ti-map-pin me-1"
-                                                                    style="font-size: 0.75rem;"></i>{{ $camera->group->name }}
-                                                            </small>
-                                                        @endif
-                                                    </div>
+                                                @php
+                                                    $lastDetection = \App\Models\DetectionEvent::whereHas('imageRecord', function ($q) use ($camera) {
+                                                        $q->where('camera_id', $camera->id);
+                                                    })->latest()->first();
 
-                                                    @php
-                                                        $lastDetection = \App\Models\DetectionEvent::whereHas('imageRecord', function ($q) use ($camera) {
-                                                            $q->where('camera_id', $camera->id);
-                                                        })->latest()->first();
+                                                    $status = $camera->operational_status;
+                                                    $badgeText = $status;
+                                                    $badgeClass = 'bg-label-secondary';
 
-                                                        $status = $camera->operational_status;
-                                                        $badgeText = $status;
-                                                        $badgeClass = 'bg-label-secondary';
-
-                                                        if ($status === 'ONLINE') {
-                                                            if ($lastDetection && now()->diffInSeconds($lastDetection->created_at) < 15) {
-                                                                $badgeText = 'DETECTING';
-                                                                $badgeClass = 'bg-label-danger';
-                                                            } else {
-                                                                $badgeText = 'ONLINE';
-                                                                $badgeClass = 'bg-label-success';
-                                                            }
-                                                        } elseif ($status === 'WARNING') {
-                                                            $badgeText = 'WARNING';
-                                                            $badgeClass = 'bg-label-warning';
-                                                        } else {
-                                                            $badgeText = 'OFFLINE';
+                                                    if ($status === 'ONLINE') {
+                                                        if ($lastDetection && now()->diffInSeconds($lastDetection->created_at) < 15) {
+                                                            $badgeText = 'DETECTING';
                                                             $badgeClass = 'bg-label-danger';
+                                                        } else {
+                                                            $badgeText = 'ONLINE';
+                                                            $badgeClass = 'bg-label-success';
                                                         }
-                                                    @endphp
-                                                    <span class="badge {{ $badgeClass }} telemetry-health-badge"
-                                                        id="health-badge-{{ $camera->id }}" style="font-size: 0.65rem;">
-                                                        {{ $badgeText }}
-                                                    </span>
-                                                </div>
+                                                    } elseif ($status === 'WARNING') {
+                                                        $badgeText = 'WARNING';
+                                                        $badgeClass = 'bg-label-warning';
+                                                    } else {
+                                                        $badgeText = 'OFFLINE';
+                                                        $badgeClass = 'bg-label-danger';
+                                                    }
+                                                @endphp
+                                                <span class="badge {{ $badgeClass }} telemetry-health-badge"
+                                                    id="health-badge-{{ $camera->id }}" style="font-size: 0.65rem;">
+                                                    {{ $badgeText }}
+                                                </span>
+                                            </div>
 
-                                                <div class="card-body p-0 text-center bg-dark d-flex align-items-center justify-content-center"
-                                                    style="overflow: hidden; background-color: #111 !important; aspect-ratio: 4 / 3; width: 100%;">
-                                                    <img class="img-fluid camera-feed-image"
-                                                        style="width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain;"
-                                                        data-camera-id="{{ $camera->id }}"
-                                                        data-websocket-channel="{{ $camera->websocket_channel_id }}"
-                                                        src="{{ $camera->latest_image_path ? asset('https://apiminio.miot-its.org/cctv/' . $camera->latest_image_path) : 'https://placehold.co/640x480/293445/FFFFFF?text=No+Feed' }}"
-                                                        alt="Live feed untuk {{ $camera->name }}">
-                                                </div>
+                                            <div class="card-body p-0 text-center bg-dark d-flex align-items-center justify-content-center"
+                                                style="overflow: hidden; background-color: #111 !important; aspect-ratio: 4 / 3; width: 100%;">
+                                                <img class="camera-feed-image w-100" data-camera-id="{{ $camera->id }}"
+                                                    data-websocket-channel="{{ $camera->websocket_channel_id }}"
+                                                    style="aspect-ratio: 4 / 3; object-fit: contain;"
+                                                    src="{{ $camera->latest_image_path ? asset('https://apiminio.miot-its.org/cctv/' . $camera->latest_image_path) : 'https://placehold.co/640x480/293445/FFFFFF?text=No+Feed' }}">
+                                            </div>
 
-                                                <div class="card-body p-3 border-top">
-                                                    <div class="row g-2" style="font-size: 0.75rem;">
-                                                        <div class="col-12 d-flex justify-content-between align-items-center">
-                                                            <span class="text-muted"><i class="ti ti-activity me-1"></i>Last
-                                                                Heartbeat</span>
-                                                            <small class="text-muted fw-semibold text-truncate ms-2"
-                                                                id="freshness-{{ $camera->id }}" style="max-width: 150px;">
-                                                                {{ $camera->freshness_indicator }}
-                                                            </small>
-                                                        </div>
-                                                        <div class="col-12 d-flex justify-content-between align-items-center mt-1">
-                                                            <span class="text-muted"><i class="ti ti-alert-triangle me-1"></i>Last
-                                                                Detection</span>
-                                                            <small class="text-muted fw-semibold text-truncate ms-2"
-                                                                style="max-width: 150px;">
-                                                                {{ $lastDetection ? $lastDetection->created_at->diffForHumans() : 'None' }}
-                                                            </small>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                            <div class="card-footer d-flex justify-content-between align-items-center p-2 border-top bg-transparent">
+                                                <button type="button" class="btn btn-xs btn-outline-secondary py-0.5 px-2" style="font-size: 0.7rem;" data-bs-toggle="modal"
+                                                    data-bs-target="#telemetryModal-{{ $camera->id }}">
+                                                    Health
+                                                </button>
+                                                <a href="{{ route('log.history.explorer', $camera->id) }}"
+                                                    class="btn btn-xs btn-outline-secondary py-0.5 px-2" style="font-size: 0.7rem;">History</a>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                                <div
-                                                    class="card-footer d-flex justify-content-between align-items-center bg-transparent border-top py-2 px-3">
-                                                    <button type="button" class="btn btn-xs btn-outline-secondary"
-                                                        data-bs-toggle="modal" data-bs-target="#telemetryModal-{{ $camera->id }}">
-                                                        Health Details
-                                                    </button>
-                                                    <a href="{{ route('log.history.explorer', $camera->id) }}"
-                                                        class="btn btn-xs btn-outline-secondary">Riwayat</a>
+                                    <!-- Detail Telemetry Modal -->
+                                    <div class="modal fade" id="telemetryModal-{{ $camera->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Health Details: {{ $camera->name }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body p-0">
+                                                    <table class="table table-striped table-sm mb-0">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>RSSI</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-rssi-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->formatted_rssi : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Heap</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-heap-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->formatted_heap : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Publish Latency</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-publish-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->formatted_publish : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>MQTT Status</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-mqtt-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->mqtt_status_text : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>WS Status</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-ws-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->ws_status_text : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Reconnect Count</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-reconnect-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->mqtt_reconnect : 0 }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>WS Close Count</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-ws-close-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->ws_close_count : 0 }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Publish Fail Count</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-publish-fail-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->publish_fail : 0 }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Capture Count</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-capture-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->capture_ok : 0 }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Publish Count</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-publish-count-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->publish_ok : 0 }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Transport Recovery</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-recovery-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->transport_recovery : 0 }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Uptime</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-uptime-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->formatted_uptime : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Firmware</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-firmware-{{ $camera->id }}">
+                                                                    {{ $telemetry ? ($telemetry->firmware ?: 'N/A') : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Board</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-board-{{ $camera->id }}">
+                                                                    {{ $telemetry ? ($telemetry->board ?: 'N/A') : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Model</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-model-{{ $camera->id }}">
+                                                                    {{ $telemetry ? ($telemetry->model ?: 'N/A') : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Last OTA</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-last-ota-{{ $camera->id }}">
+                                                                    {{ $telemetry ? ($telemetry->last_ota ? $telemetry->last_ota->toDateTimeString() : 'N/A') : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Current Deployment</strong></td>
+                                                                <td class="pe-3 text-end"
+                                                                    id="modal-current-deployment-{{ $camera->id }}">
+                                                                    {{ $telemetry ? ($telemetry->current_deployment_id ?: 'N/A') : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>WiFi Channel</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-wifi-channel-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->wifi_channel ?: 'N/A' : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>WiFi BSSID</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-wifi-bssid-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->wifi_bssid ?: 'N/A' : 'N/A' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colspan="2" class="bg-light ps-3"><strong>Remote Configuration</strong></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Current Profile</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-assigned-profile-{{ $camera->id }}">
+                                                                    {{ $camera->assignedProfile ? $camera->assignedProfile->name : 'None' }}
+                                                                </td>
+                                                            </tr>
+                                                            @php
+                                                                $profile = $camera->assignedProfile;
+                                                            @endphp
+                                                            <tr class="{{ $profile && $telemetry && $profile->jpeg_quality != $telemetry->jpeg_quality ? 'table-warning text-danger fw-bold' : '' }}"
+                                                                id="row-jpeg-{{ $camera->id }}">
+                                                                <td class="ps-3"><strong>JPEG Quality</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-jpeg-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->jpeg_quality : 'N/A' }}
+                                                                    @if($profile && $telemetry && $profile->jpeg_quality != $telemetry->jpeg_quality)
+                                                                        (Expected: {{ $profile->jpeg_quality }})
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="{{ $profile && $telemetry && $profile->frame_size != $telemetry->frame_size ? 'table-warning text-danger fw-bold' : '' }}"
+                                                                id="row-size-{{ $camera->id }}">
+                                                                <td class="ps-3"><strong>Frame Size</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-size-{{ $camera->id }}">
+                                                                    {{ $telemetry ? $telemetry->frame_size : 'N/A' }}
+                                                                    @if($profile && $telemetry && $profile->frame_size != $telemetry->frame_size)
+                                                                        (Expected: {{ $profile->frame_size }})
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="{{ $profile && $telemetry && $profile->capture_interval_ms != $telemetry->capture_interval_ms ? 'table-warning text-danger fw-bold' : '' }}"
+                                                                id="row-capture-{{ $camera->id }}">
+                                                                <td class="ps-3"><strong>Capture Interval</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-capture-interval-{{ $camera->id }}">
+                                                                    {{ $telemetry && $telemetry->capture_interval_ms !== null ? $telemetry->capture_interval_ms . ' ms' : 'N/A' }}
+                                                                    @if($profile && $telemetry && $profile->capture_interval_ms != $telemetry->capture_interval_ms)
+                                                                        (Expected: {{ $profile->capture_interval_ms }}ms)
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="{{ $profile && $telemetry && $profile->telemetry_interval_ms != $telemetry->telemetry_interval_ms ? 'table-warning text-danger fw-bold' : '' }}"
+                                                                id="row-telemetry-{{ $camera->id }}">
+                                                                <td class="ps-3"><strong>Telemetry Interval</strong></td>
+                                                                <td class="pe-3 text-end"
+                                                                    id="modal-telemetry-interval-{{ $camera->id }}">
+                                                                    {{ $telemetry && $telemetry->telemetry_interval_ms !== null ? $telemetry->telemetry_interval_ms . ' ms' : 'N/A' }}
+                                                                    @if($profile && $telemetry && $profile->telemetry_interval_ms != $telemetry->telemetry_interval_ms)
+                                                                        (Expected: {{ $profile->telemetry_interval_ms }}ms)
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="{{ $profile && $telemetry && $profile->mqtt_buffer != $telemetry->mqtt_buffer ? 'table-warning text-danger fw-bold' : '' }}"
+                                                                id="row-buffer-{{ $camera->id }}">
+                                                                <td class="ps-3"><strong>MQTT Buffer Size</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-mqtt-buffer-{{ $camera->id }}">
+                                                                    {{ $telemetry && $telemetry->mqtt_buffer !== null ? $telemetry->mqtt_buffer : 'N/A' }}
+                                                                    @if($profile && $telemetry && $profile->mqtt_buffer != $telemetry->mqtt_buffer)
+                                                                        (Expected: {{ $profile->mqtt_buffer }})
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="{{ $profile && $telemetry && (bool) $profile->image_enabled != (bool) $telemetry->image_enabled ? 'table-warning text-danger fw-bold' : '' }}"
+                                                                id="row-image-{{ $camera->id }}">
+                                                                <td class="ps-3"><strong>Image Stream</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-image-enabled-{{ $camera->id }}">
+                                                                    {{ $telemetry && $telemetry->image_enabled !== null ? ($telemetry->image_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
+                                                                    @if($profile && $telemetry && (bool) $profile->image_enabled != (bool) $telemetry->image_enabled)
+                                                                        (Expected: {{ $profile->image_enabled ? 'Enabled' : 'Disabled' }})
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="{{ $profile && $telemetry && (bool) $profile->telemetry_enabled != (bool) $telemetry->telemetry_enabled ? 'table-warning text-danger fw-bold' : '' }}"
+                                                                id="row-telem-{{ $camera->id }}">
+                                                                <td class="ps-3"><strong>Telemetry Stream</strong></td>
+                                                                <td class="pe-3 text-end"
+                                                                    id="modal-telemetry-enabled-{{ $camera->id }}">
+                                                                    {{ $telemetry && $telemetry->telemetry_enabled !== null ? ($telemetry->telemetry_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
+                                                                    @if($profile && $telemetry && (bool) $profile->telemetry_enabled != (bool) $telemetry->telemetry_enabled)
+                                                                        (Expected: {{ $profile->telemetry_enabled ? 'Enabled' : 'Disabled' }})
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr class="{{ $profile && $telemetry && (bool) $profile->ota_enabled != (bool) $telemetry->ota_enabled ? 'table-warning text-danger fw-bold' : '' }}"
+                                                                id="row-ota-{{ $camera->id }}">
+                                                                <td class="ps-3"><strong>OTA Stream</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-ota-enabled-{{ $camera->id }}">
+                                                                    {{ $telemetry && $telemetry->ota_enabled !== null ? ($telemetry->ota_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
+                                                                    @if($profile && $telemetry && (bool) $profile->ota_enabled != (bool) $telemetry->ota_enabled)
+                                                                        (Expected: {{ $profile->ota_enabled ? 'Enabled' : 'Disabled' }})
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Last Configuration</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-last-config-{{ $camera->id }}">
+                                                                    {{ $camera->last_config_time ? $camera->last_config_time->toDateTimeString() : 'Never' }}
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td class="ps-3"><strong>Last Sync</strong></td>
+                                                                <td class="pe-3 text-end" id="modal-last-sync-{{ $camera->id }}">
+                                                                    {{ $camera->last_sync ? $camera->last_sync->toDateTimeString() : 'Never' }}
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-sm btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <!-- Telemetry Detail Modal -->
-                                        <div class="modal fade" id="telemetryModal-{{ $camera->id }}" tabindex="-1" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Health Details: {{ $camera->name }}</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                            aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body p-0">
-                                                        <table class="table table-striped table-sm mb-0">
-                                                            <tbody>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>RSSI</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-rssi-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->formatted_rssi : 'N/A' }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Heap</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-heap-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->formatted_heap : 'N/A' }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Publish Latency</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-publish-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->formatted_publish : 'N/A' }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>MQTT Status</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-mqtt-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->mqtt_status_text : 'N/A' }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>WS Status</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-ws-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->ws_status_text : 'N/A' }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Reconnect Count</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-reconnect-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->mqtt_reconnect : 0 }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>WS Close Count</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-ws-close-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->ws_close_count : 0 }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Publish Fail Count</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-publish-fail-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->publish_fail : 0 }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Capture Count</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-capture-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->capture_ok : 0 }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Publish Count</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-publish-count-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->publish_ok : 0 }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Transport Recovery</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-recovery-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->transport_recovery : 0 }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Uptime</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-uptime-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->formatted_uptime : 'N/A' }}</td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Firmware</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-firmware-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->firmware ?: 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>OTA Supported</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-ota-supported-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->ota_supported ? 'Yes' : 'No') : 'No' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>OTA Running</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-ota-running-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->ota_running ? 'Yes' : 'No') : 'No' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Free OTA Space</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-free-ota-space-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->free_ota_space ? round($telemetry->free_ota_space / 1024 / 1024, 2) . ' MB' : 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Last OTA Result</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-last-ota-result-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->last_ota_result ?: 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Build</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-build-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->build ?: 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Board</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-board-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->board ?: 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Model</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-model-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->model ?: 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Last OTA</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-last-ota-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->last_ota ? $telemetry->last_ota->toDateTimeString() : 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Current Deployment</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-current-deployment-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->current_deployment_id ?: 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>WiFi Channel</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-wifi-channel-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->wifi_channel ?: 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>WiFi BSSID</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-wifi-bssid-{{ $camera->id }}">
-                                                                        {{ $telemetry ? ($telemetry->wifi_bssid ?: 'N/A') : 'N/A' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td colspan="2" class="bg-light ps-3"><strong>Remote
-                                                                            Configuration</strong></td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Current Profile</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-assigned-profile-{{ $camera->id }}">
-                                                                        {{ $camera->assignedProfile ? $camera->assignedProfile->name : 'None' }}
-                                                                    </td>
-                                                                </tr>
-                                                                @php
-                                                                    $profile = $camera->assignedProfile;
-                                                                 @endphp
-                                                                <tr class="{{ $profile && $telemetry && $profile->jpeg_quality != $telemetry->jpeg_quality ? 'table-warning text-danger fw-bold' : '' }}"
-                                                                    id="row-jpeg-{{ $camera->id }}">
-                                                                    <td class="ps-3"><strong>JPEG Quality</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-jpeg-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->jpeg_quality : 'N/A' }}
-                                                                        @if($profile && $telemetry && $profile->jpeg_quality != $telemetry->jpeg_quality)
-                                                                            (Expected: {{ $profile->jpeg_quality }})
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                                <tr class="{{ $profile && $telemetry && $profile->frame_size != $telemetry->frame_size ? 'table-warning text-danger fw-bold' : '' }}"
-                                                                    id="row-size-{{ $camera->id }}">
-                                                                    <td class="ps-3"><strong>Frame Size</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-size-{{ $camera->id }}">
-                                                                        {{ $telemetry ? $telemetry->frame_size : 'N/A' }}
-                                                                        @if($profile && $telemetry && $profile->frame_size != $telemetry->frame_size)
-                                                                            (Expected: {{ $profile->frame_size }})
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                                <tr class="{{ $profile && $telemetry && $profile->capture_interval_ms != $telemetry->capture_interval_ms ? 'table-warning text-danger fw-bold' : '' }}"
-                                                                    id="row-capture-{{ $camera->id }}">
-                                                                    <td class="ps-3"><strong>Capture Interval</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-capture-interval-{{ $camera->id }}">
-                                                                        {{ $telemetry && $telemetry->capture_interval_ms !== null ? $telemetry->capture_interval_ms . ' ms' : 'N/A' }}
-                                                                        @if($profile && $telemetry && $profile->capture_interval_ms != $telemetry->capture_interval_ms)
-                                                                            (Expected: {{ $profile->capture_interval_ms }}ms)
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                                <tr class="{{ $profile && $telemetry && $profile->telemetry_interval_ms != $telemetry->telemetry_interval_ms ? 'table-warning text-danger fw-bold' : '' }}"
-                                                                    id="row-telemetry-{{ $camera->id }}">
-                                                                    <td class="ps-3"><strong>Telemetry Interval</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-telemetry-interval-{{ $camera->id }}">
-                                                                        {{ $telemetry && $telemetry->telemetry_interval_ms !== null ? $telemetry->telemetry_interval_ms . ' ms' : 'N/A' }}
-                                                                        @if($profile && $telemetry && $profile->telemetry_interval_ms != $telemetry->telemetry_interval_ms)
-                                                                            (Expected: {{ $profile->telemetry_interval_ms }}ms)
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                                <tr class="{{ $profile && $telemetry && $profile->mqtt_buffer != $telemetry->mqtt_buffer ? 'table-warning text-danger fw-bold' : '' }}"
-                                                                    id="row-buffer-{{ $camera->id }}">
-                                                                    <td class="ps-3"><strong>MQTT Buffer Size</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-mqtt-buffer-{{ $camera->id }}">
-                                                                        {{ $telemetry && $telemetry->mqtt_buffer !== null ? $telemetry->mqtt_buffer : 'N/A' }}
-                                                                        @if($profile && $telemetry && $profile->mqtt_buffer != $telemetry->mqtt_buffer)
-                                                                            (Expected: {{ $profile->mqtt_buffer }})
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                                <tr class="{{ $profile && $telemetry && (bool) $profile->image_enabled != (bool) $telemetry->image_enabled ? 'table-warning text-danger fw-bold' : '' }}"
-                                                                    id="row-image-{{ $camera->id }}">
-                                                                    <td class="ps-3"><strong>Image Stream</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-image-enabled-{{ $camera->id }}">
-                                                                        {{ $telemetry && $telemetry->image_enabled !== null ? ($telemetry->image_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
-                                                                        @if($profile && $telemetry && (bool) $profile->image_enabled != (bool) $telemetry->image_enabled)
-                                                                            (Expected:
-                                                                            {{ $profile->image_enabled ? 'Enabled' : 'Disabled' }})
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                                <tr class="{{ $profile && $telemetry && (bool) $profile->telemetry_enabled != (bool) $telemetry->telemetry_enabled ? 'table-warning text-danger fw-bold' : '' }}"
-                                                                    id="row-telem-{{ $camera->id }}">
-                                                                    <td class="ps-3"><strong>Telemetry Stream</strong></td>
-                                                                    <td class="pe-3 text-end"
-                                                                        id="modal-telemetry-enabled-{{ $camera->id }}">
-                                                                        {{ $telemetry && $telemetry->telemetry_enabled !== null ? ($telemetry->telemetry_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
-                                                                        @if($profile && $telemetry && (bool) $profile->telemetry_enabled != (bool) $telemetry->telemetry_enabled)
-                                                                            (Expected:
-                                                                            {{ $profile->telemetry_enabled ? 'Enabled' : 'Disabled' }})
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                                <tr class="{{ $profile && $telemetry && (bool) $profile->ota_enabled != (bool) $telemetry->ota_enabled ? 'table-warning text-danger fw-bold' : '' }}"
-                                                                    id="row-ota-{{ $camera->id }}">
-                                                                    <td class="ps-3"><strong>OTA Stream</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-ota-enabled-{{ $camera->id }}">
-                                                                        {{ $telemetry && $telemetry->ota_enabled !== null ? ($telemetry->ota_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
-                                                                        @if($profile && $telemetry && (bool) $profile->ota_enabled != (bool) $telemetry->ota_enabled)
-                                                                            (Expected: {{ $profile->ota_enabled ? 'Enabled' : 'Disabled' }})
-                                                                        @endif
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Last Configuration</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-last-config-{{ $camera->id }}">
-                                                                        {{ $camera->last_config_time ? $camera->last_config_time->toDateTimeString() : 'Never' }}
-                                                                    </td>
-                                                                </tr>
-                                                                <tr>
-                                                                    <td class="ps-3"><strong>Last Sync</strong></td>
-                                                                    <td class="pe-3 text-end" id="modal-last-sync-{{ $camera->id }}">
-                                                                        {{ $camera->last_sync ? $camera->last_sync->toDateTimeString() : 'Never' }}
-                                                                    </td>
-                                                                </tr>
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-sm btn-secondary"
-                                                            data-bs-dismiss="modal">Close</button>
-                                                    </div>
+                                    <!-- Camera Preview & Telemetry Modal -->
+                                    <div class="modal fade" id="cameraPreviewModal-{{ $camera->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header py-2 px-3">
+                                                    <h5 class="modal-title fw-bold" id="preview-title-{{ $camera->id }}">
+                                                        {{ $camera->name }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
                                                 </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Camera Preview & Telemetry Modal -->
-                                        <div class="modal fade" id="cameraPreviewModal-{{ $camera->id }}" tabindex="-1"
-                                            aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                <div class="modal-content">
-                                                    <div class="modal-header py-2 px-3">
-                                                        <h5 class="modal-title fw-bold" id="preview-title-{{ $camera->id }}">
-                                                            {{ $camera->name }}</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                            aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body p-0">
-                                                        <div class="row g-0">
-                                                            <!-- Left side: Image -->
-                                                            <div class="col-12 col-md-7 bg-dark d-flex align-items-center justify-content-center"
-                                                                style="overflow: hidden; background-color: #111 !important; aspect-ratio: 4 / 3;">
-                                                                <img id="preview-image-{{ $camera->id }}" class="modal-preview-image"
-                                                                    style="width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain;"
-                                                                    src="{{ $camera->latest_image_path ? asset('https://apiminio.miot-its.org/cctv/' . $camera->latest_image_path) : 'https://placehold.co/640x480/293445/FFFFFF?text=No+Feed' }}">
+                                                <div class="modal-body p-0">
+                                                    <div class="row g-0">
+                                                        <!-- Left side: Image -->
+                                                        <div class="col-12 col-md-7 bg-dark d-flex align-items-center justify-content-center"
+                                                            style="overflow: hidden; background-color: #111 !important; aspect-ratio: 4 / 3;">
+                                                            <img id="preview-image-{{ $camera->id }}" class="modal-preview-image"
+                                                                style="width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain;"
+                                                                src="{{ $camera->latest_image_path ? asset('https://apiminio.miot-its.org/cctv/' . $camera->latest_image_path) : 'https://placehold.co/640x480/293445/FFFFFF?text=No+Feed' }}">
+                                                        </div>
+                                                        <!-- Right side: Telemetry details -->
+                                                        <div class="col-12 col-md-5 p-3 d-flex flex-column justify-content-between">
+                                                            <div>
+                                                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                                                    @php
+                                                                        $status = $camera->operational_status;
+                                                                        $badgeClass = 'bg-label-danger';
+                                                                        if ($status === 'ONLINE')
+                                                                            $badgeClass = 'bg-label-success';
+                                                                        elseif ($status === 'WARNING')
+                                                                            $badgeClass = 'bg-label-warning';
+                                                                    @endphp
+                                                                    <span class="badge {{ $badgeClass }} telemetry-health-badge"
+                                                                        id="modal-preview-health-{{ $camera->id }}">
+                                                                        {{ $status }}
+                                                                    </span>
+                                                                    <small class="text-muted fw-semibold"
+                                                                        id="modal-preview-freshness-{{ $camera->id }}">
+                                                                        {{ $camera->freshness_indicator }}
+                                                                    </small>
+                                                                </div>
+                                                                <div class="row g-2 text-start">
+                                                                    <div class="col-6">
+                                                                        <div class="small text-truncate"><span
+                                                                                class="text-muted">RSSI:</span> <strong
+                                                                                id="modal-preview-rssi-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_rssi : 'N/A' }}</strong>
+                                                                        </div>
+                                                                        <div class="small text-truncate"><span
+                                                                                class="text-muted">Heap:</span> <strong
+                                                                                id="modal-preview-heap-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_heap : 'N/A' }}</strong>
+                                                                        </div>
+                                                                        <div class="small text-truncate"><span
+                                                                                class="text-muted">Publish:</span> <strong
+                                                                                id="modal-preview-publish-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_publish : 'N/A' }}</strong>
+                                                                        </div>
+                                                                        <div class="small text-truncate"><span
+                                                                                class="text-muted">MQTT:</span> <strong
+                                                                                id="modal-preview-mqtt-{{ $camera->id }}">{{ $telemetry ? $telemetry->mqtt_status_text : 'N/A' }}</strong>
+                                                                        </div>
+                                                                        <div class="small text-truncate"><span
+                                                                                class="text-muted">WS:</span> <strong
+                                                                                id="modal-preview-ws-{{ $camera->id }}">{{ $telemetry ? $telemetry->ws_status_text : 'N/A' }}</strong>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <div class="small text-truncate"><span
+                                                                                class="text-muted">Reconnect:</span> <strong
+                                                                                id="modal-preview-reconnect-{{ $camera->id }}">{{ $telemetry ? $telemetry->reconnect_delta_text : '+0' }}</strong>
+                                                                        </div>
+                                                                        <div class="small text-truncate"><span class="text-muted">WS
+                                                                                Close:</span> <strong
+                                                                                id="modal-preview-ws-close-{{ $camera->id }}">{{ $telemetry ? $telemetry->ws_close_delta_text : '+0' }}</strong>
+                                                                        </div>
+                                                                        <div class="small text-truncate"><span
+                                                                                class="text-muted">Pub Fail:</span> <strong
+                                                                                id="modal-preview-pub-fail-{{ $camera->id }}">{{ $telemetry ? $telemetry->publish_fail_delta_text : '+0' }}</strong>
+                                                                        </div>
+                                                                        <div class="small text-truncate"><span
+                                                                                class="text-muted">Uptime:</span> <strong
+                                                                                id="modal-preview-uptime-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_uptime : 'N/A' }}</strong>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <!-- Right side: Telemetry details -->
-                                                            <div class="col-12 col-md-5 p-3 d-flex flex-column justify-content-between">
-                                                                <div>
-                                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                                        @php
-                                                                            $status = $camera->operational_status;
-                                                                            $badgeClass = 'bg-label-danger';
-                                                                            if ($status === 'ONLINE')
-                                                                                $badgeClass = 'bg-label-success';
-                                                                            elseif ($status === 'WARNING')
-                                                                                $badgeClass = 'bg-label-warning';
-                                                                        @endphp
-                                                                        <span class="badge {{ $badgeClass }} telemetry-health-badge"
-                                                                            id="modal-preview-health-{{ $camera->id }}">
-                                                                            {{ $status }}
-                                                                        </span>
-                                                                        <small class="text-muted fw-semibold"
-                                                                            id="modal-preview-freshness-{{ $camera->id }}">
-                                                                            {{ $camera->freshness_indicator }}
-                                                                        </small>
-                                                                    </div>
-                                                                    <div class="row g-2 text-start">
-                                                                        <div class="col-6">
-                                                                            <div class="small text-truncate"><span
-                                                                                    class="text-muted">RSSI:</span> <strong
-                                                                                    id="modal-preview-rssi-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_rssi : 'N/A' }}</strong>
-                                                                            </div>
-                                                                            <div class="small text-truncate"><span
-                                                                                    class="text-muted">Heap:</span> <strong
-                                                                                    id="modal-preview-heap-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_heap : 'N/A' }}</strong>
-                                                                            </div>
-                                                                            <div class="small text-truncate"><span
-                                                                                    class="text-muted">Publish:</span> <strong
-                                                                                    id="modal-preview-publish-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_publish : 'N/A' }}</strong>
-                                                                            </div>
-                                                                            <div class="small text-truncate"><span
-                                                                                    class="text-muted">MQTT:</span> <strong
-                                                                                    id="modal-preview-mqtt-{{ $camera->id }}">{{ $telemetry ? $telemetry->mqtt_status_text : 'N/A' }}</strong>
-                                                                            </div>
-                                                                            <div class="small text-truncate"><span
-                                                                                    class="text-muted">WS:</span> <strong
-                                                                                    id="modal-preview-ws-{{ $camera->id }}">{{ $telemetry ? $telemetry->ws_status_text : 'N/A' }}</strong>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="col-6">
-                                                                            <div class="small text-truncate"><span
-                                                                                    class="text-muted">Reconnect:</span> <strong
-                                                                                    id="modal-preview-reconnect-{{ $camera->id }}">{{ $telemetry ? $telemetry->reconnect_delta_text : '+0' }}</strong>
-                                                                            </div>
-                                                                            <div class="small text-truncate"><span class="text-muted">WS
-                                                                                    Close:</span> <strong
-                                                                                    id="modal-preview-ws-close-{{ $camera->id }}">{{ $telemetry ? $telemetry->ws_close_delta_text : '+0' }}</strong>
-                                                                            </div>
-                                                                            <div class="small text-truncate"><span
-                                                                                    class="text-muted">Pub Fail:</span> <strong
-                                                                                    id="modal-preview-pub-fail-{{ $camera->id }}">{{ $telemetry ? $telemetry->publish_fail_delta_text : '+0' }}</strong>
-                                                                            </div>
-                                                                            <div class="small text-truncate"><span
-                                                                                    class="text-muted">Uptime:</span> <strong
-                                                                                    id="modal-preview-uptime-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_uptime : 'N/A' }}</strong>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mt-4 d-flex justify-content-end gap-2">
-                                                                    <a href="{{ route('log.history.explorer', $camera->id) }}"
-                                                                        class="btn btn-sm btn-primary">Riwayat Lengkap</a>
-                                                                    <button type="button" class="btn btn-sm btn-secondary"
-                                                                        data-bs-dismiss="modal">Tutup</button>
-                                                                </div>
+                                                            <div class="mt-4 d-flex justify-content-end gap-2">
+                                                                <a href="{{ route('log.history.explorer', $camera->id) }}"
+                                                                    class="btn btn-sm btn-primary">Riwayat Lengkap</a>
+                                                                <button type="button" class="btn btn-sm btn-secondary"
+                                                                    data-bs-dismiss="modal">Tutup</button>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    @endforeach
-                                </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     @endforeach
                 </div>
             </div>
         @else
-            <div class="card border-0 shadow-sm py-5 text-center mb-5">
+            <div class="card border shadow-none py-5 text-center mb-5">
                 <div class="card-body">
                     <div class="avatar avatar-lg bg-label-secondary mx-auto mb-3"
                         style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
@@ -1030,146 +1048,5 @@
                 </div>
             </div>
         @endif
-    </div>
-
-    {{-- Section 2: Recent Detection --}}
-    <div class="mb-5">
-        <h5 class="mb-3 fw-bold"><i class="ti ti-user-search me-2 text-danger"></i>Recent Detection</h5>
-
-        <div class="card shadow-sm border-0">
-            <div class="card-header d-flex justify-content-between align-items-center bg-transparent border-0 pb-0">
-                <h6 class="mb-0 fw-bold">Latest Person Detection</h6>
-                <span class="badge bg-label-danger" id="detection-realtime-badge">
-                    <span class="spinner-grow spinner-grow-sm text-danger me-1" role="status"
-                        style="width: 8px; height: 8px;"></span>Realtime active
-                </span>
-            </div>
-            <div class="card-body mt-2">
-                <div id="no-person-detection-placeholder" style="{{ $latestDetection ? 'display: none;' : '' }}">
-                    <div class="py-5 text-center">
-                        <div class="avatar avatar-lg bg-label-secondary mx-auto mb-3"
-                            style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                            <i class="ti ti-user-off fs-3"></i>
-                        </div>
-                        <h5 class="fw-semibold">No detections found</h5>
-                        <p class="text-muted mx-auto" style="max-width: 320px;">No person detection events have been
-                            recorded yet.</p>
-                    </div>
-                </div>
-
-                <div id="latest-person-detection-card" class="row align-items-center"
-                    style="{{ $latestDetection ? '' : 'display: none;' }}">
-                    <div class="col-12 col-md-4 mb-3 mb-md-0 text-center bg-dark rounded d-flex align-items-center justify-content-center"
-                        style="overflow: hidden; max-height: 240px; aspect-ratio: 4 / 3;">
-                        <img id="detection-snapshot" class="img-fluid"
-                            src="{{ $latestDetection ? \Illuminate\Support\Facades\Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}"
-                            style="max-height: 240px; object-fit: contain;">
-                    </div>
-                    <div class="col-12 col-md-8 ps-md-4">
-                        <div class="row g-3">
-                            <div class="col-6 col-sm-4">
-                                <span class="text-muted d-block" style="font-size: 0.8rem;">Camera</span>
-                                <strong id="detection-camera-name"
-                                    style="font-size: 1.1rem;">{{ $latestDetection->imageRecord->camera->name ?? 'N/A' }}</strong>
-                            </div>
-                            <div class="col-6 col-sm-4">
-                                <span class="text-muted d-block" style="font-size: 0.8rem;">Confidence</span>
-                                <span class="badge bg-label-danger" id="detection-confidence" style="font-size: 1rem;">
-                                    {{ $latestDetection ? number_format($latestDetection->confidence * 100, 2) . '%' : '0.00%' }}
-                                </span>
-                            </div>
-                            <div class="col-12 col-sm-4">
-                                <span class="text-muted d-block" style="font-size: 0.8rem;">Timestamp</span>
-                                <strong
-                                    id="detection-time">{{ $latestDetection ? $latestDetection->created_at->format('Y-m-d H:i:s') : 'N/A' }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Section 3: Overview & Device Status --}}
-    <div class="mb-5">
-        <h5 class="mb-3 fw-bold"><i class="ti ti-chart-bar me-2 text-secondary"></i>Overview & Device Status</h5>
-        <div class="row g-4">
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-start justify-content-between w-100">
-                            <div class="content-left">
-                                <span class="text-muted">Total Cameras</span>
-                                <h3 class="mb-0 mt-1 fw-bold" id="summary-total">{{ $totalCameras ?? 0 }}</h3>
-                                <small class="text-muted fw-semibold">Active Fleet</small>
-                            </div>
-                            <span class="badge bg-label-secondary border rounded p-2">
-                                <i class="ti ti-camera ti-sm text-secondary"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-start justify-content-between w-100">
-                            <div class="content-left">
-                                <span class="text-muted">Online Cameras</span>
-                                <h3 class="mb-0 mt-1 fw-bold">
-                                    <span id="summary-online">{{ $onlineCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
-                                </h3>
-                                <small class="text-muted fw-semibold"
-                                    id="summary-online-percent">{{ $onlinePercent }}%</small>
-                            </div>
-                            <span class="badge bg-label-secondary border rounded p-2">
-                                <i class="ti ti-circle-check ti-sm text-secondary"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-start justify-content-between w-100">
-                            <div class="content-left">
-                                <span class="text-muted">Warning Cameras</span>
-                                <h3 class="mb-0 mt-1 fw-bold">
-                                    <span id="summary-warning">{{ $warningCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
-                                </h3>
-                                <small class="text-muted fw-semibold"
-                                    id="summary-warning-percent">{{ $warningPercent }}%</small>
-                            </div>
-                            <span class="badge bg-label-secondary border rounded p-2">
-                                <i class="ti ti-alert-circle ti-sm text-secondary"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-start justify-content-between w-100">
-                            <div class="content-left">
-                                <span class="text-muted">Offline Cameras</span>
-                                <h3 class="mb-0 mt-1 fw-bold">
-                                    <span id="summary-offline">{{ $offlineCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
-                                </h3>
-                                <small class="text-muted fw-semibold"
-                                    id="summary-offline-percent">{{ $offlinePercent }}%</small>
-                            </div>
-                            <span class="badge bg-label-secondary border rounded p-2">
-                                <i class="ti ti-circle-x ti-sm text-secondary"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 @endsection

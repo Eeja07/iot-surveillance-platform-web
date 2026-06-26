@@ -2,6 +2,21 @@
 
 @section('title', 'Remote Device Configuration')
 
+@section('page-style')
+<style>
+.table th, .table td {
+    padding: 0.5rem 0.75rem !important;
+}
+.card-footer .pagination {
+    margin-bottom: 0;
+}
+.card-footer .pagination .page-link {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+</style>
+@endsection
+
 @section('content')
 <h4 class="mb-4">Remote Device Configuration</h4>
 
@@ -24,74 +39,56 @@
 @endif
 
 <!-- Stats & Fleet Operations -->
-<div class="row g-4 mb-4">
+<div class="row g-2 mb-4">
     <!-- Camera Configurations Overview -->
     <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h4 class="mb-1 fw-bold" id="stat-total-cameras">{{ $cameras->filter(fn($c) => $c->is_active)->count() }} / {{ $cameras->count() }}</h4>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Online / Total Devices</p>
-                    </div>
-                    <div class="avatar bg-label-secondary border rounded p-2">
-                        <span class="avatar-initial text-secondary"><i class="ti ti-camera ti-md"></i></span>
-                    </div>
+        <div class="card border shadow-none p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small d-block">Online / Total Devices</span>
+                    <h4 class="mb-0 fw-bold" id="stat-total-cameras">{{ $cameras->filter(fn($c) => $c->is_active)->count() }} / {{ $cameras->count() }}</h4>
                 </div>
+                <i class="ti ti-device-nfc fs-5 text-muted"></i>
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        @php
-                            $driftCount = $cameras->filter(fn($c) => app(\App\Services\DeviceConfigurationService::class)->isDrifted($c))->count();
-                        @endphp
-                        <h4 class="mb-1 fw-bold" id="stat-drifted-cameras">
-                            {{ $driftCount }}
-                        </h4>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Configuration Drift</p>
-                    </div>
-                    <div class="avatar bg-label-secondary border rounded p-2">
-                        <span class="avatar-initial text-secondary"><i class="ti ti-alert-triangle ti-md"></i></span>
-                    </div>
+        <div class="card border shadow-none p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    @php
+                        $driftCount = $cameras->filter(fn($c) => app(\App\Services\DeviceConfigurationService::class)->isDrifted($c))->count();
+                    @endphp
+                    <span class="text-muted small d-block">Configuration Drift</span>
+                    <h4 class="mb-0 fw-bold" id="stat-drifted-cameras">{{ $driftCount }}</h4>
                 </div>
+                <i class="ti ti-alert-triangle fs-5 text-muted"></i>
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        @php
-                            $pendingCount = $cameras->filter(fn($c) => in_array($c->last_config_status, ['Pending', 'Queued', 'Sending']))->count();
-                            $failedCount = $cameras->filter(fn($c) => in_array($c->last_config_status, ['Failed', 'Rejected', 'Timeout']))->count();
-                        @endphp
-                        <h4 class="mb-1 fw-bold" id="stat-pending-changes">{{ $pendingCount }}</h4>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Queue: {{ $pendingCount }} Active / {{ $failedCount }} Failed</p>
-                    </div>
-                    <div class="avatar bg-label-secondary border rounded p-2">
-                        <span class="avatar-initial text-secondary"><i class="ti ti-refresh ti-md"></i></span>
-                    </div>
+        <div class="card border shadow-none p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    @php
+                        $pendingCount = $cameras->filter(fn($c) => in_array($c->last_config_status, ['Pending', 'Queued', 'Sending']))->count();
+                        $failedCount = $cameras->filter(fn($c) => in_array($c->last_config_status, ['Failed', 'Rejected', 'Timeout']))->count();
+                    @endphp
+                    <span class="text-muted small d-block">Queue (Active/Failed)</span>
+                    <h4 class="mb-0 fw-bold" id="stat-pending-changes">{{ $pendingCount }} / {{ $failedCount }}</h4>
                 </div>
+                <i class="ti ti-refresh fs-5 text-muted"></i>
             </div>
         </div>
     </div>
     <div class="col-12 col-sm-6 col-md-3">
-        <div class="card h-100 shadow-sm border-0">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h4 class="mb-1 fw-bold">{{ $profiles->count() }}</h4>
-                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">Profiles Defined</p>
-                    </div>
-                    <div class="avatar bg-label-secondary border rounded p-2">
-                        <span class="avatar-initial text-secondary"><i class="ti ti-settings-automation ti-md"></i></span>
-                    </div>
+        <div class="card border shadow-none p-3 h-100">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small d-block">Profiles Defined</span>
+                    <h4 class="mb-0 fw-bold">{{ $profiles->count() }}</h4>
                 </div>
+                <i class="ti ti-settings-automation fs-5 text-muted"></i>
             </div>
         </div>
     </div>
@@ -104,14 +101,14 @@
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h5 class="mb-0">Device List</h5>
                 <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-primary btn-sm" id="btn-bulk-configure" disabled data-bs-toggle="modal" data-bs-target="#modalBulkConfigure">
+                    <button type="button" class="btn btn-primary btn-xs" id="btn-bulk-configure" disabled data-bs-toggle="modal" data-bs-target="#modalBulkConfigure">
                         <i class="ti ti-settings me-1"></i> Configure Selected
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="btn-bulk-profile" disabled data-bs-toggle="modal" data-bs-target="#modalBulkProfile">
+                    <button type="button" class="btn btn-outline-primary btn-xs" id="btn-bulk-profile" disabled data-bs-toggle="modal" data-bs-target="#modalBulkProfile">
                         <i class="ti ti-settings-automation me-1"></i> Apply Profile
                     </button>
                     <div class="btn-group">
-                        <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" id="btn-bulk-fleet-actions" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                        <button type="button" class="btn btn-outline-secondary btn-xs dropdown-toggle" id="btn-bulk-fleet-actions" data-bs-toggle="dropdown" aria-expanded="false" disabled>
                             <i class="ti ti-bolt me-1"></i> Fleet Actions
                         </button>
                         <ul class="dropdown-menu">
@@ -136,10 +133,10 @@
                                 </th>
                                 <th>Camera</th>
                                 <th>Online Status</th>
-                                <th>Assigned Profile</th>
-                                <th>Drift Status</th>
+                                <th>Profile</th>
+                                <th class="d-none">Drift Status</th>
                                 <th>Sync Status</th>
-                                <th>Last Sync</th>
+                                <th class="d-none">Last Sync</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -185,22 +182,19 @@
                                     </td>
                                     <td>
                                         @if($camera->is_active)
-                                            <span class="badge bg-label-success border border-success">Online</span>
+                                            <span class="badge bg-label-success border border-success btn-xs" style="font-size: 0.7rem;">Online</span>
                                         @else
-                                            <span class="badge bg-label-danger border border-danger">Offline</span>
+                                            <span class="badge bg-label-danger border border-danger btn-xs" style="font-size: 0.7rem;">Offline</span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($camera->assignedProfile)
-                                            <span class="badge bg-label-secondary border">{{ $camera->assignedProfile->name }}</span>
-                                            @if($camera->assignedProfile->restart_required)
-                                                <span class="badge bg-label-secondary border btn-xs ms-1" data-bs-toggle="tooltip" title="Profile requires restart on apply"><i class="ti ti-refresh" style="font-size: 0.8rem;"></i></span>
-                                            @endif
+                                            <span class="badge bg-label-secondary border btn-xs" style="font-size: 0.7rem;">{{ $camera->assignedProfile->name }}</span>
                                         @else
-                                            <span class="badge bg-label-secondary border">None</span>
+                                            <span class="badge bg-label-secondary border btn-xs" style="font-size: 0.7rem;">None</span>
                                         @endif
                                     </td>
-                                    <td class="drift-status-cell">
+                                    <td class="drift-status-cell d-none">
                                         @if($drifted)
                                             <span class="badge bg-label-warning border border-warning" data-bs-toggle="tooltip" data-bs-html="true" title="Drifted fields: {{ implode(', ', $driftFields) }}">
                                                 Drifted
@@ -210,9 +204,9 @@
                                         @endif
                                     </td>
                                     <td class="pending-changes-cell">
-                                        <span class="badge {{ $statusClass }}">{{ $status }}</span>
+                                        <span class="badge {{ $statusClass }} btn-xs" style="font-size: 0.7rem;">{{ $status }}</span>
                                     </td>
-                                    <td class="last-sync-cell">
+                                    <td class="last-sync-cell d-none">
                                         {{ $camera->last_sync ? $camera->last_sync->diffForHumans() : 'Never' }}
                                     </td>
                                     <td>
@@ -289,7 +283,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">No cameras found.</td>
+                                    <td colspan="6" class="text-center py-4">No cameras found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -314,38 +308,43 @@
                         <div class="list-group-item list-group-item-action flex-column align-items-start border-0 py-3">
                             <div class="d-flex w-100 justify-content-between">
                                 <h6 class="mb-1"><strong>{{ $profile->name }}</strong></h6>
-                                <div>
-                                    <!-- Actions -->
-                                    <button class="btn btn-xs btn-outline-secondary me-1 btn-edit-profile"
-                                        data-id="{{ $profile->id }}"
-                                        data-name="{{ $profile->name }}"
-                                        data-quality="{{ $profile->jpeg_quality }}"
-                                        data-size="{{ $profile->frame_size }}"
-                                        data-capture="{{ $profile->capture_interval_ms }}"
-                                        data-telemetry="{{ $profile->telemetry_interval_ms }}"
-                                        data-buffer="{{ $profile->mqtt_buffer }}"
-                                        data-image="{{ $profile->image_enabled ? 1 : 0 }}"
-                                        data-telem="{{ $profile->telemetry_enabled ? 1 : 0 }}"
-                                        data-ota="{{ $profile->ota_enabled ? 1 : 0 }}"
-                                        data-bs-toggle="modal" data-bs-target="#modalEditProfile">
-                                        <i class="ti ti-edit"></i>
+                                <div class="dropdown">
+                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                        <i class="ti ti-dots-vertical"></i>
                                     </button>
-                                    <form action="{{ route('admin.config.profiles.store') }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <input type="hidden" name="duplicate_from_id" value="{{ $profile->id }}">
-                                        <button type="submit" class="btn btn-xs btn-outline-secondary me-1" title="Duplicate Profile">
-                                            <i class="ti ti-copy"></i>
+                                    <div class="dropdown-menu dropdown-menu-end">
+                                        <button type="button" class="dropdown-item btn-edit-profile"
+                                            data-id="{{ $profile->id }}"
+                                            data-name="{{ $profile->name }}"
+                                            data-quality="{{ $profile->jpeg_quality }}"
+                                            data-size="{{ $profile->frame_size }}"
+                                            data-capture="{{ $profile->capture_interval_ms }}"
+                                            data-telemetry="{{ $profile->telemetry_interval_ms }}"
+                                            data-buffer="{{ $profile->mqtt_buffer }}"
+                                            data-image="{{ $profile->image_enabled ? 1 : 0 }}"
+                                            data-telem="{{ $profile->telemetry_enabled ? 1 : 0 }}"
+                                            data-ota="{{ $profile->ota_enabled ? 1 : 0 }}"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditProfile">
+                                            <i class="ti ti-edit me-1"></i> Edit
                                         </button>
-                                    </form>
-                                    @if(!in_array($profile->name, ['Low Bandwidth', 'Balanced', 'High Quality', 'Custom']))
-                                        <form action="{{ route('admin.config.profiles.destroy', $profile->id) }}" method="POST" class="d-inline confirm-submit" data-message="Are you sure you want to delete this profile?">
+                                        <form action="{{ route('admin.config.profiles.store') }}" method="POST" class="d-inline">
                                             @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-xs btn-outline-danger">
-                                                <i class="ti ti-trash"></i>
+                                            <input type="hidden" name="duplicate_from_id" value="{{ $profile->id }}">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="ti ti-copy me-1"></i> Duplicate
                                             </button>
                                         </form>
-                                    @endif
+                                        @if(!in_array($profile->name, ['Low Bandwidth', 'Balanced', 'High Quality', 'Custom']))
+                                            <div class="dropdown-divider"></div>
+                                            <form action="{{ route('admin.config.profiles.destroy', $profile->id) }}" method="POST" class="d-inline confirm-submit" data-message="Are you sure you want to delete this profile?">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="ti ti-trash me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                             <small class="text-muted d-block mt-2">
@@ -476,8 +475,8 @@
             </div>
             <!-- Filters -->
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.config.index') }}" class="row g-2 align-items-center mb-3">
-                    <div class="col-12 col-sm-3">
+                <form method="GET" action="{{ route('admin.config.index') }}" class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                    <div style="min-width: 150px;">
                         <select name="camera_id" class="form-select form-select-sm">
                             <option value="">All Cameras</option>
                             @foreach($cameras as $c)
@@ -485,7 +484,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-12 col-sm-3">
+                    <div style="min-width: 130px;">
                         <select name="status" class="form-select form-select-sm">
                             <option value="">All Statuses</option>
                             <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pending</option>
@@ -497,12 +496,12 @@
                             <option value="Cancelled" {{ request('status') == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
                     </div>
-                    <div class="col-12 col-sm-3">
+                    <div style="min-width: 130px;">
                         <input type="date" name="date" class="form-control form-control-sm" value="{{ request('date') }}">
                     </div>
-                    <div class="col-12 col-sm-3 d-flex gap-1">
-                        <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
-                        <a href="{{ route('admin.config.index') }}" class="btn btn-outline-secondary btn-sm w-100">Reset</a>
+                    <div class="d-flex gap-1">
+                        <button type="submit" class="btn btn-primary btn-xs">Filter</button>
+                        <a href="{{ route('admin.config.index') }}" class="btn btn-outline-secondary btn-xs">Reset</a>
                     </div>
                 </form>
             </div>
@@ -512,10 +511,10 @@
                         <tr>
                             <th>Device</th>
                             <th>Status</th>
-                            <th>Target Payload</th>
+                            <th class="d-none">Target Payload</th>
                             <th>Details / Response</th>
-                            <th>Changed Fields</th>
-                            <th>Initiated By</th>
+                            <th class="d-none">Changed Fields</th>
+                            <th class="d-none">Initiated By</th>
                             <th>Time</th>
                             <th>Actions</th>
                         </tr>
@@ -537,9 +536,9 @@
                                         elseif ($hStatus === 'Sending') $hClass = 'bg-label-secondary border';
                                         elseif (in_array($hStatus, ['Failed', 'Rejected', 'Timeout'])) $hClass = 'bg-label-danger border border-danger';
                                     @endphp
-                                    <span class="badge {{ $hClass }}">{{ $hStatus }}</span>
+                                    <span class="badge {{ $hClass }} btn-xs" style="font-size: 0.7rem;">{{ $hStatus }}</span>
                                 </td>
-                                <td>
+                                <td class="d-none">
                                     <code class="text-truncate d-block" style="max-width: 150px;" title="{{ json_encode($history->new_config) }}">
                                         {{ json_encode($history->new_config) }}
                                     </code>
@@ -547,7 +546,7 @@
                                 <td class="message-cell" style="font-size: 0.8rem; white-space: normal; max-width: 200px;">
                                     {{ $history->message }}
                                 </td>
-                                <td>
+                                <td class="d-none">
                                     @if(!empty($history->changed_fields))
                                         @foreach($history->changed_fields as $f)
                                             <span class="badge bg-label-secondary border" style="font-size: 0.65rem;">{{ $f }}</span>
@@ -556,7 +555,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td>
+                                <td class="d-none">
                                     {{ $history->user ? $history->user->name : 'System' }}
                                 </td>
                                 <td>
@@ -1200,17 +1199,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Helper functions for badges in JS
     function getStatusBadge(status) {
-        if (status === 'Applied') return '<span class="badge bg-label-success">Applied</span>';
-        if (status === 'Pending') return '<span class="badge bg-label-warning">Pending</span>';
-        if (status === 'Queued') return '<span class="badge bg-label-info">Queued</span>';
-        if (status === 'Sending') return '<span class="badge bg-label-primary">Sending</span>';
-        if (status === 'Sent') return '<span class="badge bg-label-primary">Sent</span>';
-        if (status === 'Failed') return '<span class="badge bg-label-danger">Failed</span>';
-        if (status === 'Rejected') return '<span class="badge bg-label-danger">Rejected</span>';
-        if (status === 'Timeout') return '<span class="badge bg-label-danger">Timeout</span>';
-        if (status === 'Cancelled') return '<span class="badge bg-label-secondary">Cancelled</span>';
-        if (status === 'Expired') return '<span class="badge bg-label-secondary">Expired</span>';
-        return `<span class="badge bg-label-secondary">${status}</span>`;
+        let borderClass = 'border';
+        let bgClass = 'bg-label-secondary';
+        if (status === 'Applied') { bgClass = 'bg-label-success'; borderClass = 'border border-success'; }
+        else if (status === 'Pending') { bgClass = 'bg-label-warning'; borderClass = 'border border-warning'; }
+        else if (status === 'Queued') { bgClass = 'bg-label-secondary'; borderClass = 'border'; }
+        else if (status === 'Sending') { bgClass = 'bg-label-secondary'; borderClass = 'border'; }
+        else if (status === 'Sent') { bgClass = 'bg-label-secondary'; borderClass = 'border'; }
+        else if (['Failed', 'Rejected', 'Timeout'].includes(status)) { bgClass = 'bg-label-danger'; borderClass = 'border border-danger'; }
+        return `<span class="badge ${bgClass} ${borderClass} btn-xs" style="font-size: 0.7rem;">${status}</span>`;
     }
 
     // Laravel Reverb Realtime Configuration Listener
@@ -1254,10 +1251,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         newRow.innerHTML = `
                             <td><strong>${e.camera_name}</strong></td>
                             <td class="status-cell">${getStatusBadge(e.status)}</td>
-                            <td><code class="text-truncate d-block" style="max-width: 150px;" title="${JSON.stringify(e.new_config)}">${JSON.stringify(e.new_config)}</code></td>
+                            <td class="d-none"><code class="text-truncate d-block" style="max-width: 150px;" title="${JSON.stringify(e.new_config)}">${JSON.stringify(e.new_config)}</code></td>
                             <td class="message-cell" style="font-size: 0.8rem; white-space: normal; max-width: 200px;">${e.message}</td>
-                            <td>${changedBadges}</td>
-                            <td>System</td>
+                            <td class="d-none">${changedBadges}</td>
+                            <td class="d-none">System</td>
                             <td>${e.created_at}</td>
                             <td>${actionHtml}</td>
                         `;

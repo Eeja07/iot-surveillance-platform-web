@@ -453,19 +453,111 @@
 
     @php
         $totalCountVal = $totalCameras ?? 0;
-        $onlinePercent = $totalCountVal > 0 ? round(($onlineCameras ?? 0) / $totalCountVal * 100) : 0;
-        $warningPercent = $totalCountVal > 0 ? round(($warningCameras ?? 0) / $totalCountVal * 100) : 0;
-        $offlinePercent = $totalCountVal > 0 ? round(($offlineCameras ?? 0) / $totalCountVal * 100) : 0;
         $groupedCameras = $cameras->groupBy(function ($item) {
             return $item->group ? $item->group->name : 'Tanpa Grup';
         });
         $showHeaders = $currentGroup == 'Semua Kamera';
     @endphp
 
-    {{-- Section 1: Realtime Cameras --}}
-    <div class="mb-5">
+    {{-- Section: Overview --}}
+    <div class="mb-4">
+        <h5 class="mb-3 fw-bold">Overview</h5>
+        <div class="row g-3">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card border shadow-none p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small d-block">Total Cameras</span>
+                            <h4 class="mb-0 fw-bold" id="summary-total">{{ $totalCameras ?? 0 }}</h4>
+                        </div>
+                        <i class="ti ti-video fs-5 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card border shadow-none p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small d-block">Online Cameras</span>
+                            <h4 class="mb-0 fw-bold" id="summary-online">{{ $onlineCameras ?? 0 }}</h4>
+                        </div>
+                        <i class="ti ti-circle-check fs-5 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card border shadow-none p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small d-block">Warning Cameras</span>
+                            <h4 class="mb-0 fw-bold" id="summary-warning">{{ $warningCameras ?? 0 }}</h4>
+                        </div>
+                        <i class="ti ti-alert-triangle fs-5 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card border shadow-none p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted small d-block">Offline Cameras</span>
+                            <h4 class="mb-0 fw-bold" id="summary-offline">{{ $offlineCameras ?? 0 }}</h4>
+                        </div>
+                        <i class="ti ti-video-off fs-5 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Section: Recent Detection --}}
+    <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0 fw-bold"><i class="ti ti-video me-2 text-primary"></i>Realtime Cameras</h5>
+            <h5 class="mb-0 fw-bold">Recent Detection</h5>
+            <span class="badge bg-label-danger" id="detection-realtime-badge" style="font-size: 0.75rem;">
+                <span class="spinner-grow spinner-grow-sm text-danger me-1" role="status" style="width: 6px; height: 6px;"></span>Realtime Active
+            </span>
+        </div>
+
+        <div class="card shadow-none border">
+            <div class="card-body p-3">
+                <div id="no-person-detection-placeholder" style="{{ $latestDetection ? 'display: none;' : '' }}">
+                    <p class="text-muted mb-0 py-3 text-center">No person detection events recorded yet.</p>
+                </div>
+
+                <div id="latest-person-detection-card" class="d-flex align-items-center gap-3"
+                    style="{{ $latestDetection ? '' : 'display: none;' }}">
+                    <div class="bg-dark rounded" style="width: 100px; height: 75px; overflow: hidden; flex-shrink: 0;">
+                        <img id="detection-snapshot" class="w-100 h-100" style="object-fit: cover;"
+                            src="{{ $latestDetection ? Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}">
+                    </div>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-sm-4">
+                                <small class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Camera</small>
+                                <span class="fw-semibold text-truncate d-block" id="detection-camera-name">{{ $latestDetection->imageRecord->camera->name ?? 'N/A' }}</span>
+                            </div>
+                            <div class="col-sm-4">
+                                <small class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Confidence</small>
+                                <span class="badge bg-label-danger py-1" id="detection-confidence" style="font-size: 0.75rem;">
+                                    {{ $latestDetection ? number_format($latestDetection->confidence * 100, 2) . '%' : '0.00%' }}
+                                </span>
+                            </div>
+                            <div class="col-sm-4">
+                                <small class="text-muted d-block" style="font-size: 0.7rem; text-transform: uppercase;">Timestamp</small>
+                                <span class="text-muted" id="detection-time" style="font-size: 0.8rem;">{{ $latestDetection ? $latestDetection->created_at->format('Y-m-d H:i:s') : 'N/A' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Section: Realtime Cameras --}}
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 fw-bold">Realtime Cameras</h5>
             @if(($currentGroup ?? 'Semua Kamera') != 'Semua Kamera')
                 <span class="badge bg-label-primary border ms-2"
                     style="border-color: #dbeafe !important;">{{ $currentGroup }}</span>
@@ -474,17 +566,16 @@
 
         {{-- Filter Berdasarkan Nama Grup --}}
         @if(count($groups) > 1)
-            <div class="card mb-4">
-                <div class="card-body py-3 px-4">
+            <div class="card mb-3 border shadow-none">
+                <div class="card-body py-2 px-3">
                     <form method="POST" action="{{ url('/dashboard/groups') }}">
                         @csrf
-                        <div class="row align-items-center">
+                        <div class="row align-items-center g-2">
                             <div class="col-auto">
-                                <label class="form-label mb-0 fw-semibold"><i class="ti ti-filter me-1 text-primary"></i> Filter
-                                    Grup:</label>
+                                <label class="form-label mb-0 fw-semibold" style="font-size: 0.85rem;">Filter Grup:</label>
                             </div>
                             <div class="col-md-4">
-                                <select name="group" id="groupFilter" class="form-select border-0 bg-light">
+                                <select name="group" id="groupFilter" class="form-select form-select-sm border-0 bg-light">
                                     @foreach($groups as $name)
                                         <option value="{{ $name }}" {{ $currentGroup == $name ? 'selected' : '' }}>
                                             {{ $name }}
@@ -500,18 +591,18 @@
 
         {{-- Grid Kamera --}}
         @if($cameras->count() > 0)
-            <div class="row g-3">
+            <div class="row g-2">
                 <div class="col-12">
                     @foreach($groupedCameras as $groupName => $items)
-                        <div class="mb-5">
+                        <div class="mb-4">
                             @if($showHeaders)
-                                <div class="group-header">
-                                    <h5><i class="ti ti-folder me-2"></i>{{ $groupName }}</h5>
-                                    <span class="badge bg-label-secondary border">{{ $items->count() }} Kamera</span>
+                                <div class="group-header d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0 fw-bold"><i class="ti ti-folder me-1"></i>{{ $groupName }}</h6>
+                                    <span class="badge bg-label-secondary border" style="font-size: 0.7rem;">{{ $items->count() }} Kamera</span>
                                 </div>
                             @endif
 
-                            <div class="row g-3">
+                            <div class="row g-2">
                                 @foreach($items as $camera)
                                     @php $telemetry = $camera->latestTelemetry; @endphp
                                     <div class="col-12 col-md-6 col-lg-4 col-xl-3 camera-card" data-camera-id="{{ $camera->id }}"
@@ -519,19 +610,13 @@
                                         data-reconnect-delta="{{ $telemetry ? $telemetry->reconnect_delta : 0 }}"
                                         data-publish-fail-delta="{{ $telemetry ? $telemetry->publish_fail_delta : 0 }}">
 
-                                        <div class="card h-100 shadow-sm border-0">
-
-                                            <div
-                                                class="card-header d-flex justify-content-between align-items-center py-2 px-3 border-0 pb-0 bg-transparent">
+                                        <div class="card h-100 border shadow-none bg-transparent">
+                                            <div class="card-header d-flex justify-content-between align-items-center p-2 border-0 bg-transparent">
                                                 <div class="min-w-0">
-                                                    <h6 class="mb-0 text-truncate fw-bold" style="max-width: 100%;">{{ $camera->name }}
-                                                    </h6>
-                                                    @if($camera->group)
-                                                        <small class="text-muted d-block text-truncate" style="font-size: 0.7rem;">
-                                                            <i class="ti ti-map-pin me-1"
-                                                                style="font-size: 0.75rem;"></i>{{ $camera->group->name }}
-                                                        </small>
-                                                    @endif
+                                                    <h6 class="mb-0 text-truncate fw-bold" style="font-size: 0.85rem; max-width: 100%;">{{ $camera->name }}</h6>
+                                                    <small class="text-muted d-block text-truncate" id="freshness-{{ $camera->id }}" style="font-size: 0.7rem;">
+                                                        {{ $camera->freshness_indicator }}
+                                                    </small>
                                                 </div>
 
                                                 @php
@@ -567,41 +652,19 @@
 
                                             <div class="card-body p-0 text-center bg-dark d-flex align-items-center justify-content-center"
                                                 style="overflow: hidden; background-color: #111 !important; aspect-ratio: 4 / 3; width: 100%;">
-                                                <img class="camera-feed-image" data-camera-id="{{ $camera->id }}"
+                                                <img class="camera-feed-image w-100" data-camera-id="{{ $camera->id }}"
                                                     data-websocket-channel="{{ $camera->websocket_channel_id }}"
-                                                    style="width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain;"
+                                                    style="aspect-ratio: 4 / 3; object-fit: contain;"
                                                     src="{{ $camera->latest_image_path ? asset('https://apiminio.miot-its.org/cctv/' . $camera->latest_image_path) : 'https://placehold.co/640x480/293445/FFFFFF?text=No+Feed' }}">
                                             </div>
 
-                                            <div class="card-body p-3 border-top">
-                                                <div class="row g-2" style="font-size: 0.75rem;">
-                                                    <div class="col-12 d-flex justify-content-between align-items-center">
-                                                        <span class="text-muted"><i class="ti ti-activity me-1"></i>Last
-                                                            Heartbeat</span>
-                                                        <small class="text-muted fw-semibold text-truncate ms-2"
-                                                            id="freshness-{{ $camera->id }}" style="max-width: 150px;">
-                                                            {{ $camera->freshness_indicator }}
-                                                        </small>
-                                                    </div>
-                                                    <div class="col-12 d-flex justify-content-between align-items-center mt-1">
-                                                        <span class="text-muted"><i class="ti ti-alert-triangle me-1"></i>Last
-                                                            Detection</span>
-                                                        <small class="text-muted fw-semibold text-truncate ms-2"
-                                                            style="max-width: 150px;">
-                                                            {{ $lastDetection ? $lastDetection->created_at->diffForHumans() : 'None' }}
-                                                        </small>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div
-                                                class="card-footer d-flex justify-content-between align-items-center py-2 px-3 border-top bg-transparent">
-                                                <button type="button" class="btn btn-xs btn-outline-secondary" data-bs-toggle="modal"
+                                            <div class="card-footer d-flex justify-content-between align-items-center p-2 border-top bg-transparent">
+                                                <button type="button" class="btn btn-xs btn-outline-secondary py-0.5 px-2" style="font-size: 0.7rem;" data-bs-toggle="modal"
                                                     data-bs-target="#telemetryModal-{{ $camera->id }}">
-                                                    Health Details
+                                                    Health
                                                 </button>
                                                 <a href="{{ route('log.history.explorer', $camera->id) }}"
-                                                    class="btn btn-xs btn-outline-secondary">Detail</a>
+                                                    class="btn btn-xs btn-outline-secondary py-0.5 px-2" style="font-size: 0.7rem;">History</a>
                                             </div>
                                         </div>
                                     </div>
@@ -984,7 +1047,7 @@
                 </div>
             </div>
         @else
-            <div class="card border-0 shadow-sm py-5 text-center">
+            <div class="card border shadow-none py-5 text-center mb-5">
                 <div class="card-body">
                     <div class="avatar avatar-lg bg-label-secondary mx-auto mb-3"
                         style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
@@ -996,142 +1059,5 @@
                 </div>
             </div>
         @endif
-    </div>
-
-    {{-- Section 2: Recent Detection --}}
-    <div class="mb-5">
-        <h5 class="mb-3 fw-bold"><i class="ti ti-user-search me-2 text-danger"></i>Recent Detection</h5>
-
-        <div class="card shadow-sm border-0">
-            <div class="card-header d-flex justify-content-between align-items-center bg-transparent border-0 pb-0">
-                <h6 class="mb-0 fw-bold">Latest Person Detection</h6>
-                <span class="badge bg-label-danger" id="detection-realtime-badge">
-                    <span class="spinner-grow spinner-grow-sm text-danger me-1" role="status"
-                        style="width: 8px; height: 8px;"></span>Realtime active
-                </span>
-            </div>
-            <div class="card-body mt-2">
-                <div id="no-person-detection-placeholder" style="{{ $latestDetection ? 'display: none;' : '' }}">
-                    <div class="py-5 text-center">
-                        <div class="avatar avatar-lg bg-label-secondary mx-auto mb-3"
-                            style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                            <i class="ti ti-user-off fs-3"></i>
-                        </div>
-                        <h5 class="fw-semibold">No detections found</h5>
-                        <p class="text-muted mx-auto" style="max-width: 320px;">No person detection events have been
-                            recorded yet.</p>
-                    </div>
-                </div>
-
-                <div id="latest-person-detection-card" class="row align-items-center"
-                    style="{{ $latestDetection ? '' : 'display: none;' }}">
-                    <div class="col-12 col-md-4 mb-3 mb-md-0 text-center bg-dark rounded d-flex align-items-center justify-content-center"
-                        style="overflow: hidden; max-height: 240px; aspect-ratio: 4 / 3;">
-                        <img id="detection-snapshot" class="img-fluid"
-                            src="{{ $latestDetection ? Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}"
-                            style="max-height: 240px; object-fit: contain;">
-                    </div>
-                    <div class="col-12 col-md-8 ps-md-4">
-                        <div class="row g-3">
-                            <div class="col-6 col-sm-4">
-                                <span class="text-muted d-block" style="font-size: 0.8rem;">Camera</span>
-                                <strong id="detection-camera-name"
-                                    style="font-size: 1.1rem;">{{ $latestDetection->imageRecord->camera->name ?? 'N/A' }}</strong>
-                            </div>
-                            <div class="col-6 col-sm-4">
-                                <span class="text-muted d-block" style="font-size: 0.8rem;">Confidence</span>
-                                <span class="badge bg-label-danger" id="detection-confidence" style="font-size: 1rem;">
-                                    {{ $latestDetection ? number_format($latestDetection->confidence * 100, 2) . '%' : '0.00%' }}
-                                </span>
-                            </div>
-                            <div class="col-12 col-sm-4">
-                                <span class="text-muted d-block" style="font-size: 0.8rem;">Timestamp</span>
-                                <strong
-                                    id="detection-time">{{ $latestDetection ? $latestDetection->created_at->format('Y-m-d H:i:s') : 'N/A' }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Section 3: Overview & Device Status --}}
-    <div class="mb-5">
-        <h5 class="mb-3 fw-bold"><i class="ti ti-chart-bar me-2 text-secondary"></i>Overview & Device Status</h5>
-        <div class="row g-4">
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-start justify-content-between w-100">
-                            <div class="content-left">
-                                <span class="text-muted">Total Cameras</span>
-                                <h3 class="mb-0 mt-1 fw-bold" id="summary-total">{{ $totalCameras ?? 0 }}</h3>
-                                <small class="text-muted fw-semibold">Active Fleet</small>
-                            </div>
-                            <span class="badge bg-label-secondary border rounded p-2"><i
-                                    class="ti ti-camera ti-sm text-secondary"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-start justify-content-between w-100">
-                            <div class="content-left">
-                                <span class="text-muted">Online Cameras</span>
-                                <h3 class="mb-0 mt-1 fw-bold">
-                                    <span id="summary-online">{{ $onlineCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
-                                </h3>
-                                <small class="text-muted fw-semibold"
-                                    id="summary-online-percent">{{ $onlinePercent }}%</small>
-                            </div>
-                            <span class="badge bg-label-secondary border rounded p-2"><i
-                                    class="ti ti-circle-check ti-sm text-secondary"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-start justify-content-between w-100">
-                            <div class="content-left">
-                                <span class="text-muted">Warning Cameras</span>
-                                <h3 class="mb-0 mt-1 fw-bold">
-                                    <span id="summary-warning">{{ $warningCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
-                                </h3>
-                                <small class="text-muted fw-semibold"
-                                    id="summary-warning-percent">{{ $warningPercent }}%</small>
-                            </div>
-                            <span class="badge bg-label-secondary border rounded p-2"><i
-                                    class="ti ti-alert-circle ti-sm text-secondary"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-sm-6 col-xl-3">
-                <div class="card h-100 shadow-sm border-0">
-                    <div class="card-body d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-start justify-content-between w-100">
-                            <div class="content-left">
-                                <span class="text-muted">Offline Cameras</span>
-                                <h3 class="mb-0 mt-1 fw-bold">
-                                    <span id="summary-offline">{{ $offlineCameras ?? 0 }}</span> / <span
-                                        class="summary-total-denominator text-muted">{{ $totalCameras ?? 0 }}</span>
-                                </h3>
-                                <small class="text-muted fw-semibold"
-                                    id="summary-offline-percent">{{ $offlinePercent }}%</small>
-                            </div>
-                            <span class="badge bg-label-secondary border rounded p-2"><i
-                                    class="ti ti-circle-x ti-sm text-secondary"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 @endsection
