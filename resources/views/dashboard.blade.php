@@ -189,7 +189,6 @@
             if (window.Echo) {
                 // Subscribe to detections channel for real-time person detection updates
                 window.Echo.channel('detections')
-                    .listen('.person.detected', (data) => {
                         const detectionCard = document.getElementById('latest-person-detection-card');
                         if (detectionCard) {
                             detectionCard.style.display = 'flex';

@@ -619,7 +619,7 @@
                 
                 <div id="latest-person-detection-card" class="row align-items-center" style="{{ $latestDetection ? '' : 'display: none;' }}">
                     <div class="col-12 col-md-4 mb-3 mb-md-0 text-center bg-dark rounded d-flex align-items-center justify-content-center" style="overflow: hidden; max-height: 240px; aspect-ratio: 4 / 3;">
-                        <img id="detection-snapshot" class="img-fluid" src="{{ $latestDetection ? Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}" style="max-height: 240px; object-fit: contain;">
+                        <img id="detection-snapshot" class="img-fluid" src="{{ $latestDetection ? \Illuminate\Support\Facades\Storage::disk('s3')->url($latestDetection->imageRecord->path) : '' }}" style="max-height: 240px; object-fit: contain;">
                     </div>
                     <div class="col-12 col-md-8 ps-md-4">
                         <div class="row g-3">
