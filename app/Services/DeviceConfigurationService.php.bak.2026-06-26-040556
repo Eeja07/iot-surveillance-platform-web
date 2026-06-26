@@ -301,23 +301,11 @@ class DeviceConfigurationService
     public function handleConfigStatus(Camera $camera, array $payload)
     {
         return DB::transaction(function () use ($camera, $payload) {
-            $camera->refresh();
-            try {
-            $status = strtoupper(trim($payload['status'] ?? ''));
-            $appliedPayload = $payload["applied"] ?? true;
-            $applied = is_array($appliedPayload)
-                ? true
-                : filter_var($appliedPayload, FILTER_VALIDATE_BOOLEAN);
-
-            // Accept firmware status codes
-            $isSuccess = in_array($status, [
-                'SUCCESS',
-                'CONFIG_SUCCESS',
-            ], true);
-
-            $newStatus = ($isSuccess && $applied)
-                ? ConfigStatus::Applied->value
-                : ConfigStatus::Rejected->value;
+            $status = $payload['status'] ?? 'success';
+            $applied = filter_var($payload['applied'] ?? true, FILTER_VALIDATE_BOOLEAN);
+            
+            // Map status code or message
+            $newStatus = ($status === 'success' && $applied) ? ConfigStatus::Applied->value : ConfigStatus::Rejected->value;
             $message = $payload['message'] ?? (($newStatus === ConfigStatus::Applied->value) ? 'Configuration applied successfully by camera.' : 'Camera rejected configuration.');
 
             $history = ConfigurationHistory::where('camera_id', $camera->id)
@@ -338,47 +326,27 @@ class DeviceConfigurationService
             ]);
 
             if ($newStatus === ConfigStatus::Applied->value) {
-                Camera::where('id', $camera->id)->update([
+                $camera->update([
                     'current_config' => $camera->desired_config,
-                    'current_config_version' => DB::raw('desired_config_version'),
-                    'current_config_hash' => DB::raw('desired_config_hash'),
+                    'current_config_version' => $camera->desired_config_version,
+                    'current_config_hash' => $camera->desired_config_hash,
                     'last_applied_at' => now(),
-                    'last_failure_message' => null,
+                    'last_failure_message' => null
                 ]);
-
-                $camera->refresh();
 
                 // Update Telemetry model
                 $telemetry = $camera->latestTelemetry ?: new CameraTelemetry(['camera_id' => $camera->id]);
-                $config = $camera->desired_config ?? [];
-
-                $frameMap = [
-                    'QQVGA' => 0,
-                    'QCIF'  => 1,
-                    'HQVGA' => 2,
-                    'QVGA'  => 3,
-                    'CIF'   => 4,
-                    'VGA'   => 5,
-                    'SVGA'  => 6,
-                    'XGA'   => 7,
-                    'SXGA'  => 8,
-                    'UXGA'  => 9,
-                ];
-
-                $telemetry->fill([
-                    'jpeg_quality' => $config['jpeg_quality'] ?? $telemetry->jpeg_quality,
-                    'frame_size' => $frameMap[$config['frame_size'] ?? ""] ?? $telemetry->frame_size,
-                    'mqtt_buffer' => $config['mqtt_buffer'] ?? $telemetry->mqtt_buffer,
-                ]);
-
-                $telemetry->config_version = $camera->desired_config_version;
-                $telemetry->config_hash = $camera->desired_config_hash;
-$telemetry->save();
+                if ($camera->desired_config) {
+                    $telemetry->fill($camera->desired_config);
+                }
+                $telemetry->config_version = $camera->current_config_version;
+                $telemetry->config_hash = $camera->current_config_hash;
+                $telemetry->save();
 
                 // Check if restart is required
                 $profile = $camera->assignedProfile;
                 if ($profile && $profile->restart_required) {
-                    \Log::info("Restart required by profile '{$profile->name}' for camera {$camera->name}. Triggering restart.");
+                    Log::info("Restart required by profile '{$profile->name}' for camera {$camera->name}. Triggering restart.");
                     $this->restartDevice($camera, null);
                 }
 
@@ -394,17 +362,6 @@ $telemetry->save();
             }
 
             return true;
-            } catch (\Throwable $e) {
-                Log::error('HANDLE_CONFIG_STATUS_EXCEPTION', [
-                    'camera_id' => $camera->id,
-                    'payload' => $payload,
-                    'message' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                throw $e;
-            }
         });
     }
 

@@ -16,10 +16,6 @@ class ConfigurationHistory extends Model
         'changed_fields',
         'status',
         'message',
-        'config_version',
-        'config_hash',
-        'rollback_from',
-        'rollback_to',
         'created_at',
     ];
 

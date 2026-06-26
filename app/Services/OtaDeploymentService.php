@@ -53,7 +53,7 @@ class OtaDeploymentService
             }
 
             // Save firmware binary to MinIO
-            $firmwarePath = "firmware/{$version}/firmware.bin";
+            $firmwarePath = "firmware/{$version}/firmware_{$build}.bin";
             Storage::disk('s3')->put($firmwarePath, $binaryContents);
             $url = Storage::disk('s3')->url($firmwarePath);
 
@@ -137,11 +137,11 @@ class OtaDeploymentService
 
                 // 2. Prevent deploy unsupported board/model
                 if ($telemetry) {
-                    if ($telemetry->board && strtolower($telemetry->board) !== strtolower($firmware->board)) {
-                        throw new \Exception("Board mismatch for '{$camera->name}': camera is {$telemetry->board}, firmware requires {$firmware->board}.");
+                    if ($telemetry->fw_board && strtolower($telemetry->fw_board) !== strtolower($firmware->board)) {
+                        throw new \Exception("Board mismatch for '{$camera->name}': camera is {$telemetry->fw_board}, firmware requires {$firmware->board}.");
                     }
-                    if ($telemetry->model && strtolower($telemetry->model) !== strtolower($firmware->model)) {
-                        throw new \Exception("Model mismatch for '{$camera->name}': camera is {$telemetry->model}, firmware requires {$firmware->model}.");
+                    if ($telemetry->fw_model && strtolower($telemetry->fw_model) !== strtolower($firmware->model)) {
+                        throw new \Exception("Model mismatch for '{$camera->name}': camera is {$telemetry->fw_model}, firmware requires {$firmware->model}.");
                     }
                 }
             }
@@ -209,7 +209,7 @@ class OtaDeploymentService
             $runningCount = 0;
 
             foreach ($cameras as $cam) {
-                if (in_array($cam->status, ['Downloading', 'Verifying', 'Flashing', 'Pending'])) {
+                if (in_array($cam->status, ['Downloading','Verifying','Flashing'])) {
                     $runningCount++;
                     $allSuccess = false;
                 } elseif (in_array($cam->status, ['Failed', 'Cancelled'])) {
@@ -290,8 +290,6 @@ class OtaDeploymentService
                 if ($telemetry) {
                     $telemetry->update([
                         'ota_running' => true,
-                        'current_deployment_id' => $deployment->id,
-                        'last_ota_result' => 'Pending',
                     ]);
                     broadcast(new \App\Events\TelemetryUpdated($camera, $telemetry));
                 }
@@ -304,7 +302,9 @@ class OtaDeploymentService
                 ];
 
                 $topic = "ws/camera/{$camera->device_id}/ota";
-                $this->emqxService->publish($topic, $payload);
+                Log::info("OTA_PUBLISH_START",["topic"=>$topic,"payload"=>$payload]);
+                $ok=$this->emqxService->publish($topic,$payload);
+                Log::info("OTA_PUBLISH_RESULT",["success"=>$ok]);
             }
 
             $this->broadcastFleetUpdate($deployment);
@@ -320,7 +320,6 @@ class OtaDeploymentService
         if ($telemetry) {
             $telemetry->update([
                 'ota_running' => false,
-                'current_deployment_id' => null,
             ]);
             broadcast(new \App\Events\TelemetryUpdated($camera, $telemetry));
         }

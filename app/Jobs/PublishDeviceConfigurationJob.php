@@ -72,8 +72,6 @@ class PublishDeviceConfigurationJob implements ShouldQueue
         $payload = [
             'action' => 'config',
             'config' => $this->history->new_config,
-            'config_version' => $this->history->config_version,
-            'config_hash' => $this->history->config_hash,
         ];
 
         // Format according to whether it's restart, factory_reset or config
@@ -81,6 +79,11 @@ class PublishDeviceConfigurationJob implements ShouldQueue
             $payload['action'] = $payload['config']['action'];
             unset($payload['config']);
         }
+
+        \Illuminate\Support\Facades\Log::info('MQTT_CONFIG_PUBLISH', [
+            'topic' => $topic,
+            'payload' => $payload,
+        ]);
 
         $published = $emqxService->publish($topic, $payload);
 

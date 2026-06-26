@@ -51,7 +51,8 @@ class ImageUploadController extends Controller
 
             // SOLUSI JANGKA PANJANG: Update kolom latest_image di tabel cameras
             $camera->update([
-                'last_heartbeat_at' => now(),
+                'last_heartbeat_at => now(),
+                'is_active' => true,
                 'latest_image_path' => $path,
                 'latest_image_at'   => now(),
             ]);

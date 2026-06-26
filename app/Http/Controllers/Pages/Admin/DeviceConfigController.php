@@ -99,6 +99,11 @@ class DeviceConfigController extends Controller
 
     public function applyProfile(Request $request)
     {
+        logger()->info("APPLY_PROFILE_REQUEST", [
+            "camera_ids" => $request->input("camera_ids"),
+            "profile_id" => $request->input("profile_id"),
+            "all" => $request->all(),
+        ]);
         $request->validate([
             'camera_ids' => 'required|array',
             'camera_ids.*' => 'exists:cameras,id',

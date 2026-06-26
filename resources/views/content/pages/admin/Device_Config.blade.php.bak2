@@ -127,7 +127,6 @@
                 <form id="form-bulk-action" method="POST">
                     @csrf
                     <input type="hidden" name="operation" id="bulk-operation-input">
-                </form>
                     <table class="table table-hover align-middle">
                         <thead>
                             <tr>
@@ -175,7 +174,7 @@
                                 @endphp
                                 <tr id="camera-row-{{ $camera->id }}">
                                     <td>
-                                        <input form="form-bulk-action" class="form-check-input camera-checkbox" type="checkbox" name="camera_ids[]" value="{{ $camera->id }}">
+                                        <input class="form-check-input camera-checkbox" type="checkbox" name="camera_ids[]" value="{{ $camera->id }}">
                                     </td>
                                     <td>
                                         <div>
@@ -294,7 +293,7 @@
                             @endforelse
                         </tbody>
                     </table>
-                
+                </form>
             </div>
         </div>
     </div>

@@ -15,8 +15,6 @@ class Camera extends Model
         'latest_image_path', 'latest_image_at',
         'assigned_profile_id', 'last_config_time', 'last_sync', 'pending_changes',
         'desired_config', 'current_config',
-        'desired_config_version', 'current_config_version',
-        'desired_config_hash', 'current_config_hash',
         'last_config_status', 'last_failure_message', 'last_applied_at'
     ];
     protected $hidden = ['api_key'];

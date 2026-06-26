@@ -1,4 +1,3 @@
-# version: "3.9"   # <- opsional, boleh dihapus (sudah deprecated di compose v2+)
 x-env: &default-env
   TZ: "Asia/Jakarta"
 networks:
@@ -6,15 +5,20 @@ networks:
     driver: bridge
 volumes:
   db_data:
-  emqx_data:
-  emqx_log:
+
+  cctv_miot_emqx_data:
+    external: true
+
+  cctv_miot_emqx_log:
+    external: true
+
   minio_data:
 services:
   app:
     build:
       context: .
       dockerfile: ./docker/php/Dockerfile
-    container_name: laravel_CCTV_app_dev
+    container_name: cctv-app
     restart: unless-stopped
     working_dir: /var/www/html
     environment:
@@ -29,11 +33,12 @@ services:
       - laravel_net
   web:
     image: nginx:alpine
-    container_name: laravel_web_dev
+    container_name: cctv-web
     restart: unless-stopped
     depends_on:
       - app
     ports:
+
       - "8084:80"
     volumes:
       - ./:/var/www/html:ro
@@ -44,7 +49,7 @@ services:
       - laravel_net
   db:
     image: mysql:8.0
-    container_name: laravel_CCTV_db_dev
+    container_name: cctv-db
     hostname: db
     restart: unless-stopped
     environment:
@@ -63,7 +68,7 @@ services:
       - laravel_net
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
-    container_name: laravel_CCTV_phpmyadmin_dev
+    container_name: cctv-phpmyadmin
     restart: unless-stopped
     depends_on:
       - db
@@ -79,7 +84,7 @@ services:
       - laravel_net
   emqx:
     image: emqx/emqx:latest
-    container_name: laravel_emqx_dev
+    container_name: cctv-emqx
     restart: unless-stopped
     environment:
       <<: *default-env
@@ -95,13 +100,13 @@ services:
       - "8083:8083"
       - "18083:18083"
     volumes:
-      - emqx_data:/opt/emqx/data
-      - emqx_log:/opt/emqx/log
+      - cctv_miot_emqx_data:/opt/emqx/data
+      - cctv_miot_emqx_log:/opt/emqx/log
     networks:
       - laravel_net
   minio:
     image: minio/minio:latest
-    container_name: laravel-minio-dev
+    container_name: cctv-minio
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -113,5 +118,21 @@ services:
       - "9000:9000"
       - "9001:9001"
     command: server /data --console-address ":9001"
+    networks:
+      - laravel_net
+
+
+  reverb:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: cctv-reverb
+    restart: unless-stopped
+    working_dir: /var/www/html
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    depends_on:
+      - app
+    volumes:
+      - ./:/var/www/html
     networks:
       - laravel_net

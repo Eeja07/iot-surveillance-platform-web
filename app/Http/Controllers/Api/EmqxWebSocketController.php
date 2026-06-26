@@ -49,6 +49,7 @@ class EmqxWebSocketController extends Controller
 
             $camera->update([
                 'last_heartbeat_at' => now(),
+                'is_active' => true,
                 'latest_image_path' => $path,
                 'latest_image_at' => now(),
             ]);
@@ -124,7 +125,8 @@ class EmqxWebSocketController extends Controller
             );
 
             $camera->update([
-                'last_heartbeat_at' => now()
+                'last_heartbeat_at' => now(),
+                'is_active' => true
             ]);
 
             if (isset($payload['fw_version'])) {
@@ -254,7 +256,8 @@ class EmqxWebSocketController extends Controller
         if ($camera) {
 
             $camera->update([
-                'last_heartbeat_at' => now()
+                'last_heartbeat_at' => now(),
+                'is_active' => true
             ]);
 
             return response()->json([
@@ -269,10 +272,8 @@ class EmqxWebSocketController extends Controller
 
     public function handleOtaStatus(Request $request)
     {
-        Log::info('WS_OTA_STATUS_HANDLER_HIT', [
-            'topic' => $request->topic,
-            'payload' => $request->payload,
-        ]);
+        Log::info("WS_OTA_STATUS_HANDLER_HIT",["topic"=>$request->topic,"payload"=>$request->payload]);
+        Log::info("WS_OTA_RAW",["all"=>$request->all(),"json"=>$request->json()->all(),"content"=>$request->getContent()]);
 
         preg_match(
             '/ws\/camera\/(.+)\/ota\/status/',
