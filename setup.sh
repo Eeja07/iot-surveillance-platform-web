@@ -39,7 +39,7 @@ fi
 if [ -f .env ]; then
     if ! grep -q "APP_KEY=base64:" .env || [ -z "$(grep "APP_KEY=" .env | cut -d= -f2)" ]; then
         echo "Generating Laravel application key..."
-        php artisan key:generate
+        docker compose run --rm app php artisan key:generate
     else
         echo "Laravel application key already exists."
     fi
@@ -48,20 +48,9 @@ fi
 # Create storage symlink if it doesn't exist
 if [ ! -L public/storage ] && [ ! -d public/storage ]; then
     echo "Creating storage symlink..."
-    php artisan storage:link
+    docker compose run --rm app php artisan storage:link
 else
     echo "Storage symlink/directory already exists."
 fi
-
-# Clear Laravel caches
-echo "Clearing Laravel caches..."
-php artisan cache:clear
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-
-# Run database migrations if database is accessible
-echo "Running database migrations..."
-php artisan migrate --force || echo "Database migration skipped (database may not be online yet)."
 
 echo "Setup completed successfully!"

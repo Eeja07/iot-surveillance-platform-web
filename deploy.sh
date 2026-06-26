@@ -10,7 +10,9 @@ echo "=== [2/5] Running local setup script ==="
 echo "=== [3/5] Rebuilding and restarting containers ==="
 docker compose up -d --build
 
-echo "=== [4/5] Restarting Laravel queue workers ==="
+echo "=== [4/5] Running runtime deployment commands inside container ==="
+docker compose exec -T app php artisan optimize:clear
+docker compose exec -T app php artisan migrate --force
 docker compose exec -T app php artisan queue:restart
 
 echo "=== [5/5] Performing basic health check ==="
