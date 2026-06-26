@@ -181,6 +181,8 @@ class EmqxService
         $this->createAction("action_laravel_ws_telemetry", "/api/ws-bridge/telemetry", $connector);
         $this->createAction("action_laravel_ws_image", "/api/ws-bridge/image", $connector);
         $this->createAction("action_laravel_ws_status", "/api/ws-bridge/status", $connector);
+        $this->createAction("action_laravel_ws_ota_status", "/api/ws-bridge/ota-status", $connector);
+        $this->createAction("action_laravel_ws_config_status", "/api/ws-bridge/config-status", $connector);
 
         Log::info("EMQX_ACTIONS_SETUP: Prosedur pendaftaran Action selesai.");
     }
@@ -245,6 +247,8 @@ class EmqxService
         $this->createRule("rule_ws_telemetry", 'SELECT * FROM "ws/camera/+/telemetry"', ["http:action_laravel_ws_telemetry"]);
         $this->createRule("rule_ws_image", 'SELECT * FROM "ws/camera/+/image"', ["http:action_laravel_ws_image"]);
         $this->createRule("rule_ws_status", 'SELECT * FROM "ws/camera/+/status"', ["http:action_laravel_ws_status"]);
+        $this->createRule("rule_ws_ota_status", 'SELECT * FROM "ws/camera/+/ota/status"', ["http:action_laravel_ws_ota_status"]);
+        $this->createRule("rule_ws_config_status", 'SELECT * FROM "ws/camera/+/config/status"', ["http:action_laravel_ws_config_status"]);
 
         Log::info("EMQX_RULES_SETUP: Prosedur pendaftaran Rule selesai.");
     }
@@ -287,5 +291,26 @@ class EmqxService
     protected function get($url)
     {
         return Http::withBasicAuth($this->apiKey, $this->apiSecret)->get($url);
+    }
+
+    /**
+     * Publish an MQTT message via EMQX REST API
+     */
+    public function publish($topic, $payload, $qos = 1, $retain = false)
+    {
+        $url = "{$this->baseUrl}/publish";
+        $payloadData = [
+            'topic' => $topic,
+            'payload' => base64_encode(is_string($payload) ? $payload : json_encode($payload)),
+            'qos' => $qos,
+            'retain' => $retain,
+            'payload_encoding' => 'base64'
+        ];
+
+        $res = $this->post($url, $payloadData);
+        if ($res->failed()) {
+            Log::error("EMQX_PUBLISH_FAILED [{$topic}]: " . $res->body());
+        }
+        return $res->successful();
     }
 }

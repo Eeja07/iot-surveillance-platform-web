@@ -12,12 +12,23 @@ class Camera extends Model
         'user_id', 'device_id', 'name', 'description', 'api_key',
         'is_active', 'mqtt_username', 'mqtt_password', 'mqtt_status',
         'websocket_channel_id', 'last_heartbeat_at', 'group_id',
-        'latest_image_path', 'latest_image_at',  // kolom baru
+        'latest_image_path', 'latest_image_at',
+        'assigned_profile_id', 'last_config_time', 'last_sync', 'pending_changes',
+        'desired_config', 'current_config',
+        'desired_config_version', 'current_config_version',
+        'desired_config_hash', 'current_config_hash',
+        'last_config_status', 'last_failure_message', 'last_applied_at'
     ];
     protected $hidden = ['api_key'];
     protected $casts = [
         'last_heartbeat_at' => 'datetime',
         'latest_image_at'   => 'datetime',
+        'last_config_time'  => 'datetime',
+        'last_sync'         => 'datetime',
+        'pending_changes'   => 'array',
+        'desired_config'    => 'array',
+        'current_config'    => 'array',
+        'last_applied_at'   => 'datetime',
     ];
     protected static function booted()
     {
@@ -91,5 +102,15 @@ class Camera extends Model
 
         $diffInMinutes = round($diffInSeconds / 60);
         return "Offline {$diffInMinutes} min";
+    }
+
+    public function assignedProfile(): BelongsTo
+    {
+        return $this->belongsTo(CameraProfile::class, 'assigned_profile_id');
+    }
+
+    public function configurationHistories(): HasMany
+    {
+        return $this->hasMany(ConfigurationHistory::class);
     }
 }

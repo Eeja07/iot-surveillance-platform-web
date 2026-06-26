@@ -35,6 +35,16 @@
           "url": "/dashboard/admin/notifications",
           "name": "Notifications",
           "slug": "admin-notifications"
+        },
+        {
+          "url": "/dashboard/admin/ota",
+          "name": "OTA Firmware",
+          "slug": "admin-ota"
+        },
+        {
+          "url": "/dashboard/admin/config",
+          "name": "Device Config",
+          "slug": "admin-config"
         }
       ]
     },

@@ -276,6 +276,170 @@
                             if (modalUptime) modalUptime.textContent = data.uptime;
                             if (modalImage) modalImage.src = data.image_url;
 
+                            // Also update new fields from image received if present
+                            const fEl = document.getElementById(`modal-firmware-${data.camera_id}`);
+                            if (fEl && data.firmware) fEl.textContent = data.firmware;
+                            const otaBuild = document.getElementById(`modal-build-${data.camera_id}`);
+                            if (otaBuild && data.build) otaBuild.textContent = data.build;
+                            const otaBoard = document.getElementById(`modal-board-${data.camera_id}`);
+                            if (otaBoard && data.board) otaBoard.textContent = data.board;
+                            const otaModel = document.getElementById(`modal-model-${data.camera_id}`);
+                            if (otaModel && data.model) otaModel.textContent = data.model;
+                            const otaLast = document.getElementById(`modal-last-ota-${data.camera_id}`);
+                            if (otaLast && data.last_ota) otaLast.textContent = data.last_ota;
+                            const otaCurDep = document.getElementById(`modal-current-deployment-${data.camera_id}`);
+                            if (otaCurDep && data.current_deployment_id) otaCurDep.textContent = data.current_deployment_id;
+                            const otaSup = document.getElementById(`modal-ota-supported-${data.camera_id}`);
+                            if (otaSup && data.ota_supported) otaSup.textContent = data.ota_supported;
+                            const otaRun = document.getElementById(`modal-ota-running-${data.camera_id}`);
+                            if (otaRun && data.ota_running) otaRun.textContent = data.ota_running;
+                            const otaSpc = document.getElementById(`modal-free-ota-space-${data.camera_id}`);
+                            if (otaSpc && data.free_ota_space) otaSpc.textContent = data.free_ota_space;
+                            const otaRes = document.getElementById(`modal-last-ota-result-${data.camera_id}`);
+                            if (otaRes && data.last_ota_result) otaRes.textContent = data.last_ota_result;
+                            const wifiCh = document.getElementById(`modal-wifi-channel-${data.camera_id}`);
+                            if (wifiCh && data.wifi_channel) wifiCh.textContent = data.wifi_channel;
+                            const wifiBssid = document.getElementById(`modal-wifi-bssid-${data.camera_id}`);
+                            if (wifiBssid && data.wifi_bssid) wifiBssid.textContent = data.wifi_bssid;
+
+                            updateClientSideStates();
+                        })
+                        .listen('.telemetry.updated', (data) => {
+                            // Update compact view telemetry
+                            const rssiEl = document.getElementById(`telemetry-rssi-${data.camera_id}`);
+                            const heapEl = document.getElementById(`telemetry-heap-${data.camera_id}`);
+                            const publishEl = document.getElementById(`telemetry-publish-${data.camera_id}`);
+                            const mqttEl = document.getElementById(`telemetry-mqtt-${data.camera_id}`);
+                            const wsEl = document.getElementById(`telemetry-ws-${data.camera_id}`);
+                            const uptimeEl = document.getElementById(`telemetry-uptime-${data.camera_id}`);
+
+                            if (rssiEl) rssiEl.textContent = data.rssi;
+                            if (heapEl) heapEl.textContent = data.free_heap;
+                            if (publishEl) publishEl.textContent = data.publish_ms;
+                            if (mqttEl) mqttEl.textContent = data.mqtt_status;
+                            if (wsEl) wsEl.textContent = data.ws_status;
+                            if (uptimeEl) uptimeEl.textContent = data.uptime;
+
+                            // Update modal preview
+                            const modalRssi = document.getElementById(`modal-preview-rssi-${data.camera_id}`);
+                            const modalHeap = document.getElementById(`modal-preview-heap-${data.camera_id}`);
+                            const modalPublish = document.getElementById(`modal-preview-publish-${data.camera_id}`);
+                            const modalMqtt = document.getElementById(`modal-preview-mqtt-${data.camera_id}`);
+                            const modalWs = document.getElementById(`modal-preview-ws-${data.camera_id}`);
+                            const modalUptime = document.getElementById(`modal-preview-uptime-${data.camera_id}`);
+
+                            if (modalRssi) modalRssi.textContent = data.rssi;
+                            if (modalHeap) modalHeap.textContent = data.free_heap;
+                            if (modalPublish) modalPublish.textContent = data.publish_ms;
+                            if (modalMqtt) modalMqtt.textContent = data.mqtt_status;
+                            if (modalWs) modalWs.textContent = data.ws_status;
+                            if (modalUptime) modalUptime.textContent = data.uptime;
+
+                            // Update detail telemetry modal
+                            const detRssi = document.getElementById(`modal-rssi-${data.camera_id}`);
+                            const detHeap = document.getElementById(`modal-heap-${data.camera_id}`);
+                            const detPublish = document.getElementById(`modal-publish-${data.camera_id}`);
+                            const detMqtt = document.getElementById(`modal-mqtt-${data.camera_id}`);
+                            const detWs = document.getElementById(`modal-ws-${data.camera_id}`);
+                            const detUptime = document.getElementById(`modal-uptime-${data.camera_id}`);
+
+                            if (detRssi) detRssi.textContent = data.rssi;
+                            if (detHeap) detHeap.textContent = data.free_heap;
+                            if (detPublish) detPublish.textContent = data.publish_ms;
+                            if (detMqtt) detMqtt.textContent = data.mqtt_status;
+                            if (detWs) detWs.textContent = data.ws_status;
+                            if (detUptime) detUptime.textContent = data.uptime;
+
+                            // Update new OTA/WiFi fields
+                            const fEl = document.getElementById(`modal-firmware-${data.camera_id}`);
+                            if (fEl) fEl.textContent = data.firmware;
+                            const otaBuild = document.getElementById(`modal-build-${data.camera_id}`);
+                            if (otaBuild) otaBuild.textContent = data.build;
+                            const otaBoard = document.getElementById(`modal-board-${data.camera_id}`);
+                            if (otaBoard) otaBoard.textContent = data.board;
+                            const otaModel = document.getElementById(`modal-model-${data.camera_id}`);
+                            if (otaModel) otaModel.textContent = data.model;
+                            const otaLast = document.getElementById(`modal-last-ota-${data.camera_id}`);
+                            if (otaLast) otaLast.textContent = data.last_ota;
+                            const otaCurDep = document.getElementById(`modal-current-deployment-${data.camera_id}`);
+                            if (otaCurDep) otaCurDep.textContent = data.current_deployment_id;
+                            const otaSup = document.getElementById(`modal-ota-supported-${data.camera_id}`);
+                            if (otaSup) otaSup.textContent = data.ota_supported;
+                            const otaRun = document.getElementById(`modal-ota-running-${data.camera_id}`);
+                            if (otaRun) otaRun.textContent = data.ota_running;
+                            const otaSpc = document.getElementById(`modal-free-ota-space-${data.camera_id}`);
+                            if (otaSpc) otaSpc.textContent = data.free_ota_space;
+                            const otaRes = document.getElementById(`modal-last-ota-result-${data.camera_id}`);
+                            if (otaRes) otaRes.textContent = data.last_ota_result;
+                            const wifiCh = document.getElementById(`modal-wifi-channel-${data.camera_id}`);
+                            if (wifiCh) wifiCh.textContent = data.wifi_channel;
+                            const wifiBssid = document.getElementById(`modal-wifi-bssid-${data.camera_id}`);
+                            if (wifiBssid) wifiBssid.textContent = data.wifi_bssid;
+
+                            // Update Configuration Fields
+                            const pName = data.assigned_profile ? data.assigned_profile.name : 'None';
+                            const profEl = document.getElementById(`modal-assigned-profile-${data.camera_id}`);
+                            if (profEl) profEl.textContent = pName;
+
+                            const lastC = document.getElementById(`modal-last-config-${data.camera_id}`);
+                            if (lastC) lastC.textContent = data.last_config_time;
+                            const lastS = document.getElementById(`modal-last-sync-${data.camera_id}`);
+                            if (lastS) lastS.textContent = data.last_sync;
+
+                            // Helper to update field, text, and drift styling
+                            const updateFieldDrift = (fieldKey, telemetryVal, profileVal, textVal, expectedText) => {
+                                const cell = document.getElementById(`modal-${fieldKey}-${data.camera_id}`);
+                                const row = document.getElementById(`row-${fieldKey}-${data.camera_id}`);
+                                if (cell) {
+                                    if (data.assigned_profile && telemetryVal != profileVal) {
+                                        cell.textContent = `${textVal} (Expected: ${expectedText})`;
+                                        if (row) row.className = 'table-warning text-danger fw-bold';
+                                    } else {
+                                        cell.textContent = textVal;
+                                        if (row) row.className = '';
+                                    }
+                                }
+                            };
+
+                            if (data.assigned_profile) {
+                                const prof = data.assigned_profile;
+                                updateFieldDrift('jpeg', data.jpeg_quality, prof.jpeg_quality, data.jpeg_quality, prof.jpeg_quality);
+                                updateFieldDrift('size', data.frame_size, prof.frame_size, data.frame_size, prof.frame_size);
+                                updateFieldDrift('capture-interval', data.capture_interval_ms, prof.capture_interval_ms, `${data.capture_interval_ms} ms`, `${prof.capture_interval_ms}ms`);
+                                updateFieldDrift('telemetry-interval', data.telemetry_interval_ms, prof.telemetry_interval_ms, `${data.telemetry_interval_ms} ms`, `${prof.telemetry_interval_ms}ms`);
+                                updateFieldDrift('mqtt-buffer', data.mqtt_buffer, prof.mqtt_buffer, data.mqtt_buffer, prof.mqtt_buffer);
+                                
+                                const imgB = data.image_enabled === 'Enabled';
+                                const pImgB = !!prof.image_enabled;
+                                updateFieldDrift('image-enabled', imgB, pImgB, data.image_enabled, pImgB ? 'Enabled' : 'Disabled');
+                                
+                                const telB = data.telemetry_enabled === 'Enabled';
+                                const pTelB = !!prof.telemetry_enabled;
+                                updateFieldDrift('telemetry-enabled', telB, pTelB, data.telemetry_enabled, pTelB ? 'Enabled' : 'Disabled');
+
+                                const otaB = data.ota_enabled === 'Enabled';
+                                const pOtaB = !!prof.ota_enabled;
+                                updateFieldDrift('ota-enabled', otaB, pOtaB, data.ota_enabled, pOtaB ? 'Enabled' : 'Disabled');
+                            } else {
+                                // No profile assigned
+                                const fields = ['jpeg', 'size', 'capture-interval', 'telemetry-interval', 'mqtt-buffer', 'image-enabled', 'telemetry-enabled', 'ota-enabled'];
+                                fields.forEach(f => {
+                                    const cell = document.getElementById(`modal-${f}-${data.camera_id}`);
+                                    const row = document.getElementById(`row-${f}-${data.camera_id}`);
+                                    if (row) row.className = '';
+                                    if (cell) {
+                                        if (f === 'jpeg') cell.textContent = data.jpeg_quality;
+                                        if (f === 'size') cell.textContent = data.frame_size;
+                                        if (f === 'capture-interval') cell.textContent = `${data.capture_interval_ms} ms`;
+                                        if (f === 'telemetry-interval') cell.textContent = `${data.telemetry_interval_ms} ms`;
+                                        if (f === 'mqtt-buffer') cell.textContent = data.mqtt_buffer;
+                                        if (f === 'image-enabled') cell.textContent = data.image_enabled;
+                                        if (f === 'telemetry-enabled') cell.textContent = data.telemetry_enabled;
+                                        if (f === 'ota-enabled') cell.textContent = data.ota_enabled;
+                                    }
+                                });
+                            }
+
                             updateClientSideStates();
                         });
                 }
@@ -599,6 +763,162 @@
                                                             <td class="ps-3"><strong>Uptime</strong></td>
                                                             <td class="pe-3 text-end" id="modal-uptime-{{ $camera->id }}">{{ $telemetry ? $telemetry->formatted_uptime : 'N/A' }}</td>
                                                         </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>Firmware</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-firmware-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->firmware ?: 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>OTA Supported</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-ota-supported-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->ota_supported ? 'Yes' : 'No') : 'No' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>OTA Running</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-ota-running-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->ota_running ? 'Yes' : 'No') : 'No' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>Free OTA Space</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-free-ota-space-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->free_ota_space ? round($telemetry->free_ota_space / 1024 / 1024, 2) . ' MB' : 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>Last OTA Result</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-last-ota-result-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->last_ota_result ?: 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>Build</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-build-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->build ?: 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>Board</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-board-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->board ?: 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>Model</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-model-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->model ?: 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>Last OTA</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-last-ota-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->last_ota ? $telemetry->last_ota->toDateTimeString() : 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>Current Deployment</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-current-deployment-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->current_deployment_id ?: 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="ps-3"><strong>WiFi Channel</strong></td>
+                                                            <td class="pe-3 text-end" id="modal-wifi-channel-{{ $camera->id }}">
+                                                                {{ $telemetry ? ($telemetry->wifi_channel ?: 'N/A') : 'N/A' }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                             <td class="ps-3"><strong>WiFi BSSID</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-wifi-bssid-{{ $camera->id }}">
+                                                                 {{ $telemetry ? ($telemetry->wifi_bssid ?: 'N/A') : 'N/A' }}</td>
+                                                         </tr>
+                                                         <tr>
+                                                             <td colspan="2" class="bg-light ps-3"><strong>Remote Configuration</strong></td>
+                                                         </tr>
+                                                         <tr>
+                                                             <td class="ps-3"><strong>Current Profile</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-assigned-profile-{{ $camera->id }}">
+                                                                 {{ $camera->assignedProfile ? $camera->assignedProfile->name : 'None' }}
+                                                             </td>
+                                                         </tr>
+                                                         @php
+                                                             $profile = $camera->assignedProfile;
+                                                         @endphp
+                                                         <tr class="{{ $profile && $telemetry && $profile->jpeg_quality != $telemetry->jpeg_quality ? 'table-warning text-danger fw-bold' : '' }}" id="row-jpeg-{{ $camera->id }}">
+                                                             <td class="ps-3"><strong>JPEG Quality</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-jpeg-{{ $camera->id }}">
+                                                                 {{ $telemetry ? $telemetry->jpeg_quality : 'N/A' }}
+                                                                 @if($profile && $telemetry && $profile->jpeg_quality != $telemetry->jpeg_quality)
+                                                                     (Expected: {{ $profile->jpeg_quality }})
+                                                                 @endif
+                                                             </td>
+                                                         </tr>
+                                                         <tr class="{{ $profile && $telemetry && $profile->frame_size != $telemetry->frame_size ? 'table-warning text-danger fw-bold' : '' }}" id="row-size-{{ $camera->id }}">
+                                                             <td class="ps-3"><strong>Frame Size</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-size-{{ $camera->id }}">
+                                                                 {{ $telemetry ? $telemetry->frame_size : 'N/A' }}
+                                                                 @if($profile && $telemetry && $profile->frame_size != $telemetry->frame_size)
+                                                                     (Expected: {{ $profile->frame_size }})
+                                                                 @endif
+                                                             </td>
+                                                         </tr>
+                                                         <tr class="{{ $profile && $telemetry && $profile->capture_interval_ms != $telemetry->capture_interval_ms ? 'table-warning text-danger fw-bold' : '' }}" id="row-capture-{{ $camera->id }}">
+                                                             <td class="ps-3"><strong>Capture Interval</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-capture-interval-{{ $camera->id }}">
+                                                                 {{ $telemetry && $telemetry->capture_interval_ms !== null ? $telemetry->capture_interval_ms . ' ms' : 'N/A' }}
+                                                                 @if($profile && $telemetry && $profile->capture_interval_ms != $telemetry->capture_interval_ms)
+                                                                     (Expected: {{ $profile->capture_interval_ms }}ms)
+                                                                 @endif
+                                                             </td>
+                                                         </tr>
+                                                         <tr class="{{ $profile && $telemetry && $profile->telemetry_interval_ms != $telemetry->telemetry_interval_ms ? 'table-warning text-danger fw-bold' : '' }}" id="row-telemetry-{{ $camera->id }}">
+                                                             <td class="ps-3"><strong>Telemetry Interval</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-telemetry-interval-{{ $camera->id }}">
+                                                                 {{ $telemetry && $telemetry->telemetry_interval_ms !== null ? $telemetry->telemetry_interval_ms . ' ms' : 'N/A' }}
+                                                                 @if($profile && $telemetry && $profile->telemetry_interval_ms != $telemetry->telemetry_interval_ms)
+                                                                     (Expected: {{ $profile->telemetry_interval_ms }}ms)
+                                                                 @endif
+                                                             </td>
+                                                         </tr>
+                                                         <tr class="{{ $profile && $telemetry && $profile->mqtt_buffer != $telemetry->mqtt_buffer ? 'table-warning text-danger fw-bold' : '' }}" id="row-buffer-{{ $camera->id }}">
+                                                             <td class="ps-3"><strong>MQTT Buffer Size</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-mqtt-buffer-{{ $camera->id }}">
+                                                                 {{ $telemetry && $telemetry->mqtt_buffer !== null ? $telemetry->mqtt_buffer : 'N/A' }}
+                                                                 @if($profile && $telemetry && $profile->mqtt_buffer != $telemetry->mqtt_buffer)
+                                                                     (Expected: {{ $profile->mqtt_buffer }})
+                                                                 @endif
+                                                             </td>
+                                                         </tr>
+                                                         <tr class="{{ $profile && $telemetry && (bool)$profile->image_enabled != (bool)$telemetry->image_enabled ? 'table-warning text-danger fw-bold' : '' }}" id="row-image-{{ $camera->id }}">
+                                                             <td class="ps-3"><strong>Image Stream</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-image-enabled-{{ $camera->id }}">
+                                                                 {{ $telemetry && $telemetry->image_enabled !== null ? ($telemetry->image_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
+                                                                 @if($profile && $telemetry && (bool)$profile->image_enabled != (bool)$telemetry->image_enabled)
+                                                                     (Expected: {{ $profile->image_enabled ? 'Enabled' : 'Disabled' }})
+                                                                 @endif
+                                                             </td>
+                                                         </tr>
+                                                         <tr class="{{ $profile && $telemetry && (bool)$profile->telemetry_enabled != (bool)$telemetry->telemetry_enabled ? 'table-warning text-danger fw-bold' : '' }}" id="row-telem-{{ $camera->id }}">
+                                                             <td class="ps-3"><strong>Telemetry Stream</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-telemetry-enabled-{{ $camera->id }}">
+                                                                 {{ $telemetry && $telemetry->telemetry_enabled !== null ? ($telemetry->telemetry_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
+                                                                 @if($profile && $telemetry && (bool)$profile->telemetry_enabled != (bool)$telemetry->telemetry_enabled)
+                                                                     (Expected: {{ $profile->telemetry_enabled ? 'Enabled' : 'Disabled' }})
+                                                                 @endif
+                                                             </td>
+                                                         </tr>
+                                                         <tr class="{{ $profile && $telemetry && (bool)$profile->ota_enabled != (bool)$telemetry->ota_enabled ? 'table-warning text-danger fw-bold' : '' }}" id="row-ota-{{ $camera->id }}">
+                                                             <td class="ps-3"><strong>OTA Stream</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-ota-enabled-{{ $camera->id }}">
+                                                                 {{ $telemetry && $telemetry->ota_enabled !== null ? ($telemetry->ota_enabled ? 'Enabled' : 'Disabled') : 'N/A' }}
+                                                                 @if($profile && $telemetry && (bool)$profile->ota_enabled != (bool)$telemetry->ota_enabled)
+                                                                     (Expected: {{ $profile->ota_enabled ? 'Enabled' : 'Disabled' }})
+                                                                 @endif
+                                                             </td>
+                                                         </tr>
+                                                         <tr>
+                                                             <td class="ps-3"><strong>Last Configuration</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-last-config-{{ $camera->id }}">
+                                                                 {{ $camera->last_config_time ? $camera->last_config_time->toDateTimeString() : 'Never' }}
+                                                             </td>
+                                                         </tr>
+                                                         <tr>
+                                                             <td class="ps-3"><strong>Last Sync</strong></td>
+                                                             <td class="pe-3 text-end" id="modal-last-sync-{{ $camera->id }}">
+                                                                 {{ $camera->last_sync ? $camera->last_sync->toDateTimeString() : 'Never' }}
+                                                             </td>
+                                                         </tr>
                                                     </tbody>
                                                 </table>
                                             </div>

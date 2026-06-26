@@ -133,3 +133,41 @@ Schedule::call(function () {
 
 
 //->dailyAt('02:00')
+
+Schedule::call(function () {
+    $now = now();
+    $pendingDeployments = \App\Models\OtaDeployment::where('status', 'Scheduled')
+        ->where('scheduled_at', '<=', $now)
+        ->get();
+
+    foreach ($pendingDeployments as $deployment) {
+        try {
+            $deployment->update(['status' => 'Pending']);
+            
+            $cameras = $deployment->deploymentCameras;
+            $percentage = $deployment->rollout_percentage;
+            $batchSize = max(1, ceil($cameras->count() * $percentage / 100));
+            
+            $stagedCameras = $cameras->where('status', 'Staged');
+            $nextBatch = $stagedCameras->take($batchSize);
+            
+            foreach ($nextBatch as $cam) {
+                $cam->update([
+                    'status' => 'Pending',
+                    'started_at' => now(),
+                ]);
+            }
+            
+            $service = app(\App\Services\OtaDeploymentService::class);
+            $service->startDeploymentBatch($deployment);
+            
+            Log::info("Scheduled OTA deployment {$deployment->id} started successfully.");
+        } catch (\Throwable $e) {
+            Log::error("Failed to start scheduled OTA deployment {$deployment->id}: " . $e->getMessage());
+        }
+    }
+})
+->everyMinute()
+->name('process-scheduled-ota-deployments')
+->withoutOverlapping();
+

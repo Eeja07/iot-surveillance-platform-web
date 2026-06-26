@@ -100,6 +100,9 @@ Route::prefix('mqtt')->group(function () {
 Route::prefix('ws-bridge')->group(function () {
     Route::post('/telemetry', [EmqxWebSocketController::class, 'handleTelemetry'])->name('api.ws.telemetry');
     Route::post('/image', [EmqxWebSocketController::class, 'handleImage'])->name('api.ws.image');
+    Route::post('/status', [EmqxWebSocketController::class, 'handleStatus'])->name('api.ws.status');
+    Route::post('/ota-status', [EmqxWebSocketController::class, 'handleOtaStatus'])->name('api.ws.ota-status');
+    Route::post('/config-status', [EmqxWebSocketController::class, 'handleConfigStatus'])->name('api.ws.config-status');
 });
 
 // Status & Sync Utils

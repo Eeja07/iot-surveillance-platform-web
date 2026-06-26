@@ -8,14 +8,14 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Controllers\Pages\UserDashboardController;
 use App\Http\Controllers\Pages\DashboardController;
 use App\Http\Controllers\Pages\CameraGroupController;
-// --- Controllers Modul Admin (Pages/Admin/) ---
 use App\Http\Controllers\Pages\Admin\ManajemenKameraController;
-use App\Http\Controllers\Pages\Admin\NotifikasiPeringatanController;
+// use App\Http\Controllers\Pages\Admin\NotifikasiPeringatanController;
+use App\Http\Controllers\Pages\Admin\OtaController;
 // --- Controllers Modul Report (Pages/Log/) ---
 use App\Http\Controllers\Pages\Log\LogAktifitasController;
 use App\Http\Controllers\Pages\Log\RiwayatRekamanController;
 // --- Controllers Modul Invoice/Bill (Pages/ML/) ---
-use App\Http\Controllers\Pages\ML\LogDeteksiMlController;
+// use App\Http\Controllers\Pages\ML\LogDeteksiMlController;
 // --- Controllers Modul Setting (Pages/Setting/) ---
 use App\Http\Controllers\Pages\Setting\UserController;
 use App\Http\Controllers\Pages\Setting\RoleController;
@@ -56,7 +56,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('cameras', ManajemenKameraController::class);
             Route::get('cameras/{camera}/qrcode', [ManajemenKameraController::class, 'downloadQrCode'])->name('cameras.qrcode');
-            Route::get('/notifications', [NotifikasiPeringatanController::class, 'index'])->name('notifications.index');
+            // Route::get('/notifications', [NotifikasiPeringatanController::class, 'index'])->name('notifications.index');
+
+            Route::prefix('ota')->name('ota.')->group(function () {
+                Route::get('/', [OtaController::class, 'index'])->name('index');
+                Route::post('/upload', [OtaController::class, 'upload'])->name('upload');
+                Route::delete('/{id}', [OtaController::class, 'destroy'])->name('destroy');
+                Route::get('/{id}/download', [OtaController::class, 'download'])->name('download');
+                Route::post('/deploy', [OtaController::class, 'deploy'])->name('deploy');
+                Route::post('/cancel', [OtaController::class, 'cancel'])->name('cancel');
+            });
+
+            Route::prefix('config')->name('config.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Pages\Admin\DeviceConfigController::class, 'index'])->name('index');
+                Route::post('/apply', [\App\Http\Controllers\Pages\Admin\DeviceConfigController::class, 'apply'])->name('apply');
+                Route::post('/apply-profile', [\App\Http\Controllers\Pages\Admin\DeviceConfigController::class, 'applyProfile'])->name('apply-profile');
+                Route::post('/restart', [\App\Http\Controllers\Pages\Admin\DeviceConfigController::class, 'restart'])->name('restart');
+                Route::post('/factory-reset', [\App\Http\Controllers\Pages\Admin\DeviceConfigController::class, 'factoryReset'])->name('factory-reset');
+                Route::post('/fleet-operation', [\App\Http\Controllers\Pages\Admin\DeviceConfigController::class, 'fleetOperation'])->name('fleet-operation');
+                Route::post('/rollback', [\App\Http\Controllers\Pages\Admin\DeviceConfigController::class, 'rollback'])->name('rollback');
+                Route::resource('profiles', \App\Http\Controllers\Pages\Admin\CameraProfileController::class)->except(['create', 'show', 'edit']);
+            });
 
             Route::prefix('camera-groups')->name('camera-groups.')->group(function () {
                 Route::get('/', [CameraGroupController::class, 'index'])->name('index');
@@ -69,9 +89,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         // ML Logs
-        Route::prefix('ml')->name('ml.')->group(function () {
-            Route::get('/detection-log', [LogDeteksiMlController::class, 'index'])->name('detection-log.index');
-        });
+        // Route::prefix('ml')->name('ml.')->group(function () {
+        //     Route::get('/detection-log', [LogDeteksiMlController::class, 'index'])->name('detection-log.index');
+        // });
 
         // System Logs & History
         Route::prefix('log')->name('log.')->group(function () {
