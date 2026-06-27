@@ -42,13 +42,7 @@ class OtaDeploymentService
             // Compute SHA256 of the binary
             $binaryContents = file_get_contents($file->getRealPath());
             $sha256 = hash('sha256', $binaryContents);
-            $size = $file->getSize();
-
-            // Validate duplicate version or SHA256
-            if (OtaFirmware::where('version', $version)->exists()) {
-                throw new \Exception("Firmware version v{$version} already exists.");
-            }
-            if (OtaFirmware::where('sha256', $sha256)->exists()) {
+            $size = $file->getSize();            if (OtaFirmware::where('sha256', $sha256)->exists()) {
                 throw new \Exception("A firmware binary with this SHA256 checksum already exists.");
             }
 
@@ -73,7 +67,7 @@ class OtaDeploymentService
                 'release_notes' => $releaseNotes
             ];
 
-            $manifestPath = "firmware/{$version}/manifest.json";
+            $manifestPath = "firmware/{$version}/manifest_{$build}.json";
             Storage::disk('s3')->put($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
             // Create record
@@ -177,7 +171,7 @@ class OtaDeploymentService
                     'deployment_id' => $deployment->id,
                     'camera_id' => $camera->id,
                     'old_version' => $telemetry ? $telemetry->firmware : 'Unknown',
-                    'target_version' => $firmware->version,
+                    'target_version' => $deployment->firmware->version,
                     'status' => $initialStatus,
                     'progress' => 0,
                 ]);
@@ -295,7 +289,7 @@ class OtaDeploymentService
                 }
 
                 // Publish MQTT deployment command
-                $manifestUrl = Storage::disk('s3')->url("firmware/{$cam->target_version}/manifest.json");
+                $manifestUrl = Storage::disk('s3')->url("firmware/{$deployment->firmware->version}/manifest_{$deployment->firmware->build}.json");
                 $payload = [
                     'action' => 'ota',
                     'manifest' => $manifestUrl
