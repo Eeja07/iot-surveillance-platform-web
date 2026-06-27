@@ -82,8 +82,8 @@ class MqttWebhookController extends Controller
             $camera = Camera::where('device_id', $deviceId)->first();
             if ($camera) {
                 $camera->update([
-                    'last_heartbeat_at => now(),
-                'is_active' => true,
+                    'last_heartbeat_at' => now(),
+                    'is_active' => true,
                     'latest_image_path' => $path,
                     'latest_image_at'   => now(),
                 ]);

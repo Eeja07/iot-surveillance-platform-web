@@ -15,6 +15,9 @@ use App\Http\Controllers\Api\UserCameraApiController;
 use App\Http\Controllers\Api\EmqxWebSocketController;
 use App\Http\Controllers\Api\MqttAuthController;
 use App\Http\Controllers\Api\MqttWebhookController;
+use App\Http\Controllers\Api\DetectionQueryController;
+use App\Http\Controllers\Api\NotificationQueryController;
+use App\Http\Controllers\Api\OverviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +84,20 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/assign', [UserCameraGroupApiController::class, 'assignCamera']);
         Route::post('/remove', [UserCameraGroupApiController::class, 'removeCamera']);
     });
+
+    // Detection & Motion Queries
+    Route::get('/detection-events', [DetectionQueryController::class, 'index']);
+    Route::get('/detection-events/latest', [DetectionQueryController::class, 'latest']);
+    Route::get('/detection-events/camera/{camera}', [DetectionQueryController::class, 'camera']);
+    Route::get('/detection-events/history', [DetectionQueryController::class, 'history']);
+    Route::get('/motion-events', [DetectionQueryController::class, 'motion']);
+
+    // Notifications Parity
+    Route::get('/notifications', [NotificationQueryController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationQueryController::class, 'markAsRead']);
+
+    // Overview Dashboard
+    Route::get('/overview', [OverviewController::class, 'index']);
 });
 
 // --- 4. Rute IoT & Webhook (Tanpa Auth Sanctum biasanya) ---
