@@ -10,6 +10,14 @@ class CameraTelemetry extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'last_ota' => 'datetime',
+        'mqtt_connected' => 'boolean',
+        'ws_connected' => 'boolean',
+    ];
+
     public function getHealthStatusAttribute(): string
     {
         $mqtt = $this->mqtt_connected;
