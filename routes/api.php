@@ -19,6 +19,8 @@ use App\Http\Controllers\Api\DetectionQueryController;
 use App\Http\Controllers\Api\NotificationQueryController;
 use App\Http\Controllers\Api\OverviewController;
 use App\Http\Controllers\Api\CameraConfigController;
+use App\Http\Controllers\Api\OtaApiController;
+
 
 
 /*
@@ -106,6 +108,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cameras/{camera}/config', [CameraConfigController::class, 'update']);
     Route::post('/cameras/{camera}/reboot', [CameraConfigController::class, 'reboot']);
     Route::post('/cameras/{camera}/capture', [CameraConfigController::class, 'capture']);
+
+    // OTA Management
+    Route::get('/firmware/latest', [OtaApiController::class, 'latest']);
+    Route::get('/ota/deployments', [OtaApiController::class, 'deployments']);
+    Route::post('/cameras/{camera}/ota', [OtaApiController::class, 'deploy']);
 });
 
 // --- 4. Rute IoT & Webhook (Tanpa Auth Sanctum biasanya) ---

@@ -560,5 +560,154 @@ class ExampleTest extends TestCase
                 'message' => 'Manual capture command sent successfully.',
             ]);
     }
+
+    public function test_ota_endpoints_require_authentication(): void
+    {
+        $this->getJson('/api/firmware/latest')->assertStatus(401);
+        $this->getJson('/api/ota/deployments')->assertStatus(401);
+        $this->postJson('/api/cameras/1/ota')->assertStatus(401);
+    }
+
+    public function test_cannot_deploy_ota_to_other_users_camera(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $camera = Camera::create([
+            'user_id' => $otherUser->id,
+            'name' => 'Other Camera',
+        ]);
+
+        $this->actingAs($user)->postJson("/api/cameras/{$camera->id}/ota")->assertStatus(403);
+    }
+
+    public function test_can_get_latest_firmware(): void
+    {
+        $user = User::factory()->create();
+        OtaFirmware::create([
+            'version' => '1.2.3',
+            'board' => 'esp32cam',
+            'model' => 'AI Thinker',
+            'build' => '20260627',
+            'min_version' => '1.0.0',
+            'mandatory' => true,
+            'rollback_allowed' => false,
+            'force' => false,
+            'size' => 1048576, // 1 MB
+            'sha256' => 'abcde12345',
+            'url' => 'https://cctv.miot-its.org/firmware/1.2.3/firmware.bin',
+            'path' => 'firmware/1.2.3/firmware.bin',
+            'release_notes' => 'Initial release notes',
+            'uploaded_by' => $user->id,
+        ]);
+
+        $response = $this->actingAs($user)->getJson('/api/firmware/latest');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'version' => '1.2.3',
+                'board' => 'esp32cam',
+                'formatted_size' => '1 MB',
+            ]);
+    }
+
+    public function test_can_get_ota_deployments(): void
+    {
+        $user = User::factory()->create();
+        $camera = Camera::create([
+            'user_id' => $user->id,
+            'name' => 'My Camera',
+        ]);
+
+        $firmware = OtaFirmware::create([
+            'version' => '1.2.3',
+            'size' => 1048576,
+            'sha256' => 'abcde12345',
+            'url' => 'https://example.com/fw.bin',
+            'path' => 'fw.bin',
+        ]);
+
+        $deployment = OtaDeployment::create([
+            'id' => 'deployment-uuid-1',
+            'firmware_id' => $firmware->id,
+            'created_by' => $user->id,
+            'status' => 'Running',
+            'rollout_percentage' => 100,
+        ]);
+
+        \App\Models\OtaDeploymentCamera::create([
+            'deployment_id' => $deployment->id,
+            'camera_id' => $camera->id,
+            'old_version' => '1.2.2',
+            'target_version' => '1.2.3',
+            'status' => 'Downloading',
+            'progress' => 50,
+            'message' => 'Downloading binary...',
+        ]);
+
+        $response = $this->actingAs($user)->getJson('/api/ota/deployments');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'id',
+                        'firmware_id',
+                        'target_version',
+                        'status',
+                        'cameras' => [
+                            '*' => [
+                                'camera_id',
+                                'camera_name',
+                                'status',
+                                'progress',
+                            ]
+                        ]
+                    ]
+                ]
+            ]);
+    }
+
+    public function test_can_deploy_ota_successfully(): void
+    {
+        $user = User::factory()->create();
+        $camera = Camera::create([
+            'user_id' => $user->id,
+            'name' => 'My Camera',
+            'device_id' => 'device-uuid-1234',
+        ]);
+
+        $firmware = OtaFirmware::create([
+            'version' => '1.2.3',
+            'size' => 1048576,
+            'sha256' => 'abcde12345',
+            'url' => 'https://example.com/fw.bin',
+            'path' => 'fw.bin',
+        ]);
+
+        $mockOta = $this->mock(\App\Services\OtaDeploymentService::class);
+        $mockOta->shouldReceive('createDeployment')
+            ->once()
+            ->with([
+                'firmware_id' => $firmware->id,
+                'target_type' => 'single',
+                'camera_ids' => [$camera->id],
+                'rollout_percentage' => 100,
+                'scheduled_at' => null,
+                'notes' => 'OTA deploy initiated via Mobile API.',
+            ], $user->id)
+            ->andReturn((object)['id' => 'mock-deployment-uuid']);
+
+        $response = $this->actingAs($user)->postJson("/api/cameras/{$camera->id}/ota", [
+            'firmware_id' => $firmware->id,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'OTA deployment initiated successfully.',
+                'deployment_id' => 'mock-deployment-uuid',
+            ]);
+    }
 }
+
 
