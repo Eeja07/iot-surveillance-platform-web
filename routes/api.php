@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\MqttWebhookController;
 use App\Http\Controllers\Api\DetectionQueryController;
 use App\Http\Controllers\Api\NotificationQueryController;
 use App\Http\Controllers\Api\OverviewController;
+use App\Http\Controllers\Api\CameraConfigController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +100,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Overview Dashboard
     Route::get('/overview', [OverviewController::class, 'index']);
+
+    // Camera Configuration & Commands
+    Route::get('/cameras/{camera}/config', [CameraConfigController::class, 'show']);
+    Route::put('/cameras/{camera}/config', [CameraConfigController::class, 'update']);
+    Route::post('/cameras/{camera}/reboot', [CameraConfigController::class, 'reboot']);
+    Route::post('/cameras/{camera}/capture', [CameraConfigController::class, 'capture']);
 });
 
 // --- 4. Rute IoT & Webhook (Tanpa Auth Sanctum biasanya) ---

@@ -423,4 +423,142 @@ class ExampleTest extends TestCase
                 'uptime_avg' => 150000, // (100000 + 200000) / 2
             ]);
     }
+
+    public function test_config_endpoints_require_authentication(): void
+    {
+        $this->getJson('/api/cameras/1/config')->assertStatus(401);
+        $this->putJson('/api/cameras/1/config', [])->assertStatus(401);
+        $this->postJson('/api/cameras/1/reboot')->assertStatus(401);
+        $this->postJson('/api/cameras/1/capture')->assertStatus(401);
+    }
+
+    public function test_cannot_access_other_users_camera_config(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $camera = Camera::create([
+            'user_id' => $otherUser->id,
+            'name' => 'Other Camera',
+        ]);
+
+        $this->actingAs($user)->getJson("/api/cameras/{$camera->id}/config")->assertStatus(403);
+        $this->actingAs($user)->putJson("/api/cameras/{$camera->id}/config", [])->assertStatus(403);
+        $this->actingAs($user)->postJson("/api/cameras/{$camera->id}/reboot")->assertStatus(403);
+        $this->actingAs($user)->postJson("/api/cameras/{$camera->id}/capture")->assertStatus(403);
+    }
+
+    public function test_can_retrieve_camera_config(): void
+    {
+        $user = User::factory()->create();
+        $camera = Camera::create([
+            'user_id' => $user->id,
+            'name' => 'My Camera',
+            'desired_config' => ['jpeg_quality' => 15, 'frame_size' => 'VGA'],
+            'current_config' => ['jpeg_quality' => 20, 'frame_size' => 'QVGA'],
+            'desired_config_version' => 2,
+            'current_config_version' => 1,
+            'last_config_status' => 'Pending',
+        ]);
+
+        $response = $this->actingAs($user)->getJson("/api/cameras/{$camera->id}/config");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'camera_id' => $camera->id,
+                'camera_name' => 'My Camera',
+                'desired_config' => ['jpeg_quality' => 15, 'frame_size' => 'VGA'],
+                'current_config' => ['jpeg_quality' => 20, 'frame_size' => 'QVGA'],
+                'desired_config_version' => 2,
+                'current_config_version' => 1,
+                'last_config_status' => 'Pending',
+            ]);
+    }
+
+    public function test_can_update_camera_config(): void
+    {
+        $user = User::factory()->create();
+        $camera = Camera::create([
+            'user_id' => $user->id,
+            'name' => 'My Camera',
+            'device_id' => 'device-uuid-1234',
+            'is_active' => true,
+        ]);
+
+        // Mock EMQX Service to prevent external network calls during publish
+        $mockEmqx = $this->mock(\App\Services\EmqxService::class);
+        $mockEmqx->shouldReceive('publish')->andReturn(true);
+
+        $payload = [
+            'jpeg_quality' => 15,
+            'frame_size' => 'VGA',
+            'capture_interval_ms' => 3000,
+            'telemetry_interval_ms' => 5000,
+            'mqtt_buffer' => 32768,
+            'image_enabled' => true,
+            'telemetry_enabled' => true,
+            'ota_enabled' => true,
+        ];
+
+        $response = $this->actingAs($user)->putJson("/api/cameras/{$camera->id}/config", $payload);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Configuration command queued successfully.',
+                'desired_config_version' => 1,
+            ]);
+
+        $camera->refresh();
+        $this->assertEquals(15, $camera->desired_config['jpeg_quality']);
+        $this->assertEquals('VGA', $camera->desired_config['frame_size']);
+        $this->assertEquals(1, $camera->desired_config_version);
+    }
+
+    public function test_can_reboot_camera(): void
+    {
+        $user = User::factory()->create();
+        $camera = Camera::create([
+            'user_id' => $user->id,
+            'name' => 'My Camera',
+            'device_id' => 'device-uuid-1234',
+            'is_active' => true,
+        ]);
+
+        $mockEmqx = $this->mock(\App\Services\EmqxService::class);
+        $mockEmqx->shouldReceive('publish')->andReturn(true);
+
+        $response = $this->actingAs($user)->postJson("/api/cameras/{$camera->id}/reboot");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Reboot command initiated successfully.',
+            ]);
+    }
+
+    public function test_can_trigger_manual_capture(): void
+    {
+        $user = User::factory()->create();
+        $camera = Camera::create([
+            'user_id' => $user->id,
+            'name' => 'My Camera',
+            'device_id' => 'device-uuid-1234',
+            'is_active' => true,
+        ]);
+
+        $mockEmqx = $this->mock(\App\Services\EmqxService::class);
+        $mockEmqx->shouldReceive('publish')
+            ->once()
+            ->with("ws/camera/device-uuid-1234/config", ['action' => 'capture'])
+            ->andReturn(true);
+
+        $response = $this->actingAs($user)->postJson("/api/cameras/{$camera->id}/capture");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'message' => 'Manual capture command sent successfully.',
+            ]);
+    }
 }
+
