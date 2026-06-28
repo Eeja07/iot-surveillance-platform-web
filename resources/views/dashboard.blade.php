@@ -441,8 +441,8 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1">Dashboard Pemantauan</h4>
-            <p class="mb-0 text-muted">Halo, <strong>{{ auth()->user()->name }}</strong>.</p>
+            <h4 class="mb-1">Welcome to Mivion</h4>
+            <p class="mb-0 text-muted">Real-time surveillance insights and operational intelligence. Hello, <strong>{{ auth()->user()->name }}</strong>.</p>
         </div>
         @role('admin')
         <a href="{{ route('admin.camera-groups.index') }}" class="btn btn-primary">

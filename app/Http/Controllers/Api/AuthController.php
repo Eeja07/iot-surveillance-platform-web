@@ -55,7 +55,7 @@ class AuthController extends Controller
             // 5. Kirim OTP melalui Email
             Mail::raw("Kode OTP verifikasi pendaftaran Anda adalah: {$otp}. Kode ini berlaku selama 60 menit.", function ($message) use ($user) {
                 $message->to($user->email)
-                        ->subject('Verifikasi Pendaftaran Akun - CCTV MIOT');
+                        ->subject('Verifikasi Pendaftaran Akun - Mivion');
             });
 
             DB::commit();

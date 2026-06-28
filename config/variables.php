@@ -1,14 +1,14 @@
 <?php
 // Variables
 return [
-  "creatorName" => "",
+  "creatorName" => "Eeja07",
   "creatorUrl" => "https://miot-its.org",
-  "templateName" => "MiotVision",
+  "templateName" => "Mivion",
   "templateSuffix" => "",
   "templateVersion" => "2.0.0",
   "templateFree" => false,
-  "templateDescription" => "",
-  "templateKeyword" => "",
+  "templateDescription" => "Mivion is an intelligent surveillance platform providing real-time monitoring, telemetry visualization, firmware management, and AI-powered securityMivion Team insights.",
+  "templateKeyword" => "Mivion, CCTV, Surveillance, ESP32-CAM, Telemetry, Monitoring, Detection, OTA, Security",
   "licenseUrl" => "",
   "livePreview" => "",
   "productPage" => "",
@@ -26,5 +26,5 @@ return [
   "githubUrl" => "",
   "dribbbleUrl" => "",
   "instagramUrl" => "",
-  "logoUrl" => "assets/img/favicon/icon_cctv_miot.png",
+  "logoUrl" => "assets/images/logomivio.png",
 ];

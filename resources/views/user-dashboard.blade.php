@@ -462,8 +462,8 @@
     {{-- Header Dashboard --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1">Dashboard Pemantauan Kamera</h4>
-            <p class="mb-0 text-muted">Selamat datang kembali, <strong>{{ auth()->user()->name ?? 'User' }}</strong>.</p>
+            <h4 class="mb-1">Welcome to Mivion</h4>
+            <p class="mb-0 text-muted">Real-time surveillance insights and operational intelligence. Welcome back, <strong>{{ auth()->user()->name ?? 'User' }}</strong>.</p>
         </div>
 
         <div>

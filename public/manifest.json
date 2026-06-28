@@ -1,0 +1,21 @@
+{
+  "name": "Mivion",
+  "short_name": "Mivion",
+  "description": "See More, Know Faster.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#2563EB",
+  "background_color": "#F8FAFC",
+  "icons": [
+    {
+      "src": "/assets/images/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/images/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

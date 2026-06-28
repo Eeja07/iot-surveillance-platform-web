@@ -10,12 +10,12 @@
 // JS global variables
 window.config = {
   colors: {
-    primary: '#7367f0',
+    primary: '#2563eb',
     secondary: '#808390',
-    success: '#28c76f',
+    success: '#10b981',
     info: '#00bad1',
-    warning: '#ff9f43',
-    danger: '#FF4C51',
+    warning: '#f59e0b',
+    danger: '#ef4444',
     dark: '#4b4b4b',
     black: '#000',
     white: '#fff',
@@ -27,12 +27,12 @@ window.config = {
     borderColor: '#e6e6e8'
   },
   colors_label: {
-    primary: '#7367f029',
+    primary: '#2563eb29',
     secondary: '#a8aaae29',
-    success: '#28c76f29',
+    success: '#10b98129',
     info: '#00cfe829',
-    warning: '#ff9f4329',
-    danger: '#ea545529',
+    warning: '#f59e0b29',
+    danger: '#ef444429',
     dark: '#4b4b4b29'
   },
   colors_dark: {

@@ -49,7 +49,7 @@ class ForgotPasswordController extends Controller
         try {
             Mail::raw("Kode OTP untuk reset password Anda adalah: {$otp}. Kode ini berlaku selama 60 menit.", function ($message) use ($user) {
                 $message->to($user->email)
-                        ->subject('Kode OTP Reset Password - CCTV MIOT');
+                        ->subject('Kode OTP Reset Password - Mivion');
             });
         } catch (\Exception $e) {
             return response()->json([

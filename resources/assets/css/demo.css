@@ -9,12 +9,12 @@
   --primary-rgb: 37, 99, 235;
   --background: #f8fafc;
   --surface: #ffffff;
-  --border: #e5e7eb;
+  --border: #E2E8F0;
   --text: #0f172a;
   --muted: #64748b;
-  --success: #16a34a;
-  --warning: #d97706;
-  --danger: #dc2626;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
 
   /* Standardized styling helpers */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -364,17 +364,97 @@ body {
 
 
 /* Override Bootstrap warning outline to neutral gray */
-.btn-outline-warning{
-  --bs-btn-color:#6b7280;
-  --bs-btn-border-color:#d1d5db;
-  --bs-btn-hover-color:#fff;
-  --bs-btn-hover-bg:#6b7280;
-  --bs-btn-hover-border-color:#6b7280;
-  --bs-btn-focus-shadow-rgb:107,114,128;
-  --bs-btn-active-color:#fff;
-  --bs-btn-active-bg:#4b5563;
-  --bs-btn-active-border-color:#4b5563;
-  --bs-btn-disabled-color:#9ca3af;
-  --bs-btn-disabled-border-color:#d1d5db;
+.btn-outline-warning {
+  --bs-btn-color: #6b7280;
+  --bs-btn-border-color: #d1d5db;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #6b7280;
+  --bs-btn-hover-border-color: #6b7280;
+  --bs-btn-focus-shadow-rgb: 107, 114, 128;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #4b5563;
+  --bs-btn-active-border-color: #4b5563;
+  --bs-btn-disabled-color: #9ca3af;
+  --bs-btn-disabled-border-color: #d1d5db;
 }
 
+/* --- Custom Mivion Dark Sidebar Overrides --- */
+#layout-menu.bg-menu-theme {
+  background-color: #0f172a !important;
+}
+
+#layout-menu.bg-menu-theme .menu-header {
+  color: #94a3b8 !important; /* Muted Slate */
+}
+
+#layout-menu.bg-menu-theme .menu-link,
+#layout-menu.bg-menu-theme .menu-horizontal-prev,
+#layout-menu.bg-menu-theme .menu-horizontal-next {
+  color: #cbd5e1 !important; /* Slate-300 icon / text color default */
+}
+
+#layout-menu.bg-menu-theme .menu-inner > .menu-item.active > .menu-link {
+  background-color: #2563eb !important; /* Active item primary blue */
+  color: #ffffff !important;
+}
+
+#layout-menu.bg-menu-theme .menu-inner > .menu-item.active > .menu-link .menu-icon {
+  color: #ffffff !important; /* Active icon white */
+}
+
+#layout-menu.bg-menu-theme .menu-item .menu-link:hover,
+#layout-menu.bg-menu-theme .menu-item .menu-link:focus {
+  background-color: rgba(37, 99, 235, 0.15) !important; /* Hover blue overlay */
+  color: #ffffff !important;
+}
+
+#layout-menu.bg-menu-theme .menu-item .menu-link:hover .menu-icon {
+  color: #ffffff !important;
+}
+
+#layout-menu.bg-menu-theme .menu-item.active > .menu-link {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+#layout-menu.bg-menu-theme .menu-item.active .menu-icon {
+  color: #ffffff !important;
+}
+
+#layout-menu.bg-menu-theme .app-brand .layout-menu-toggle {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+/* Ensure brand text is visible in dark sidebar */
+#layout-menu.bg-menu-theme .app-brand-text {
+  color: #ffffff !important;
+}
+#layout-menu.bg-menu-theme .app-brand .text-muted {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+/* --- Navbar Styling Overrides --- */
+.layout-navbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+.layout-navbar .navbar-nav-right .badge-notifications {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+.layout-navbar .avatar {
+  border: 2px solid #2563eb !important;
+}
+
+/* --- Custom Utility Overrides --- */
+.rounded-2xl {
+  border-radius: 1rem !important;
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}

@@ -83,23 +83,25 @@
         <div class="authentication-wrapper authentication-basic container-p-y">
             <div class="authentication-inner py-6">
                 <!-- Login Card -->
-                <div class="card">
+                <div class="card shadow-xl rounded-2xl">
                     <div class="card-body">
                         <!-- Logo -->
-                       <div class="app-brand justify-content-center mb-6">
-    <a href="{{ url('/') }}" class="app-brand-link">
-        <span class="app-brand-logo demo">
-            <img src="{{ asset(config('variables.logoUrl')) }}" height="20" alt="Logo">
-        </span>
-        <span class="app-brand-text demo text-heading fw-bold">
-            {{ config('variables.templateName') }}
-        </span>
-    </a>
-</div>
+                        <div class="app-brand justify-content-center flex-column mb-6">
+                            <a href="{{ url('/') }}" class="app-brand-link d-flex flex-column align-items-center">
+                                <span class="app-brand-logo demo mb-2">
+                                    <img src="{{ asset(config('variables.logoUrl')) }}" height="48" alt="Logo">
+                                </span>
+                                <h3 class="app-brand-text demo text-heading fw-bold mb-0">
+                                    {{ config('variables.templateName') }}
+                                </h3>
+                                <p class="text-muted fw-medium mt-1 mb-0" style="font-size: 0.85rem;">See More, Know Faster.</p>
+                            </a>
+                        </div>
                         <!-- /Logo -->
 
-                        <h4 class="mb-1">Welcome to {{ config('variables.templateName') }}! 👋</h4>
-                        <p class="mb-6">Please sign-in to your account and start the adventure</p>
+                        <p class="text-center text-muted mb-6" style="font-size: 0.9rem;">
+                            Unified monitoring platform for telemetry, detection, firmware management, and real-time surveillance operations.
+                        </p>
 
                         {{-- Session Status --}}
                         @if (session('status'))

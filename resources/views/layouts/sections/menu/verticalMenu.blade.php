@@ -7,10 +7,13 @@
 
     <!-- ! Hide app brand if navbar-full -->
     @if (!isset($navbarFull))
-        <div class="app-brand demo">
-            <a href="{{ url('/') }}" class="app-brand-link">
-                <span class="app-brand-logo demo">@include('_partials.macros', ['height' => 20])</span>
-                <span class="app-brand-text demo menu-text fw-bold">{{ config('variables.templateName') }}</span>
+        <div class="app-brand demo" style="height: auto; min-height: 64px; padding-top: 15px; padding-bottom: 15px;">
+            <a href="{{ url('/') }}" class="app-brand-link d-flex align-items-center">
+                <span class="app-brand-logo demo me-2">@include('_partials.macros', ['height' => 32])</span>
+                <div class="d-flex flex-column">
+                    <span class="app-brand-text demo menu-text fw-bold" style="font-size: 1.25rem; line-height: 1.2;">{{ config('variables.templateName') }}</span>
+                    <small class="text-muted" style="font-size: 0.65rem; font-weight: 500; letter-spacing: 0.2px;">See More, Know Faster.</small>
+                </div>
             </a>
 
             <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto">

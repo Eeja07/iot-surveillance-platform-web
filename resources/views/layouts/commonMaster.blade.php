@@ -28,10 +28,7 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 
-    <title>@yield('title') |
-        {{ config('variables.templateName') ? config('variables.templateName') : 'TemplateName' }} -
-        {{ config('variables.templateSuffix') ? config('variables.templateSuffix') : 'TemplateSuffix' }}
-    </title>
+    <title>@hasSection('title'){{ config('variables.templateName') }} | @yield('title')@else{{ config('variables.templateName') }}@endif</title>
     <meta name="description"
         content="{{ config('variables.templateDescription') ? config('variables.templateDescription') : '' }}" />
     <meta name="keywords"
@@ -41,7 +38,11 @@
     <!-- Canonical SEO -->
     <link rel="canonical" href="{{ config('variables.productPage') ? config('variables.productPage') : '' }}">
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.ico') }}" />
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/images/favicon-32x32.png') }}" />
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/images/favicon-16x16.png') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/images/apple-touch-icon.png') }}" />
+    <link rel="manifest" href="{{ asset('manifest.json') }}" />
 
 
     <!-- Include Styles -->
