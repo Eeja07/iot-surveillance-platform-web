@@ -4,8 +4,11 @@
 'use strict';
 
 (function () {
-  // Color Variables
-  const purpleColor = '#836AF9',
+  // Mivion Brand Color Palette
+  const primaryBlue = '#2563EB',
+    accentCyan = '#38BDF8',
+    successGreen = '#10B981',
+    warningAmber = '#F59E0B',
     yellowColor = '#ffe800',
     cyanColor = '#28dac6',
     orangeColor = '#FF8132',
@@ -13,9 +16,9 @@
     oceanBlueColor = '#299AFF',
     greyColor = '#4F5D70',
     greyLightColor = '#EDF1F4',
-    blueColor = '#2B9AFF',
-    blueLightColor = '#84D0FF',
-    blueDarkColor = '#1D9FF2';
+    blueColor = '#2563EB',
+    blueLightColor = '#93C5FD',
+    blueDarkColor = '#1D4ED8';
 
   let cardColor, headingColor, labelColor, borderColor, legendColor;
 
@@ -317,12 +320,12 @@
   if (radarChart) {
     // For radar gradient color
     const gradientBlue = radarChart.getContext('2d').createLinearGradient(0, 0, 0, 150);
-    gradientBlue.addColorStop(0, 'rgba(85, 85, 255, 0.9)');
-    gradientBlue.addColorStop(1, 'rgba(151, 135, 255, 0.8)');
+    gradientBlue.addColorStop(0, "rgba(37, 99, 235, 0.9)");
+    gradientBlue.addColorStop(1, "rgba(56, 189, 248, 0.8)");
 
     const gradientRed = radarChart.getContext('2d').createLinearGradient(0, 0, 0, 150);
-    gradientRed.addColorStop(0, 'rgba(255, 85, 184, 0.9)');
-    gradientRed.addColorStop(1, 'rgba(255, 135, 135, 0.8)');
+    gradientRed.addColorStop(0, "rgba(16, 185, 129, 0.9)");
+    gradientRed.addColorStop(1, "rgba(245, 158, 11, 0.8)");
 
     const radarChartVar = new Chart(radarChart, {
       type: 'radar',
@@ -406,7 +409,7 @@
         datasets: [
           {
             label: 'Population (millions)',
-            backgroundColor: [purpleColor, yellowColor, orangeColor, oceanBlueColor, greyColor, cyanColor],
+            backgroundColor: [primaryBlue, yellowColor, orangeColor, oceanBlueColor, greyColor, cyanColor],
             data: [19, 17.5, 15, 13.5, 11, 9],
             borderWidth: 0
           }
@@ -469,8 +472,8 @@
         datasets: [
           {
             label: 'Dataset 1',
-            backgroundColor: purpleColor,
-            borderColor: purpleColor,
+            backgroundColor: primaryBlue,
+            borderColor: primaryBlue,
             data: [
               {
                 x: 20,

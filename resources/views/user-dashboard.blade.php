@@ -543,7 +543,11 @@
         <div class="card shadow-none border">
             <div class="card-body p-3">
                 <div id="no-person-detection-placeholder" style="{{ $latestDetection ? 'display: none;' : '' }}">
-                    <p class="text-muted mb-0 py-3 text-center">No person detection events recorded yet.</p>
+                    <div class="mivion-empty-state py-4">
+                        <div class="empty-icon"><i class="ti ti-eye-off"></i></div>
+                        <h5>No detection events recorded.</h5>
+                        <p class="text-muted mb-0" style="font-size:0.85rem;">Mivion is waiting for new insights.</p>
+                    </div>
                 </div>
 
                 <div id="latest-person-detection-card" class="d-flex align-items-center gap-3"
@@ -1037,14 +1041,11 @@
             </div>
         @else
             <div class="card border shadow-none py-5 text-center mb-5">
-                <div class="card-body">
-                    <div class="avatar avatar-lg bg-label-secondary mx-auto mb-3"
-                        style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
-                        <i class="ti ti-camera-off fs-3"></i>
-                    </div>
-                    <h5 class="fw-semibold">No cameras available</h5>
-                    <p class="text-muted mx-auto" style="max-width: 320px;">Choose another group or add new cameras to start
-                        monitoring.</p>
+                <div class="card-body mivion-empty-state">
+                    <div class="empty-icon"><i class="ti ti-camera-off"></i></div>
+                    <h5>No cameras available.</h5>
+                    <p class="text-muted mx-auto" style="max-width: 320px;">Choose another group or add new cameras to start monitoring.</p>
+                    <p class="empty-hint">Mivion is waiting for new insights.</p>
                 </div>
             </div>
         @endif

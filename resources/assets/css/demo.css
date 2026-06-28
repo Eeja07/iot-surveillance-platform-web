@@ -458,3 +458,85 @@ body {
 .shadow-xl {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
 }
+
+/* ============================================================ */
+/* Mivion UX Final Pass — Polish Rules                          */
+/* ============================================================ */
+
+/* --- Auth Page Background Gradient --- */
+.authentication-wrapper.authentication-basic,
+.authentication-wrapper.authentication-cover {
+  background: linear-gradient(180deg, #F8FAFC 0%, #EFF6FF 100%) !important;
+  min-height: 100vh;
+}
+
+/* --- Card Normalization --- */
+.card {
+  border-radius: 0.75rem !important; /* rounded-xl */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important; /* shadow-sm */
+  transition: box-shadow 0.3s ease, transform 0.3s ease !important;
+}
+.card:hover {
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.10), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; /* hover:shadow-md */
+}
+
+/* --- Table Normalization --- */
+.table thead th,
+.table > thead > tr > th {
+  background-color: #F8FAFC !important;
+  border-bottom: 2px solid #E2E8F0 !important;
+  color: var(--muted) !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+.table {
+  border-color: #E2E8F0 !important;
+}
+.table td, .table th {
+  border-color: #E2E8F0 !important;
+}
+
+/* --- Loading Spinner Blue Override --- */
+.spinner-border-primary,
+.spinner-border.text-primary,
+.spinner-grow.text-primary {
+  color: #2563EB !important;
+}
+
+/* --- Realtime Active Indicator: blue accent instead of danger --- */
+#detection-realtime-badge .spinner-grow {
+  color: #2563EB !important;
+}
+
+/* --- Empty State Styles --- */
+.mivion-empty-state {
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+.mivion-empty-state .empty-icon {
+  width: 56px;
+  height: 56px;
+  background-color: #EFF6FF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+.mivion-empty-state .empty-icon i {
+  font-size: 1.5rem;
+  color: #2563EB;
+}
+.mivion-empty-state h5 {
+  font-weight: 600;
+  color: #0F172A;
+  margin-bottom: 0.375rem;
+}
+.mivion-empty-state .empty-hint {
+  font-size: 0.8rem;
+  color: #64748B;
+  font-style: italic;
+  margin-top: 0.5rem;
+}

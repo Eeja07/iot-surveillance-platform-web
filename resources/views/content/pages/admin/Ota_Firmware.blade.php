@@ -323,7 +323,7 @@
                     </tr>
                 @empty
                     <tr id="no-live-placeholder">
-                        <td colspan="6" class="text-center py-4 text-muted">No active camera updates.</td>
+                        <td colspan="6" class="text-center py-4 text-muted">No active camera updates available.</td>
                     </tr>
                 @endforelse
             </tbody>

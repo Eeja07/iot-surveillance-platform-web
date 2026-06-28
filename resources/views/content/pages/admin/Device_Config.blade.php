@@ -283,7 +283,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4">No cameras found.</td>
+                                    <td colspan="6" class="text-center py-4">No cameras available.</td>
                                 </tr>
                             @endforelse
                         </tbody>
