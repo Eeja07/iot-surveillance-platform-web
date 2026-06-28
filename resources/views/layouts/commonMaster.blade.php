@@ -33,6 +33,13 @@
         content="{{ config('variables.templateDescription') ? config('variables.templateDescription') : '' }}" />
     <meta name="keywords"
         content="{{ config('variables.templateKeyword') ? config('variables.templateKeyword') : '' }}">
+    <meta name="author" content="{{ config('variables.creatorName', 'Eeja07') }}">
+    <!-- OpenGraph -->
+    <meta property="og:title" content="@hasSection('title'){{ config('variables.templateName') }} | @yield('title')@else{{ config('variables.templateName') }}@endif" />
+    <meta property="og:description" content="{{ config('variables.templateDescription', 'See More, Know Faster.') }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="{{ config('variables.templateName') }}" />
+    <meta property="og:image" content="{{ asset('assets/images/pwa-512.png') }}" />
     <!-- laravel CRUD token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Canonical SEO -->
