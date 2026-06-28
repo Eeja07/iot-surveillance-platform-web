@@ -118,4 +118,4 @@ database/Sql/
 files.txt
 cleanup_candidates.txt
 docker_old/
-img/
+img/public/build/
