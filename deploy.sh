@@ -2,7 +2,7 @@
 set -e
 
 echo "=== [1/5] Pulling latest changes from git ==="
-git pull origin main
+git pull eeja main
 
 echo "=== [2/5] Running local setup script ==="
 chmod +x ./setup.sh
