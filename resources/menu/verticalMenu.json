@@ -31,11 +31,7 @@
           "name": "Camera List",
           "slug": "admin-cameras"
         },
-        {
-          "url": "/admin/notifications",
-          "name": "Notifications",
-          "slug": "admin-notifications"
-        },
+
         {
           "url": "/admin/ota",
           "name": "OTA Firmware",
@@ -68,21 +64,7 @@
         }
       ]
     },
-    {
-      "name": "AI Analytics",
-      "icon": "menu-icon tf-icons ti ti-brain",
-      "slug": "ai-analytics",
-      "role": [
-        "admin"
-      ],
-      "submenu": [
-        {
-          "url": "/ml/detection-log",
-          "name": "Detection Log",
-          "slug": "detection-log"
-        }
-      ]
-    },
+
     {
       "name": "Event Logs",
       "icon": "menu-icon tf-icons ti ti-file-text",

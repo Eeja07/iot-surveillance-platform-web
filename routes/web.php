@@ -138,7 +138,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/my-cameras/data', [UserManajemenKameraController::class, 'getData'])->name('my-cameras.data');
             Route::resource('my-cameras', UserManajemenKameraController::class)->except(['create', 'store', 'show']);
         });
-    ;
 
     // 3. API Internal Terproteksi
     Route::prefix('api')->name('api.')->group(function () {

@@ -171,3 +171,8 @@ Schedule::call(function () {
 ->name('process-scheduled-ota-deployments')
 ->withoutOverlapping();
 
+Schedule::command('camera:check-offline')
+    ->everyMinute()
+    ->name('check-offline-cameras')
+    ->withoutOverlapping();
+

@@ -2,9 +2,10 @@
 set -e
 
 echo "=== [1/5] Pulling latest changes from git ==="
-git pull eeja main
+git pull origin main
 
 echo "=== [2/5] Running local setup script ==="
+chmod +x ./setup.sh
 ./setup.sh
 
 echo "=== [3/5] Rebuilding and restarting containers ==="

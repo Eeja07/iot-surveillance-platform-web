@@ -1,201 +1,266 @@
-# Sistem Manajemen Kamera (SMC V1)
+# Mivion IoT Surveillance & Fleet Management Platform
 
-![Versi Laravel](https://img.shields.io/badge/Laravel-v11.x-FF2D20?style=for-the-badge&logo=laravel)
-![Versi PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php)
-[![Lisensi: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Laravel Version](https://img.shields.io/badge/Laravel-v11.x-FF2D20?style=for-the-badge&logo=laravel)](https://laravel.com)
+[![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=for-the-badge&logo=php)](https://php.net)
+[![FastAPI Version](https://img.shields.io/badge/FastAPI-0.100%2B-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Docker Support](https://img.shields.io/badge/Docker-Compatible-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-<p align="center">
-  <img src="https://placehold.co/600x300/293445/FFFFFF?text=Logo+Proyek+Kamera" alt="Logo Proyek" width="400"/>
-</p>
-
-Sistem Manajemen Kamera (SMC) adalah aplikasi web komprehensif yang dibangun menggunakan Laravel untuk membantu memantau dan mengelola beberapa perangkat kamera berbasis IoT (seperti ESP32-CAM). Aplikasi ini dirancang untuk menyediakan platform terpusat untuk registrasi perangkat, melihat riwayat rekaman, dan mengelola akses pengguna.
+Mivion is a premium, real-time IoT surveillance platform designed for managing and orchestrating fleets of edge cameras (such as ESP32-CAMs). It integrates real-time telemetry ingestion, secure MQTT signaling, automated OTA firmware updates, MinIO-based S3 object storage, and automated machine learning image inference.
 
 ---
 
-## Daftar Isi
+## Table of Contents
 
-1.  [Fitur Utama](#fitur-utama)
-2.  [Struktur Menu & Hak Akses](#struktur-menu--hak-akses)
-3.  [Teknologi yang Digunakan](#teknologi-yang-digunakan)
-4.  [Panduan Instalasi](#panduan-instalasi)
-5.  [Cara Penggunaan](#cara-penggunaan)
-6.  [Lisensi](#lisensi)
-
----
-
-## Fitur Utama
-
-Berikut adalah penjelasan lebih detail mengenai fungsionalitas utama yang tersedia dalam sistem ini:
-
-- **Dashboard Terpusat**:
-
-  - **Statistik Cepat**: Menampilkan ringkasan data penting seperti jumlah total kamera, jumlah kamera yang aktif, dan total pengguna terdaftar.
-  - **Pratinjau Langsung**: Menampilkan _feed_ gambar terbaru dari setiap kamera yang aktif untuk pemantauan cepat.
-
-- **Manajemen Perangkat Kamera**:
-
-  - **Registrasi Perangkat**: Admin dapat mendaftarkan perangkat kamera baru dan sistem akan secara otomatis menghasilkan `Device ID` dan `API Key` yang unik untuk otentikasi.
-  - **CRUD Kamera**: Kemampuan untuk menambah, melihat, mengedit (nama, deskripsi, status), dan menghapus perangkat kamera.
-
-- **Riwayat Rekaman**:
-
-  - **Penerimaan Gambar via API**: Memiliki _endpoint_ API khusus (`/api/upload`) untuk menerima kiriman gambar dari perangkat ESP32-CAM.
-  - **Penyimpanan Terstruktur**: Gambar disimpan dalam folder yang terorganisir berdasarkan `Device ID` dan tanggal (`YYYY-MM-DD`) untuk manajemen file yang mudah.
-  - **Penghapusan Otomatis**: Tugas terjadwal (`Scheduled Task`) untuk secara otomatis menghapus rekaman yang lebih tua dari 30 hari, menjaga agar penyimpanan tidak penuh.
-  - **Penelusuran Riwayat**: Antarmuka untuk menelusuri riwayat rekaman per kamera, dikelompokkan berdasarkan tanggal, dan melihat detail gambar per waktu.
-
-- **Manajemen Pengguna & Hak Akses**:
-
-  - **Berbasis Peran (RBAC)**: Menggunakan `spatie/laravel-permission`, Admin dapat membuat peran (misalnya, 'Admin', 'Viewer') dan menetapkan izin spesifik.
-  - **Keamanan Akses**: Memastikan setiap pengguna hanya dapat mengakses fitur dan data yang sesuai dengan perannya.
-
-- **Log & Notifikasi**:
-
-  - **Log Aktivitas**: Mencatat semua tindakan penting yang dilakukan oleh pengguna di dalam sistem untuk tujuan audit.
-  - **Sistem Peringatan**: Halaman khusus untuk menampilkan peringatan, seperti notifikasi kamera yang _offline_ (tidak mengirim data dalam interval waktu tertentu).
-
-- **Log Deteksi Machine Learning (Fitur Masa Depan)**:
-  - **Dasar untuk Pengembangan**: Fondasi telah disiapkan untuk mengintegrasikan model ML, dengan halaman log deteksi yang akan menampilkan gambar di mana objek berhasil diidentifikasi.
+1. [System Architecture](#system-architecture)
+2. [Prerequisites](#prerequisites)
+3. [Environment Configuration](#environment-configuration)
+4. [Docker-Compose Quickstart](#docker-compose-quickstart)
+5. [Host-Based Local Installation](#host-based-local-installation)
+6. [Services Configuration](#services-configuration)
+   - [EMQX (MQTT Broker)](#emqx-mqtt-broker)
+   - [MinIO (Object Storage)](#minio-object-storage)
+   - [Laravel Reverb (WebSockets)](#laravel-reverb-websockets)
+   - [FastAPI (Detection Service)](#fastapi-detection-service)
+7. [Database Initialization & Seeding](#database-initialization--seeding)
+8. [Queue Workers & Scheduler](#queue-workers--scheduler)
+9. [Automated OTA Firmware Deployments](#automated-ota-firmware-deployments)
+10. [Storage & Image Cleanup Policy](#storage--image-cleanup-policy)
+11. [Troubleshooting & FAQs](#troubleshooting--faqs)
+12. [License](#license)
 
 ---
 
-## Struktur Menu & Hak Akses
+## System Architecture
 
-Berikut adalah rincian menu yang dapat diakses oleh setiap peran utama. Peran **Admin** memiliki akses ke semua menu.
+Mivion utilizes a decoupled microservices architecture coordinated via Docker Compose:
 
-### Peran: Admin
+```mermaid
+graph TD
+    ESP[ESP32-CAM Edge Fleet] -->|MQTT Telemetry / Commands| EMQX[EMQX Broker :1883]
+    ESP -->|HTTP POST Images| Web[Laravel Web App :80]
+    EMQX -->|Webhooks| Web
+    Web -->|Broadcast Events| Rev[Laravel Reverb :8080]
+    Web -->|Dispatch Inference Job| FA[FastAPI Detection Service :8001]
+    Web -->|Store Raw Files| MinIO[MinIO Object Storage :9000]
+    FA -->|POST Inference Data| Web
+    Rev -->|Real-time Updates| UI[Blade/Vite Frontend]
+```
 
-Memiliki kontrol penuh atas sistem, termasuk pengaturan dan manajemen pengguna.
-
-| Menu Utama           | Sub-Menu           | URL Path                         |
-| :------------------- | :----------------- | :------------------------------- |
-| **Dashboard**        | -                  | `/dashboard`                     |
-| **Manajemen Kamera** | -                  | `/dashboard/admin/cameras`       |
-| **Riwayat Rekaman**  | -                  | `/dashboard/log/history`         |
-| **Log Deteksi ML**   | -                  | `/dashboard/ml/detection-log`    |
-| **Log Aktivitas**    | -                  | `/dashboard/log/activities`      |
-| **Notifikasi**       | -                  | `/dashboard/admin/notifications` |
-| **Pengaturan**       | Manajemen Pengguna | `/dashboard/settings/users`      |
-|                      | Manajemen Peran    | `/dashboard/settings/roles`      |
-
-### Peran: Viewer (Contoh)
-
-Hanya dapat melihat data, tidak dapat mengubah atau menghapus.
-
-| Menu Utama          | Sub-Menu | URL Path                 |
-| :------------------ | :------- | :----------------------- |
-| **Dashboard**       | -        | `/dashboard`             |
-| **Riwayat Rekaman** | -        | `/dashboard/log/history` |
+* **Web Platform (Laravel 11)**: Manages camera registration, OTA policies, configurations, security roles, and telemetry logs.
+* **MQTT Broker (EMQX v5)**: Routes telemetry payloads, monitors edge client online/offline states via webhooks, and publishes configuration commands back to devices.
+* **Object Storage (MinIO)**: S3-compatible local bucket system used for storing raw captured JPEG images and compiling `.bin` firmware artifacts.
+* **Real-time Server (Laravel Reverb)**: High-performance WebSocket engine that updates the dashboard UI instantly without page refreshes.
+* **AI Inference (FastAPI)**: Evaluates uploaded camera images for person/object detection, returning confidence boundaries back to Laravel.
 
 ---
 
-## Teknologi yang Digunakan
+## Prerequisites
 
-- **Backend**: Laravel 11, PHP 8.2+
-- **Frontend**: Vite, Blade, Bootstrap 5, SASS, JavaScript
-- **Database**: MySQL / MariaDB
-- **Paket Utama**:
-  - `spatie/laravel-permission`: Untuk Manajemen Peran & Hak Akses.
-  - `laravel/breeze`: Untuk sistem otentikasi.
+* **Docker & Docker Compose** (Highly Recommended)
+* **PHP >= 8.2** and **Composer** (for local installation)
+* **Node.js >= 18** and **NPM** (for compiling frontend assets)
+* **MySQL 8.0** or MariaDB
 
 ---
 
-## Panduan Instalasi
+## Environment Configuration
 
-Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lingkungan lokal Anda.
+1. Copy the example environment template:
+   ```bash
+   cp .env.example .env
+   ```
 
-### Prasyarat
+2. Key environment variables to configure in your `.env`:
 
-- PHP >= 8.2
-- Composer
-- Node.js & NPM
-- Server Database (MySQL/MariaDB)
+   ```ini
+   # App Details
+   APP_ENV=local
+   APP_DEBUG=true
+   APP_URL=http://localhost
 
-### Langkah-langkah Instalasi
+   # Database (Inside Docker Network)
+   DB_CONNECTION=mysql
+   DB_HOST=mysql
+   DB_PORT=3306
+   DB_DATABASE=Sistem_Camera_MIOT
+   DB_USERNAME=db_user
+   DB_PASSWORD=db_password
 
-1.  **Clone repository ini:**
+   # MinIO / S3 Configuration
+   AWS_ACCESS_KEY_ID=minioadmin
+   AWS_SECRET_ACCESS_KEY=minioadmin
+   AWS_DEFAULT_REGION=us-east-1
+   AWS_BUCKET=cctv
+   AWS_URL=http://localhost:9000/cctv
+   AWS_ENDPOINT=http://minio:9000
+   AWS_USE_PATH_STYLE_ENDPOINT=true
 
-    ```bash
-    git clone [URL_REPOSITORY_ANDA]
-    cd [NAMA_FOLDER_PROYEK]
-    ```
+   # Laravel Reverb (WebSockets)
+   REVERB_APP_ID=534729
+   REVERB_APP_KEY=mivionreverbkey123
+   REVERB_APP_SECRET=mivionreverbsecret123
+   REVERB_HOST=0.0.0.0
+   REVERB_PORT=8080
+   REVERB_SCHEME=http
 
-2.  **Install dependensi PHP:**
-
-    ```bash
-    composer install
-    ```
-
-3.  **Install dependensi JavaScript:**
-
-    ```bash
-    npm install
-    ```
-
-4.  **Buat file `.env`:**
-    Salin file `.env.example` menjadi `.env`.
-
-    ```bash
-    cp .env.example .env
-    ```
-
-5.  **Konfigurasi Database:**
-    Buka file `.env` dan sesuaikan pengaturan database Anda (`DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`).
-
-6.  **Generate Application Key:**
-
-    ```bash
-    php artisan key:generate
-    ```
-
-7.  **Jalankan Migrasi Database:**
-    Perintah ini akan membuat semua tabel yang diperlukan, termasuk dari Spatie.
-
-    ```bash
-    php artisan migrate
-    ```
-
-8.  **(Opsional) Jalankan Seeder:**
-    Jika Anda memiliki data awal, jalankan seeder.
-
-    ```bash
-    php artisan db:seed
-    ```
-
-9.  **Buat Symbolic Link untuk Storage:**
-
-    ```bash
-    php artisan storage:link
-    ```
-
-10. **Compile Aset Frontend:**
-    ```bash
-    npm run dev
-    ```
+   # EMQX Credentials
+   EMQX_API_KEY=c638ca43cc860c26
+   EMQX_API_SECRET=kDM2eSlUtI7fOz9AErm3tcqcd8BEweJnNEfWgxdpOWVH
+   ```
 
 ---
 
-## Cara Penggunaan
+## Docker-Compose Quickstart
 
-1.  **Jalankan server pengembangan Laravel:**
+To run the entire system in containerized mode:
 
-    ```bash
-    php artisan serve
-    ```
+1. Build and start the containers:
+   ```bash
+   docker compose up -d --build
+   ```
 
-    Aplikasi akan berjalan di `http://127.0.0.1:8000`.
+2. Run migrations and seeders inside the application container:
+   ```bash
+   docker compose exec app php artisan migrate --seed
+   ```
 
-2.  **Akses Aplikasi:**
-    Buka browser dan kunjungi `http://127.0.0.1:8000`.
-
-3.  **Akun Default:**
-    Anda bisa login menggunakan akun yang Anda buat atau yang berasal dari seeder.
-    - **Admin**:
-      - Email: `admin@gmail.com`
-      - Password: `password`
+3. Open your browser and navigate to:
+   * Web App: [http://localhost](http://localhost)
+   * EMQX Dashboard: [http://localhost:18083](http://localhost:18083) (User: `admin`, Pass: `public`)
+   * MinIO Console: [http://localhost:9001](http://localhost:9001) (User: `minioadmin`, Pass: `minioadmin`)
+   * phpMyAdmin: [http://localhost:8085](http://localhost:8085) (User: `root`, Pass: `root`)
 
 ---
 
-## Lisensi
+## Host-Based Local Installation
 
-Proyek ini dilisensikan di bawah Lisensi MIT.
+If you prefer running the services directly on your host machine without containerizing the Laravel application:
+
+1. Install Composer dependencies:
+   ```bash
+   composer install
+   ```
+
+2. Install Node modules and build assets:
+   ```bash
+   npm install
+   npm run build
+   ```
+
+3. Run migrations and database seeds:
+   ```bash
+   php artisan migrate --seed
+   ```
+
+4. Serve the Laravel application:
+   ```bash
+   php artisan serve
+   ```
+
+5. Run Reverb WebSocket Server:
+   ```bash
+   php artisan reverb:start
+   ```
+
+---
+
+## Services Configuration
+
+### EMQX (MQTT Broker)
+Edge cameras publish telemetry to `ws/camera/{device_id}/telemetry` and subscribe to `ws/camera/{device_id}/config` or `/ota`.
+* **Action:** To synchronize client connections, you must configure EMQX webhooks to forward connection events (`client.connected`, `client.disconnected`) to the Laravel endpoint: `http://<your-laravel-host>/api/mqtt-webhook`.
+
+### MinIO (Object Storage)
+* **Action:** Log into the MinIO Console (`http://localhost:9001`), go to **Buckets**, and create a bucket named `cctv`.
+* **Important:** Ensure the bucket policy is set to **Public** (or configure appropriate read access) so that browser clients can load camera snapshot feeds directly from S3.
+
+### Laravel Reverb (WebSockets)
+Reverb is automatically run as a daemon within the containerized setup. If you are developing locally, run `php artisan reverb:start`. The frontend Vite compiler will bind WebSocket listeners to Reverb using variables prefixed with `VITE_REVERB_*`.
+
+### FastAPI (Detection Service)
+The detection service runs in a Python 3.10 environment inside `detection-service/`.
+* **Local Run:**
+  ```bash
+  cd detection-service
+  pip install -r requirements.txt
+  uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+  ```
+* **Variables:** Set `LARAVEL_API_URL` to point to the Laravel server so the worker can POST object detection reports back to `/api/detection-feedback`.
+
+---
+
+## Database Initialization & Seeding
+
+Running `php artisan db:seed` registers roles and basic test users:
+
+> [!IMPORTANT]
+> **Default Admin Account:**
+> Due to a database seeding restriction, the seeders create a default regular user (`user@gmail.com` / `password`). 
+> To gain administrator access to register cameras and upload firmware, log in and promote the user, or run Laravel Tinker:
+> ```bash
+> php artisan tinker
+> >>> $user = \App\Models\User::where('email', 'user@gmail.com')->first();
+> >>> $user->syncRoles('admin');
+> ```
+
+---
+
+## Queue Workers & Scheduler
+
+### Queue Worker (Required)
+Image processing, EMQX API synchronization, and object detection jobs are managed asynchronously using Laravel Queues. Run a queue worker:
+```bash
+php artisan queue:work
+```
+
+### Task Scheduler
+To handle firmware staged rollout phases and automate log pruning:
+1. Add this cron entry to your server:
+   ```bash
+   * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+   ```
+2. For testing scheduler jobs locally, run:
+   ```bash
+   php artisan schedule:work
+   ```
+
+---
+
+## Automated OTA Firmware Deployments
+
+Mivion supports staged OTA (Over-the-Air) firmware rollouts:
+1. Upload a compiled `.bin` firmware artifact inside **Camera Management > OTA Firmware**. The system automatically generates a versioned `manifest.json` metadata file in MinIO.
+2. Create a Deployment targeting a single camera, selected devices, or the entire fleet.
+3. Configure a **staged rollout percentage** (e.g., deploy to 10% of devices first).
+4. Devices will receive the OTA update trigger topic via MQTT, download the manifest, inspect version checksums, flash the firmware binary, and report progress back to the dashboard via WebSockets.
+
+---
+
+## Storage & Image Cleanup Policy
+
+To prevent database bloating and MinIO disk exhaustion, a scheduled task runs in the background:
+* **Pruning Rule:** The system automatically deletes all `ImageRecord` records and their physical JPEG files stored in MinIO that are older than **14 days**.
+* **Configuration:** This policy is defined and scheduled in `routes/console.php`.
+
+---
+
+## Troubleshooting & FAQs
+
+### 1. Database migration fails on `2026_06_25_000003_add_ota_fields_to_camera_telemetry_table`
+* **Cause:** The `camera_telemetry` base table creation migration was not run or is missing.
+* **Fix:** Verify if a migration creating `camera_telemetry` table is present. If missing, generate one or execute a manual query to create the table structure.
+
+### 2. Laravel crashes on boot with `Class "Laravel\Telescope\TelescopeApplicationServiceProvider" not found`
+* **Cause:** Telescope is registered in `bootstrap/providers.php` but its dependencies are missing in production because `--no-dev` was used.
+* **Fix:** Remove Telescope from the global bootstrap provider array and register it dynamically in `AppServiceProvider`.
+
+### 3. Images uploaded from ESP32-CAMs are not rendering in the browser
+* **Cause:** MinIO bucket `cctv` does not exist or has private read policies.
+* **Fix:** Create the bucket `cctv` in the MinIO console and set its access policy to **Public**.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
