@@ -15,7 +15,7 @@ echo "=== [4/5] Running runtime deployment commands inside container ==="
 docker compose exec -T app php artisan optimize:clear
 docker compose exec -T app php artisan migrate --force
 docker compose exec -T app php artisan queue:restart
-docker compose restart app reverb
+docker compose restart app reverb web minio emqx db
 echo "=== [5/5] Performing basic health check ==="
 docker compose ps
 docker compose logs app --tail=20
