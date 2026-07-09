@@ -56,6 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('cameras', ManajemenKameraController::class);
             Route::get('cameras/{camera}/qrcode', [ManajemenKameraController::class, 'downloadQrCode'])->name('cameras.qrcode');
+            Route::post('cameras/{camera}/commands', [\App\Http\Controllers\Api\CameraConfigController::class, 'commands'])->name('cameras.commands');
             // Route::get('/notifications', [NotifikasiPeringatanController::class, 'index'])->name('notifications.index');
 
             Route::prefix('ota')->name('ota.')->group(function () {

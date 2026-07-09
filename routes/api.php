@@ -108,7 +108,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cameras/{camera}/config', [CameraConfigController::class, 'update']);
     Route::post('/cameras/{camera}/reboot', [CameraConfigController::class, 'reboot']);
     Route::post('/cameras/{camera}/capture', [CameraConfigController::class, 'capture']);
-    Route::post('/cameras/{camera}/commands', [CameraConfigController::class, 'commands']);
+
 
 
     // OTA Management

@@ -13,7 +13,7 @@ class CameraCommandsTest extends TestCase
 
     public function test_commands_endpoint_requires_authentication(): void
     {
-        $this->postJson('/api/cameras/1/commands', ['command' => 'restart'])
+        $this->postJson('/admin/cameras/1/commands', ['command' => 'restart'])
             ->assertStatus(401);
     }
 
@@ -27,7 +27,7 @@ class CameraCommandsTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->postJson("/api/cameras/{$camera->id}/commands", ['command' => 'restart'])
+            ->postJson("/admin/cameras/{$camera->id}/commands", ['command' => 'restart'])
             ->assertStatus(403);
     }
 
@@ -45,7 +45,7 @@ class CameraCommandsTest extends TestCase
         $mockEmqx->shouldReceive('publish')->andReturn(true);
 
         $response = $this->actingAs($user)
-            ->postJson("/api/cameras/{$camera->id}/commands", ['command' => 'restart']);
+            ->postJson("/admin/cameras/{$camera->id}/commands", ['command' => 'restart']);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -68,7 +68,7 @@ class CameraCommandsTest extends TestCase
         $mockEmqx->shouldReceive('publish')->andReturn(true);
 
         $response = $this->actingAs($user)
-            ->postJson("/api/cameras/{$camera->id}/commands", ['command' => 'camera_reinit']);
+            ->postJson("/admin/cameras/{$camera->id}/commands", ['command' => 'camera_reinit']);
 
         $response->assertStatus(200)
             ->assertJson([
@@ -88,7 +88,7 @@ class CameraCommandsTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)
-            ->postJson("/api/cameras/{$camera->id}/commands", ['command' => 'invalid_command']);
+            ->postJson("/admin/cameras/{$camera->id}/commands", ['command' => 'invalid_command']);
 
         $response->assertStatus(422);
     }

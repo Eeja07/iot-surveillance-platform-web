@@ -1372,8 +1372,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const maintenanceConfirmBtn = document.getElementById('btn-maintenance-confirm-action');
 
     function getSelectedCameraId() {
-        const selector = document.querySelector('select[name="camera_id"]');
-        return selector ? selector.value : '';
+        const checked = document.querySelectorAll('.camera-checkbox:checked');
+        return checked.length === 1 ? checked[0].value : '';
     }
 
     function showToast(title, message, isSuccess = true) {
@@ -1467,7 +1467,7 @@ document.addEventListener('DOMContentLoaded', function () {
             targetBtn.disabled = true;
             targetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sending...';
 
-            fetch(`/api/cameras/${cameraId}/commands`, {
+            fetch(`/admin/cameras/${cameraId}/commands`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
