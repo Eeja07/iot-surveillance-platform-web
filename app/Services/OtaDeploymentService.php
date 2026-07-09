@@ -108,7 +108,7 @@ class OtaDeploymentService
             $firmware = OtaFirmware::findOrFail($firmwareId);
 
             // Resolve target cameras
-            $query = Camera::where('is_active', true);
+            $query = Camera::where('admin_enabled', true);
             if ($targetType === 'single') {
                 $query->where('id', $cameraIds[0] ?? null);
             } elseif ($targetType === 'selected') {

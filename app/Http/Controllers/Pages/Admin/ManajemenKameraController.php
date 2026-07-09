@@ -92,7 +92,7 @@ class ManajemenKameraController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_active' => 'required|boolean',
+            'admin_enabled' => 'required|boolean',
         ]);
 
         $camera->update($request->all());

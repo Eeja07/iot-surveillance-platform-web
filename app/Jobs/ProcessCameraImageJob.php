@@ -49,17 +49,23 @@ class ProcessCameraImageJob implements ShouldQueue
             $camera = Camera::where('device_id', $this->deviceId)->first();
             if ($camera) {
                 // Administrative Override Check: Reject connection if camera is disabled
-                if (!$camera->is_active) {
+                if (!$camera->admin_enabled) {
                     Log::warning("ASYNC_IMAGE_IGNORED: Camera is administratively disabled", ['device_id' => $this->deviceId]);
                     return;
                 }
 
+                $wasOffline = !$camera->is_online;
+
                 $camera->update([
                     'last_heartbeat_at' => now(),
-                    'is_active' => true,
+                    'is_online'         => true,
                     'latest_image_path' => $path,
                     'latest_image_at'   => now(),
                 ]);
+
+                if ($wasOffline) {
+                    event(new \App\Events\CameraOnline($camera));
+                }
 
                 if (method_exists($camera, 'imageRecords')) {
                     $imageRecord = $camera->imageRecords()->create([

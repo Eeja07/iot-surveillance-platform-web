@@ -38,7 +38,7 @@ class CameraCommandsTest extends TestCase
             'user_id' => $user->id,
             'name' => 'My Camera',
             'device_id' => 'device-uuid-1234',
-            'is_active' => true,
+            'admin_enabled' => true,
         ]);
 
         $mockEmqx = $this->mock(\App\Services\EmqxService::class);
@@ -61,7 +61,7 @@ class CameraCommandsTest extends TestCase
             'user_id' => $user->id,
             'name' => 'My Camera',
             'device_id' => 'device-uuid-1234',
-            'is_active' => true,
+            'admin_enabled' => true,
         ]);
 
         $mockEmqx = $this->mock(\App\Services\EmqxService::class);
@@ -84,7 +84,7 @@ class CameraCommandsTest extends TestCase
             'user_id' => $user->id,
             'name' => 'My Camera',
             'device_id' => 'device-uuid-1234',
-            'is_active' => true,
+            'admin_enabled' => true,
         ]);
 
         $response = $this->actingAs($user)

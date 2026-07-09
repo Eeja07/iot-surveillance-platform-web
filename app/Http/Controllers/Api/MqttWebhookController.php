@@ -36,14 +36,23 @@ class MqttWebhookController extends Controller
         $camera = Camera::where('mqtt_username', $username)->first();
         if ($camera) {
             // Administrative Override Check: Reject connection if camera is disabled
-            if (!$camera->is_active) {
+            if (!$camera->admin_enabled) {
                 return response()->json(['status' => 'camera_disabled'], 403);
             }
 
+            $isOnline = ($status === 'online');
+
             $camera->update([
                 'mqtt_status' => $status,
-                'last_heartbeat_at' => now()
+                'last_heartbeat_at' => now(),
+                'is_online' => $isOnline
             ]);
+
+            if ($isOnline) {
+                event(new \App\Events\CameraOnline($camera));
+            } else {
+                event(new \App\Events\CameraOffline($camera));
+            }
         }
         return response()->json(['status' => 'ok']);
     }
@@ -61,7 +70,7 @@ class MqttWebhookController extends Controller
         $camera = Camera::where('device_id', $deviceId)->first();
         if ($camera) {
             // Administrative Override Check: Reject connection if camera is disabled
-            if (!$camera->is_active) {
+            if (!$camera->admin_enabled) {
                 return response()->json(['status' => 'camera_disabled'], 403);
             }
         }

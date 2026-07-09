@@ -147,7 +147,9 @@ Route::get('/camera-statuses', function() {
     return \App\Models\Camera::with(['latestTelemetry'])->get()->mapWithKeys(function ($camera) {
         $telemetry = $camera->latestTelemetry;
         return [$camera->id => [
-            'is_active' => $camera->is_active,
+            'admin_enabled' => $camera->admin_enabled,
+            'is_online' => $camera->is_online,
+            'is_active' => $camera->is_online,
             'mqtt_status' => $camera->mqtt_status ?? 'offline',
             'health_status' => $camera->operational_status,
             'freshness' => $camera->freshness_indicator,

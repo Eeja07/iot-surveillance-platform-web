@@ -481,7 +481,7 @@ class ExampleTest extends TestCase
             'user_id' => $user->id,
             'name' => 'My Camera',
             'device_id' => 'device-uuid-1234',
-            'is_active' => true,
+            'admin_enabled' => true,
         ]);
 
         // Mock EMQX Service to prevent external network calls during publish
@@ -521,7 +521,7 @@ class ExampleTest extends TestCase
             'user_id' => $user->id,
             'name' => 'My Camera',
             'device_id' => 'device-uuid-1234',
-            'is_active' => true,
+            'admin_enabled' => true,
         ]);
 
         $mockEmqx = $this->mock(\App\Services\EmqxService::class);
@@ -543,7 +543,7 @@ class ExampleTest extends TestCase
             'user_id' => $user->id,
             'name' => 'My Camera',
             'device_id' => 'device-uuid-1234',
-            'is_active' => true,
+            'admin_enabled' => true,
         ]);
 
         $mockEmqx = $this->mock(\App\Services\EmqxService::class);

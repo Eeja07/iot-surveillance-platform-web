@@ -10,7 +10,7 @@ class Camera extends Model
     use HasFactory;
     protected $fillable = [
         'user_id', 'device_id', 'name', 'description', 'api_key',
-        'is_active', 'mqtt_username', 'mqtt_password', 'mqtt_status',
+        'admin_enabled', 'is_online', 'mqtt_username', 'mqtt_password', 'mqtt_status',
         'websocket_channel_id', 'last_heartbeat_at', 'group_id',
         'latest_image_path', 'latest_image_at',
         'assigned_profile_id', 'last_config_time', 'last_sync', 'pending_changes',
@@ -19,6 +19,8 @@ class Camera extends Model
     ];
     protected $hidden = ['api_key'];
     protected $casts = [
+        'admin_enabled'     => 'boolean',
+        'is_online'         => 'boolean',
         'last_heartbeat_at' => 'datetime',
         'latest_image_at'   => 'datetime',
         'last_config_time'  => 'datetime',
@@ -36,11 +38,6 @@ class Camera extends Model
             if (empty($camera->mqtt_password)) $camera->mqtt_password = Str::random(16);
             if (empty($camera->api_key)) $camera->api_key = Str::random(40);
         });
-    }
-    public function getIsOnlineAttribute(): bool
-    {
-        if (empty($this->last_heartbeat_at)) return false;
-        return abs(now()->diffInSeconds($this->last_heartbeat_at)) < 15;
     }
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
     public function group(): BelongsTo { return $this->belongsTo(CameraGroup::class, 'group_id'); }

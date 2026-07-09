@@ -29,6 +29,10 @@ class ImageUploadController extends Controller
             return response()->json(['message' => 'Unauthorized: Invalid device_id or api_key.'], 401);
         }
 
+        if (!$camera->admin_enabled) {
+            return response()->json(['message' => 'Forbidden: Camera is administratively disabled.'], 403);
+        }
+
         try {
             $dateFolder = now()->format('Y-m-d');
             $filename = now()->format('His') . '_' . uniqid() . '.' . $request->file('image')->getClientOriginalExtension();
@@ -49,13 +53,17 @@ class ImageUploadController extends Controller
                 'captured_at' => now(),
             ]);
 
-            // SOLUSI JANGKA PANJANG: Update kolom latest_image di tabel cameras
+            $wasOffline = !$camera->is_online;
             $camera->update([
                 'last_heartbeat_at' => now(),
-                'is_active' => true,
+                'is_online'         => true,
                 'latest_image_path' => $path,
                 'latest_image_at'   => now(),
             ]);
+
+            if ($wasOffline) {
+                event(new \App\Events\CameraOnline($camera));
+            }
 
             Log::info('SUCCESS: Image uploaded and latest_image updated.');
 

@@ -46,7 +46,7 @@
             <div class="d-flex align-items-center justify-content-between">
                 <div>
                     <span class="text-muted small d-block">Online / Total Devices</span>
-                    <h4 class="mb-0 fw-bold" id="stat-total-cameras">{{ $cameras->filter(fn($c) => $c->is_active)->count() }} / {{ $cameras->count() }}</h4>
+                    <h4 class="mb-0 fw-bold" id="stat-total-cameras">{{ $cameras->filter(fn($c) => $c->is_online)->count() }} / {{ $cameras->count() }}</h4>
                 </div>
                 <i class="ti ti-device-nfc fs-5 text-muted"></i>
             </div>
@@ -181,7 +181,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        @if($camera->is_active)
+                                        @if($camera->is_online)
                                             <span class="badge bg-label-success border border-success btn-xs" style="font-size: 0.7rem;">Online</span>
                                         @else
                                             <span class="badge bg-label-danger border border-danger btn-xs" style="font-size: 0.7rem;">Offline</span>

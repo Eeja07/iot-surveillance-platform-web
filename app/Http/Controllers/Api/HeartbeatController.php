@@ -26,12 +26,19 @@ class HeartbeatController extends Controller
 
             $camera = Camera::where('device_id', $validated['device_id'])->firstOrFail();
 
-            // HANYA UPDATE TIMESTAMP
+            if (!$camera->admin_enabled) {
+                return response()->json(['status' => 'camera_disabled', 'message' => 'Camera is administratively disabled.'], 403);
+            }
+
+            $wasOffline = !$camera->is_online;
+
             $camera->last_heartbeat_at = now();
+            $camera->is_online = true;
             $camera->save();
 
-            // Hapus event WebSocket yang tidak lagi digunakan
-            // event(new CameraOnline($camera));
+            if ($wasOffline) {
+                event(new \App\Events\CameraOnline($camera));
+            }
 
             Log::info('Heartbeat received for camera: ' . $camera->name);
 

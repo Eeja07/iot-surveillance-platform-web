@@ -60,7 +60,9 @@ class NewImageReceived implements ShouldBroadcastNow
       'latest_image_timestamp' => $this->camera->latest_image_at 
         ? $this->camera->latest_image_at->timestamp * 1000 
         : now()->timestamp * 1000,
-      'is_active' => $this->camera->is_active,
+      'admin_enabled' => $this->camera->admin_enabled,
+      'is_online' => $this->camera->is_online,
+      'is_active' => $this->camera->is_online,
       'mqtt_status' => $this->camera->mqtt_status ?? 'offline',
       'health_status' => $this->camera->operational_status,
       'rssi' => $telemetry ? $telemetry->formatted_rssi : 'N/A',

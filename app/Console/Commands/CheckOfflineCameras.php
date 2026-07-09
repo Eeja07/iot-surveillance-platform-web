@@ -31,28 +31,30 @@ class CheckOfflineCameras extends Command
     $this->info('Checking for offline cameras...');
 
     // Tentukan batas waktu (misalnya 35 detik yang lalu)
-    // Kita beri sedikit kelonggaran dari 30 detik
     $threshold = Carbon::now()->subSeconds(35);
 
-    // Cari semua kamera yang aktif tetapi heartbeat terakhirnya sudah lebih dari 35 detik yang lalu
-    $offlineCameras = Camera::where('is_active', true)
-      ->where('last_heartbeat_at', '<', $threshold)
-      ->get();
+    // Cari semua kamera yang admin_enabled = true
+    $cameras = Camera::where('admin_enabled', true)->get();
 
-    if ($offlineCameras->isEmpty()) {
-      $this->info('No offline cameras found.');
-      return;
+    $offlineCount = 0;
+
+    foreach ($cameras as $camera) {
+      $online = (bool)($camera->last_heartbeat_at && $camera->last_heartbeat_at->gt($threshold));
+
+      if ($camera->is_online != $online) {
+        $camera->update(['is_online' => $online]);
+
+        if ($online) {
+          event(new \App\Events\CameraOnline($camera));
+          $this->info("Camera '{$camera->name}' marked as online.");
+        } else {
+          event(new CameraOffline($camera));
+          $this->warn("Camera '{$camera->name}' marked as offline.");
+          $offlineCount++;
+        }
+      }
     }
 
-    foreach ($offlineCameras as $camera) {
-      $camera->is_active = false;
-      $camera->save();
-      $this->warn("Camera '{$camera->name}' marked as offline.");
-
-      // 2. Panggil event untuk memberitahu frontend
-      event(new CameraOffline($camera));
-    }
-
-    $this->info('Finished checking cameras. Found ' . $offlineCameras->count() . ' offline cameras.');
+    $this->info('Finished checking cameras. Found ' . $offlineCount . ' newly offline cameras.');
   }
 }

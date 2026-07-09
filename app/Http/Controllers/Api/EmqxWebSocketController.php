@@ -34,7 +34,7 @@ class EmqxWebSocketController extends Controller
         }
 
         // Administrative Override Check: Reject connection if camera is disabled
-        if (!$camera->is_active) {
+        if (!$camera->admin_enabled) {
             return response()->json([
                 'message' => 'Kamera dinonaktifkan secara administratif'
             ], 403);
@@ -83,7 +83,7 @@ class EmqxWebSocketController extends Controller
         }
 
         // Administrative Override Check: Reject connection if camera is disabled
-        if (!$camera->is_active) {
+        if (!$camera->admin_enabled) {
             return response()->json([
                 'status' => 'camera_disabled'
             ], 403);
@@ -236,10 +236,14 @@ class EmqxWebSocketController extends Controller
             );
 
             $telemetryInstance = \Illuminate\Support\Facades\DB::transaction(function () use ($camera, $telemetry) {
+                $wasOffline = !$camera->is_online;
                 $camera->update([
                     'last_heartbeat_at' => now(),
-                    'is_active' => true
+                    'is_online' => true
                 ]);
+                if ($wasOffline) {
+                    event(new \App\Events\CameraOnline($camera));
+                }
                 return CameraTelemetry::create($telemetry);
             });
 
@@ -285,16 +289,20 @@ class EmqxWebSocketController extends Controller
 
         if ($camera) {
             // Administrative Override Check: Reject connection if camera is disabled
-            if (!$camera->is_active) {
+            if (!$camera->admin_enabled) {
                 return response()->json([
                     'status' => 'camera_disabled'
                 ], 403);
             }
 
+            $wasOffline = !$camera->is_online;
             $camera->update([
                 'last_heartbeat_at' => now(),
-                'is_active' => true
+                'is_online' => true
             ]);
+            if ($wasOffline) {
+                event(new \App\Events\CameraOnline($camera));
+            }
 
             return response()->json([
                 'status' => 'success'
@@ -334,7 +342,7 @@ class EmqxWebSocketController extends Controller
         }
 
         // Administrative Override Check: Reject connection if camera is disabled
-        if (!$camera->is_active) {
+        if (!$camera->admin_enabled) {
             return response()->json([
                 'status' => 'camera_disabled'
             ], 403);
@@ -476,7 +484,7 @@ class EmqxWebSocketController extends Controller
         }
 
         // Administrative Override Check: Reject connection if camera is disabled
-        if (!$camera->is_active) {
+        if (!$camera->admin_enabled) {
             return response()->json([
                 'status' => 'camera_disabled'
             ], 403);

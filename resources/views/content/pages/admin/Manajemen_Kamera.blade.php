@@ -104,14 +104,14 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($camera->is_active)
+                                    @if($camera->is_online)
                                         <span class="badge bg-label-success">Online</span>
                                     @else
                                         <span class="badge bg-label-danger">Offline</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if($camera->getRawOriginal('is_active'))
+                                    @if($camera->admin_enabled)
                                         <span class="badge bg-success">Aktif</span>
                                     @else
                                         <span class="badge bg-secondary">Nonaktif</span>
@@ -249,9 +249,9 @@
                             <div class="mb-4">
                                 <label class="form-label d-block">Status Administratif</label>
                                 <div class="form-check form-switch">
-                                    <input type="hidden" name="is_active" value="0">
-                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', $camera->getRawOriginal('is_active')) ? 'checked' : '' }}>
-                                    <label class="form-check-label" for="is_active">Aktifkan Kamera (Mengizinkan koneksi dan penerimaan data)</label>
+                                    <input type="hidden" name="admin_enabled" value="0">
+                                    <input class="form-check-input" type="checkbox" id="admin_enabled" name="admin_enabled" value="1" {{ old('admin_enabled', $camera->admin_enabled) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="admin_enabled">Aktifkan Kamera (Mengizinkan koneksi dan penerimaan data)</label>
                                 </div>
                             </div>
                             <div>
