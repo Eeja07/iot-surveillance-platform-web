@@ -32,7 +32,7 @@ class DeviceConfigurationService
             'frame_size' => 'nullable|string|in:QQVGA,QVGA,VGA,SVGA,XGA,SXGA,UXGA',
             'capture_interval_ms' => 'nullable|integer|min:100',
             'telemetry_interval_ms' => 'nullable|integer|min:1000',
-            'mqtt_buffer' => 'nullable|integer|min:0',
+            'mqtt_buffer' => 'nullable|integer|between:1024,131072',
             'image_enabled' => 'nullable|boolean',
             'telemetry_enabled' => 'nullable|boolean',
             'ota_enabled' => 'nullable|boolean',
@@ -167,7 +167,7 @@ class DeviceConfigurationService
             ]);
 
             // Queue and publish automatically if camera is active
-            if ($camera->is_active) {
+            if ($camera->is_online) {
                 $camera->update(['last_config_status' => ConfigStatus::Queued->value]);
                 $history->update([
                     'status' => ConfigStatus::Queued->value,
@@ -261,7 +261,7 @@ class DeviceConfigurationService
                 'last_config_time' => now()
             ]);
 
-            if ($camera->is_active) {
+            if ($camera->is_online) {
                 $camera->update(['last_config_status' => ConfigStatus::Queued->value]);
                 $rollbackHistory->update([
                     'status' => ConfigStatus::Queued->value,
@@ -281,7 +281,7 @@ class DeviceConfigurationService
      */
     public function checkAndPublishPendingConfig(Camera $camera)
     {
-        if ($camera->is_active && in_array($camera->last_config_status, [ConfigStatus::Pending->value, ConfigStatus::Queued->value])) {
+        if ($camera->is_online && in_array($camera->last_config_status, [ConfigStatus::Pending->value, ConfigStatus::Queued->value])) {
             $history = ConfigurationHistory::where('camera_id', $camera->id)
                 ->whereIn('status', [ConfigStatus::Pending->value, ConfigStatus::Queued->value])
                 ->orderBy('id', 'desc')
@@ -447,7 +447,7 @@ $telemetry->save();
 
             broadcast(new ConfigStatusUpdated($camera, $history));
 
-            if ($camera->is_active) {
+            if ($camera->is_online) {
                 $camera->update(['last_config_status' => ConfigStatus::Queued->value]);
                 $history->update([
                     'status' => ConfigStatus::Queued->value,
@@ -484,7 +484,7 @@ $telemetry->save();
 
             broadcast(new ConfigStatusUpdated($camera, $history));
 
-            if ($camera->is_active) {
+            if ($camera->is_online) {
                 $camera->update(['last_config_status' => ConfigStatus::Queued->value]);
                 $history->update([
                     'status' => ConfigStatus::Queued->value,
@@ -528,7 +528,7 @@ $telemetry->save();
                                 'created_at' => now(),
                             ]);
 
-                            if ($camera->is_active) {
+                            if ($camera->is_online) {
                                 $camera->update(['last_config_status' => ConfigStatus::Queued->value]);
                                 $newHistory->update(['status' => ConfigStatus::Queued->value]);
                                 dispatch(new \App\Jobs\PublishDeviceConfigurationJob($camera, $newHistory));

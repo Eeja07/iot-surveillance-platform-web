@@ -70,7 +70,7 @@ class PublishDeviceConfigurationJob implements ShouldQueue
         ]);
         broadcast(new ConfigStatusUpdated($this->camera, $this->history));
 
-        $topic = "camera/{$this->camera->device_id}/config";
+        $topic = "ws/camera/{$this->camera->device_id}/config";
         
         if (isset($this->history->new_config['command'])) {
             $payload = $this->history->new_config['command'];

@@ -3,7 +3,7 @@
 namespace App\Events;
 
 use App\Models\Camera;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 // UBAH BARIS INI
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
@@ -34,7 +34,7 @@ class CameraOnline implements ShouldBroadcastNow
   public function broadcastOn(): array
   {
     return [
-      new Channel($this->camera->websocket_channel_id),
+      new PrivateChannel($this->camera->websocket_channel_id),
     ];
   }
 

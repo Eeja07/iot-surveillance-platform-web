@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Camera;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class MqttWebhookController extends Controller
@@ -34,10 +33,18 @@ class MqttWebhookController extends Controller
 
     protected function updateStatus($username, $status)
     {
-        Camera::where('mqtt_username', $username)->update([
-            'mqtt_status' => $status,
-            'last_heartbeat_at' => now()
-        ]);
+        $camera = Camera::where('mqtt_username', $username)->first();
+        if ($camera) {
+            // Administrative Override Check: Reject connection if camera is disabled
+            if (!$camera->is_active) {
+                return response()->json(['status' => 'camera_disabled'], 403);
+            }
+
+            $camera->update([
+                'mqtt_status' => $status,
+                'last_heartbeat_at' => now()
+            ]);
+        }
         return response()->json(['status' => 'ok']);
     }
 
@@ -51,58 +58,17 @@ class MqttWebhookController extends Controller
             return response()->json(['status' => 'invalid_data'], 400);
         }
 
-        try {
-            $imageData = base64_decode($request->payload);
-            $fileName = microtime(true) . '.jpg';
-            $path = "camera/{$deviceId}/" . $fileName;
-
-            Log::info("MQTT_MINIO_UPLOADING", ['path' => $path]);
-
-            try {
-                // Mencoba simpan dengan opsi 'public'
-                // Menggunakan disk 's3' yang merujuk ke MinIO
-                $disk = Storage::disk('s3');
-
-                // PENTING: Gunakan put agar melempar exception jika gagal (karena 'throw' => true di config)
-                $disk->put($path, $imageData, 'public');
-
-                Log::info("MQTT_MINIO_UPLOAD_SUCCESS", ['path' => $path]);
-
-            } catch (\Exception $s3Exception) {
-                // MENANGKAP ERROR TEKNIS: misal Invalid Hostname, Access Denied, atau Bucket Not Found
-                Log::error("MQTT_S3_DRIVER_ERROR: " . $s3Exception->getMessage(), [
-                    'endpoint' => config('filesystems.disks.s3.endpoint'),
-                    'bucket' => config('filesystems.disks.s3.bucket'),
-                    'path_style' => config('filesystems.disks.s3.use_path_style_endpoint')
-                ]);
-                return response()->json(['status' => 'driver_error', 'msg' => $s3Exception->getMessage()], 500);
+        $camera = Camera::where('device_id', $deviceId)->first();
+        if ($camera) {
+            // Administrative Override Check: Reject connection if camera is disabled
+            if (!$camera->is_active) {
+                return response()->json(['status' => 'camera_disabled'], 403);
             }
-
-            // Update database record
-            $camera = Camera::where('device_id', $deviceId)->first();
-            if ($camera) {
-                $camera->update([
-                    'last_heartbeat_at' => now(),
-                    'is_active' => true,
-                    'latest_image_path' => $path,
-                    'latest_image_at'   => now(),
-                ]);
-                if (method_exists($camera, 'imageRecords')) {
-                    $imageRecord = $camera->imageRecords()->create([
-                        'path' => $path,
-                        'captured_at' => now()
-                    ]);
-                    broadcast(new \App\Events\NewImageReceived($camera, $imageRecord));
-
-            \App\Jobs\DetectImageJob::dispatch($imageRecord);
-                }
-            }
-
-            return response()->json(['status' => 'success']);
-
-        } catch (\Exception $e) {
-            Log::error("MQTT_WEBHOOK_EXCEPTION: " . $e->getMessage());
-            return response()->json(['status' => 'error'], 500);
         }
+
+        // Dispatch asynchronous image upload and processing job
+        \App\Jobs\ProcessCameraImageJob::dispatch($deviceId, $request->payload);
+
+        return response()->json(['status' => 'success']);
     }
 }

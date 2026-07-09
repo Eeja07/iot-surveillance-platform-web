@@ -3,7 +3,7 @@
 namespace App\Events;
 
 use App\Models\Camera;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -20,8 +20,22 @@ class OtaStatusUpdated implements ShouldBroadcastNow
 
     public function broadcastOn(): array
     {
+        $userId = null;
+        if ($this->camera) {
+            $userId = $this->camera->user_id;
+        } elseif (isset($this->otaData['deployment_id'])) {
+            $deployment = \App\Models\OtaDeployment::find($this->otaData['deployment_id']);
+            if ($deployment) {
+                $userId = $deployment->created_by;
+            }
+        }
+
+        if (!$userId) {
+            $userId = auth()->id();
+        }
+
         return [
-            new Channel('ota-updates'),
+            new PrivateChannel('user.' . $userId . '.ota-updates'),
         ];
     }
 

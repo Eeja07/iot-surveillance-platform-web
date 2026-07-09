@@ -37,7 +37,7 @@ class Camera extends Model
             if (empty($camera->api_key)) $camera->api_key = Str::random(40);
         });
     }
-    public function getIsActiveAttribute(): bool
+    public function getIsOnlineAttribute(): bool
     {
         if (empty($this->last_heartbeat_at)) return false;
         return abs(now()->diffInSeconds($this->last_heartbeat_at)) < 15;

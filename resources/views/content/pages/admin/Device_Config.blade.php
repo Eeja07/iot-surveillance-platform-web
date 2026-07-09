@@ -1252,7 +1252,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Laravel Reverb Realtime Configuration Listener
     if (window.Echo) {
-        window.Echo.channel('device-configs')
+        window.Echo.private('user.' + {{ auth()->id() }} + '.device-configs')
             .listen('.config.status.updated', (e) => {
                 console.log('Realtime Config Update:', e);
 
@@ -1276,9 +1276,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         let actionHtml = '-';
                         if (e.new_config && !e.new_config.action && e.status !== 'Cancelled') {
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                             actionHtml = `
                                 <form action="{{ route('admin.config.rollback') }}" method="POST" class="d-inline confirm-submit" data-message="Are you sure you want to rollback to this configuration state?">
-                                    @csrf
+                                    <input type="hidden" name="_token" value="${csrfToken}">
                                     <input type="hidden" name="camera_id" value="${e.camera_id}">
                                     <input type="hidden" name="history_id" value="${e.history_id}">
                                     <button type="submit" class="btn btn-xs btn-outline-warning" title="Rollback to this state">

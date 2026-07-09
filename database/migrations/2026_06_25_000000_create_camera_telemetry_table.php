@@ -10,12 +10,11 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-
+    {
         if (Schema::hasTable('camera_telemetry')) {
             return;
         }
 
-    {
         Schema::create('camera_telemetry', function (Blueprint $table) {
             $table->id();
             $table->foreignId('camera_id')->constrained('cameras')->onDelete('cascade');

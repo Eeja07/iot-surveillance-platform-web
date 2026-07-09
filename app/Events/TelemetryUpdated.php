@@ -4,7 +4,7 @@ namespace App\Events;
 
 use App\Models\Camera;
 use App\Models\CameraTelemetry;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -22,7 +22,7 @@ class TelemetryUpdated implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         return [
-            new Channel($this->camera->websocket_channel_id),
+            new PrivateChannel($this->camera->websocket_channel_id),
         ];
     }
 
@@ -52,7 +52,7 @@ class TelemetryUpdated implements ShouldBroadcastNow
             'wifi_channel' => $this->telemetry->wifi_channel ?: 'N/A',
             'wifi_bssid' => $this->telemetry->wifi_bssid ?: 'N/A',
             'jpeg_quality' => $this->telemetry->jpeg_quality ?: 'N/A',
-            'frame_size' => $this->telemetry->frame_size ?: 'N/A',
+            'frame_size' => $this->telemetry->formatted_frame_size,
             'capture_interval_ms' => $this->telemetry->capture_interval_ms ?: 'N/A',
             'telemetry_interval_ms' => $this->telemetry->telemetry_interval_ms ?: 'N/A',
             'mqtt_buffer' => $this->telemetry->mqtt_buffer ?: 'N/A',
@@ -62,6 +62,9 @@ class TelemetryUpdated implements ShouldBroadcastNow
             'assigned_profile' => $this->camera->assignedProfile ? $this->camera->assignedProfile->toArray() : null,
             'last_config_time' => $this->camera->last_config_time ? $this->camera->last_config_time->toDateTimeString() : 'Never',
             'last_sync' => $this->camera->last_sync ? $this->camera->last_sync->toDateTimeString() : 'Never',
+            'last_ota' => $this->telemetry->last_ota ? $this->telemetry->last_ota->toDateTimeString() : 'N/A',
+            'last_ota_result' => $this->telemetry->last_ota_result ?: 'N/A',
+            'current_deployment_id' => $this->telemetry->current_deployment_id ?: 'N/A',
         ];
     }
 }

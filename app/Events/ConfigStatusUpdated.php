@@ -4,7 +4,7 @@ namespace App\Events;
 
 use App\Models\Camera;
 use App\Models\ConfigurationHistory;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -21,8 +21,9 @@ class ConfigStatusUpdated implements ShouldBroadcastNow
 
     public function broadcastOn(): array
     {
+        $userId = $this->camera->user_id ?? auth()->id();
         return [
-            new Channel('device-configs'),
+            new PrivateChannel('user.' . $userId . '.device-configs'),
         ];
     }
 

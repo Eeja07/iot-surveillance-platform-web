@@ -56,7 +56,7 @@ class UserManajemenKameraController extends Controller
         'id' => $camera->id,
         'name' => $camera->name,
         'device_id' => Str::limit($camera->device_id, 13) . '...',
-        'is_active' => $camera->is_active,
+        'is_active' => $camera->is_online,
         'action' => view('content.pages.User._partials.camera-actions', ['camera' => $camera])->render(),
       ];
     }

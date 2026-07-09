@@ -194,7 +194,10 @@ class OtaDeploymentService
      */
     public function startDeploymentBatch(OtaDeployment $deployment)
     {
-        DB::transaction(function () use ($deployment) {
+        $publishCommands = [];
+        $broadcastEvents = [];
+
+        DB::transaction(function () use ($deployment, &$publishCommands, &$broadcastEvents) {
             $cameras = $deployment->deploymentCameras;
             
             // Check status of all cameras in deployment
@@ -228,7 +231,7 @@ class OtaDeploymentService
                         $this->clearCameraOtaState($cam->camera);
                     }
                 }
-                $this->broadcastFleetUpdate($deployment);
+                $broadcastEvents[] = fn() => $this->broadcastFleetUpdate($deployment);
                 return;
             }
 
@@ -252,7 +255,7 @@ class OtaDeploymentService
                     'status' => 'Success',
                     'finished_at' => now(),
                 ]);
-                $this->broadcastFleetUpdate($deployment);
+                $broadcastEvents[] = fn() => $this->broadcastFleetUpdate($deployment);
                 return;
             }
 
@@ -285,7 +288,7 @@ class OtaDeploymentService
                     $telemetry->update([
                         'ota_running' => true,
                     ]);
-                    broadcast(new \App\Events\TelemetryUpdated($camera, $telemetry));
+                    $broadcastEvents[] = fn() => broadcast(new \App\Events\TelemetryUpdated($camera, $telemetry));
                 }
 
                 // Publish MQTT deployment command
@@ -296,13 +299,26 @@ class OtaDeploymentService
                 ];
 
                 $topic = "ws/camera/{$camera->device_id}/ota";
-                Log::info("OTA_PUBLISH_START",["topic"=>$topic,"payload"=>$payload]);
-                $ok=$this->emqxService->publish($topic,$payload);
-                Log::info("OTA_PUBLISH_RESULT",["success"=>$ok]);
+                
+                $publishCommands[] = [
+                    'topic' => $topic,
+                    'payload' => $payload,
+                ];
             }
 
-            $this->broadcastFleetUpdate($deployment);
+            $broadcastEvents[] = fn() => $this->broadcastFleetUpdate($deployment);
         });
+
+        // Outside transaction, perform the publishing and broadcasting:
+        foreach ($publishCommands as $cmd) {
+            Log::info("OTA_PUBLISH_START", ["topic" => $cmd['topic'], "payload" => $cmd['payload']]);
+            $ok = $this->emqxService->publish($cmd['topic'], $cmd['payload']);
+            Log::info("OTA_PUBLISH_RESULT", ["success" => $ok]);
+        }
+
+        foreach ($broadcastEvents as $eventCallback) {
+            $eventCallback();
+        }
     }
 
     /**

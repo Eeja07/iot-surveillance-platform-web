@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ImageRecord;
 use Aws\S3\S3Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -17,13 +18,29 @@ class CleanupOrphanMinio extends Command
     {
         ini_set('memory_limit', '512M');
 
-        $cutoffTimestamp = now()
-            ->subDays(14)
-            ->timestamp;
+        $cutoffDateTime = now()->subDays(14);
+        $cutoffTimestamp = $cutoffDateTime->timestamp;
 
         Log::info('ORPHAN_CLEANUP_STARTED', [
             'cutoff_timestamp' => $cutoffTimestamp,
-            'cutoff_date' => date('Y-m-d H:i:s', $cutoffTimestamp),
+            'cutoff_date' => $cutoffDateTime->toDateTimeString(),
+        ]);
+
+        // 1. Prune database image records in chunks to prevent locking hazards
+        $this->info("Pruning database image records older than 14 days...");
+        $dbDeletedCount = 0;
+        do {
+            $deletedInBatch = ImageRecord::where('captured_at', '<', $cutoffDateTime)
+                ->limit(500)
+                ->delete();
+            $dbDeletedCount += $deletedInBatch;
+        } while ($deletedInBatch > 0);
+
+        $this->info("Deleted {$dbDeletedCount} image records (and associated motion/detection events) from database.");
+
+        Log::info('DB_PRUNING_COMPLETED', [
+            'records_deleted' => $dbDeletedCount,
+            'cutoff_date' => $cutoffDateTime->toDateTimeString(),
         ]);
 
         $disk = Storage::disk('s3');

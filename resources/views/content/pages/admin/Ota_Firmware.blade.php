@@ -838,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Real-time update using Laravel Reverb (via Echo)
     if (window.Echo) {
-        window.Echo.channel('ota-updates')
+        window.Echo.private('user.' + {{ auth()->id() }} + '.ota-updates')
             .listen('.ota.status.updated', (e) => {
                 console.log('Realtime OTA status update received:', e);
 

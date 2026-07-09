@@ -33,55 +33,24 @@ class EmqxWebSocketController extends Controller
             ], 404);
         }
 
-        try {
-            $imageData = base64_decode($payload);
-
-            $fileName = microtime(true) . '.jpg';
-
-            $path = "camera/{$deviceId}/" . $fileName;
-
-            Storage::disk('s3')->put($path, $imageData);
-
-            $imageRecord = $camera->imageRecords()->create([
-                'path' => $path,
-                'captured_at' => now()
-            ]);
-
-            $camera->update([
-                'last_heartbeat_at' => now(),
-                'is_active' => true,
-                'latest_image_path' => $path,
-                'latest_image_at' => now(),
-            ]);
-
-            Log::info(
-                "WS_IMAGE_UPLOAD_SUCCESS dari {$camera->name}"
-            );
-
-            broadcast(new \App\Events\NewImageReceived($camera, $imageRecord));
-
-            \App\Jobs\DetectImageJob::dispatch($imageRecord);
-
+        // Administrative Override Check: Reject connection if camera is disabled
+        if (!$camera->is_active) {
             return response()->json([
-                'status' => 'success'
-            ]);
-        } catch (\Exception $e) {
-
-            Log::error(
-                "WS_IMAGE_UPLOAD_FAILED: " .
-                $e->getMessage()
-            );
-
-            return response()->json([
-                'status' => 'error',
-                'msg' => $e->getMessage()
-            ], 500);
+                'message' => 'Kamera dinonaktifkan secara administratif'
+            ], 403);
         }
+
+        // Dispatch asynchronous image upload and processing job
+        \App\Jobs\ProcessCameraImageJob::dispatch($deviceId, $payload);
+
+        return response()->json([
+            'status' => 'success'
+        ]);
     }
 
     public function handleTelemetry(Request $request)
     {
-        Log::error('TELEMETRY_HANDLER_HIT', [
+        Log::info('TELEMETRY_HANDLER_HIT', [
             'topic' => $request->topic,
             'payload' => $request->payload,
             'all' => $request->all(),
@@ -113,10 +82,49 @@ class EmqxWebSocketController extends Controller
             ], 404);
         }
 
+        // Administrative Override Check: Reject connection if camera is disabled
+        if (!$camera->is_active) {
+            return response()->json([
+                'status' => 'camera_disabled'
+            ], 403);
+        }
+
         try {
             $payload = is_array($request->payload)
                 ? $request->payload
                 : json_decode($request->payload, true);
+
+            if (!is_array($payload)) {
+                return response()->json([
+                    'status' => 'invalid_payload',
+                    'message' => 'Payload telemetry tidak valid (harus JSON/Array)'
+                ], 400);
+            }
+
+            $validator = \Illuminate\Support\Facades\Validator::make($payload, [
+                'rssi' => 'nullable|numeric|between:-150,150',
+                'free_heap' => 'nullable|integer|min:0',
+                'uptime_sec' => 'nullable|integer|min:0',
+                'wifi_channel' => 'nullable|integer|between:1,14',
+                'mqtt_buffer' => 'nullable|integer|min:0',
+                'publish_ms' => 'nullable|integer|min:0',
+                'fw_version' => 'nullable|string|max:50',
+                'fw_build' => 'nullable|string|max:100',
+                'fw_board' => 'nullable|string|max:100',
+                'fw_model' => 'nullable|string|max:100',
+            ]);
+
+            if ($validator->fails()) {
+                Log::warning("WS_TELEMETRY_VALIDATION_FAILED", [
+                    'camera' => $camera->name,
+                    'errors' => $validator->errors()->toArray(),
+                    'payload' => $payload
+                ]);
+                return response()->json([
+                    'status' => 'validation_error',
+                    'errors' => $validator->errors()->toArray()
+                ], 422);
+            }
 
             Log::info(
                 "WS_TELEMETRY_RECEIVED",
@@ -126,19 +134,28 @@ class EmqxWebSocketController extends Controller
                 ]
             );
 
-            $camera->update([
-                'last_heartbeat_at' => now(),
-                'is_active' => true
-            ]);
+
 
             if (isset($payload['fw_version'])) {
                 $payload['firmware'] = $payload['fw_version'];
+            }
+            if (isset($payload['fw_build'])) {
+                $payload['build'] = $payload['fw_build'];
+            }
+            if (isset($payload['fw_board'])) {
+                $payload['board'] = $payload['fw_board'];
+            }
+            if (isset($payload['fw_model'])) {
+                $payload['model'] = $payload['fw_model'];
             }
             if (isset($payload['channel'])) {
                 $payload['wifi_channel'] = $payload['channel'];
             }
             if (isset($payload['bssid'])) {
                 $payload['wifi_bssid'] = $payload['bssid'];
+            }
+            if (isset($payload['free_sketch_space'])) {
+                $payload['free_ota_space'] = $payload['free_sketch_space'];
             }
 
             $allowedFields = [
@@ -191,6 +208,11 @@ class EmqxWebSocketController extends Controller
                 'fw_board',
                 'fw_model',
 
+                'firmware',
+                'build',
+                'board',
+                'model',
+
                 'ota_supported',
                 'ota_running',
                 'free_ota_space',
@@ -213,7 +235,13 @@ class EmqxWebSocketController extends Controller
                 JSON_UNESCAPED_UNICODE
             );
 
-            $telemetryInstance = CameraTelemetry::create($telemetry);
+            $telemetryInstance = \Illuminate\Support\Facades\DB::transaction(function () use ($camera, $telemetry) {
+                $camera->update([
+                    'last_heartbeat_at' => now(),
+                    'is_active' => true
+                ]);
+                return CameraTelemetry::create($telemetry);
+            });
 
             // Delegate to config service for Desired State Management checks (Auto Heal & pending queue checks)
             app(\App\Services\DeviceConfigurationService::class)->handleTelemetryUpdate($camera, $payload);
@@ -256,6 +284,12 @@ class EmqxWebSocketController extends Controller
         )->first();
 
         if ($camera) {
+            // Administrative Override Check: Reject connection if camera is disabled
+            if (!$camera->is_active) {
+                return response()->json([
+                    'status' => 'camera_disabled'
+                ], 403);
+            }
 
             $camera->update([
                 'last_heartbeat_at' => now(),
@@ -297,6 +331,13 @@ class EmqxWebSocketController extends Controller
             return response()->json([
                 'status' => 'not_found'
             ], 404);
+        }
+
+        // Administrative Override Check: Reject connection if camera is disabled
+        if (!$camera->is_active) {
+            return response()->json([
+                'status' => 'camera_disabled'
+            ], 403);
         }
 
         try {
@@ -432,6 +473,13 @@ class EmqxWebSocketController extends Controller
             return response()->json([
                 'status' => 'not_found'
             ], 404);
+        }
+
+        // Administrative Override Check: Reject connection if camera is disabled
+        if (!$camera->is_active) {
+            return response()->json([
+                'status' => 'camera_disabled'
+            ], 403);
         }
 
         try {

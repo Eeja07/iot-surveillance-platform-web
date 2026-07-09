@@ -74,7 +74,10 @@ class EmqxService
             'mechanism' => 'password_based',
             'method' => 'post',
             'url' => "{$this->callbackBaseUrl}/api/mqtt/auth",
-            'headers' => ['content-type' => 'application/json'],
+            'headers' => [
+                'content-type' => 'application/json',
+                'x-webhook-secret' => env('EMQX_WEBHOOK_SECRET', 'default-super-secret-token')
+            ],
             'body' => ['username' => '${username}', 'password' => '${password}'],
             'enable' => true,
             'ssl' => [
@@ -103,7 +106,10 @@ class EmqxService
             'enable' => true,
             'method' => 'post',
             'url' => "{$this->callbackBaseUrl}/api/mqtt/acl",
-            'headers' => ['content-type' => 'application/json'],
+            'headers' => [
+                'content-type' => 'application/json',
+                'x-webhook-secret' => env('EMQX_WEBHOOK_SECRET', 'default-super-secret-token')
+            ],
             'body' => ['username' => '${username}', 'topic' => '${topic}', 'action' => '${action}'],
             'ssl' => [
                 'enable' => $isHttps,
@@ -134,7 +140,8 @@ class EmqxService
             'url' => $this->callbackBaseUrl,
             'headers' => [
                 'content-type' => 'application/json',
-                'accept' => 'application/json'
+                'accept' => 'application/json',
+                'x-webhook-secret' => env('EMQX_WEBHOOK_SECRET', 'default-super-secret-token')
             ],
             'enable' => true,
             'connect_timeout' => '5s'
@@ -146,7 +153,8 @@ class EmqxService
             'url' => $this->callbackBaseUrl,
             'headers' => [
                 'content-type' => 'application/json',
-                'accept' => 'application/json'
+                'accept' => 'application/json',
+                'x-webhook-secret' => env('EMQX_WEBHOOK_SECRET', 'default-super-secret-token')
             ],
             'enable' => true,
             'connect_timeout' => '5s'
@@ -198,7 +206,11 @@ class EmqxService
             'parameters' => [
                 'path' => $path,
                 'method' => 'post',
-                'headers' => ['content-type' => 'application/json', 'accept' => 'application/json'],
+                'headers' => [
+                    'content-type' => 'application/json',
+                    'accept' => 'application/json',
+                    'x-webhook-secret' => env('EMQX_WEBHOOK_SECRET', 'default-super-secret-token')
+                ],
                 'body' => json_encode([
                     'action' => 'message_publish',
                     'topic' => '${topic}',
@@ -215,7 +227,11 @@ class EmqxService
             'parameters' => [
                 'path' => $path,
                 'method' => 'post',
-                'headers' => ['content-type' => 'application/json', 'accept' => 'application/json'],
+                'headers' => [
+                    'content-type' => 'application/json',
+                    'accept' => 'application/json',
+                    'x-webhook-secret' => env('EMQX_WEBHOOK_SECRET', 'default-super-secret-token')
+                ],
                 'body' => json_encode([
                     'action' => 'message_publish',
                     'topic' => '${topic}',

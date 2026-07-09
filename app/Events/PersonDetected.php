@@ -3,7 +3,7 @@
 namespace App\Events;
 
 use App\Models\DetectionEvent;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -29,10 +29,11 @@ class PersonDetected implements ShouldBroadcastNow
     public function broadcastOn(): array
     {
         $camera = $this->detectionEvent->imageRecord?->camera;
+        $userId = $camera?->user_id ?? auth()->id();
 
         return [
-            new Channel('detections'),
-            new Channel($camera?->websocket_channel_id ?? 'detections'),
+            new PrivateChannel('user.' . $userId . '.detections'),
+            new PrivateChannel($camera?->websocket_channel_id ?? 'detections'),
         ];
     }
 

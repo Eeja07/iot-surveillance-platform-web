@@ -49,6 +49,26 @@ class CameraTelemetry extends Model
         return $this->publish_ms !== null ? $this->publish_ms . ' ms' : 'N/A';
     }
 
+    public function getFormattedFrameSizeAttribute(): string
+    {
+        if ($this->frame_size === null) {
+            return 'N/A';
+        }
+        $map = [
+            0 => 'QQVGA',
+            1 => 'QCIF',
+            2 => 'HQVGA',
+            3 => 'QVGA',
+            4 => 'CIF',
+            5 => 'VGA',
+            6 => 'SVGA',
+            7 => 'XGA',
+            8 => 'SXGA',
+            9 => 'UXGA',
+        ];
+        return $map[$this->frame_size] ?? $this->frame_size;
+    }
+
     public function getMqttStatusTextAttribute(): string
     {
         return $this->mqtt_connected ? 'Online' : 'Offline';

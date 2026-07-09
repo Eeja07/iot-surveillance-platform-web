@@ -3,7 +3,7 @@
 namespace App\Events;
 
 use App\Models\Camera;
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -30,7 +30,7 @@ class CameraOffline implements ShouldBroadcast
   public function broadcastOn(): array
   {
     return [
-      new Channel($this->camera->websocket_channel_id),
+      new PrivateChannel($this->camera->websocket_channel_id),
     ];
   }
 

@@ -21,7 +21,9 @@
                 allCameraCards.forEach(card => {
                     totalCount++;
                     const cameraId = card.dataset.cameraId;
-                    const timestamp = parseInt(card.dataset.latestImageTimestamp) || 0;
+                    const imageTimestamp = parseInt(card.dataset.latestImageTimestamp) || 0;
+                    const telemetryTimestamp = parseInt(card.dataset.latestTelemetryTimestamp) || 0;
+                    const timestamp = Math.max(imageTimestamp, telemetryTimestamp);
 
                     let elapsed = 0;
                     let status = 'OFFLINE';
@@ -136,7 +138,7 @@
             // 2. Subscribe ke channel kamera masing-masing menggunakan WebSocket (Reverb)
             if (window.Echo) {
                 // Subscribe to detections channel for real-time person detection updates
-                window.Echo.channel('detections')
+                window.Echo.private('user.' + {{ auth()->id() }} + '.detections')
                     .listen('.person.detected', (data) => {
                         // Show browser toast
                         let toastContainer = document.querySelector('.toast-container');
@@ -198,7 +200,7 @@
                     const channelId = imgElement ? imgElement.dataset.websocketChannel : null;
 
                     if (channelId) {
-                        window.Echo.channel(channelId)
+                        window.Echo.private(channelId)
                             .listen('.image.received', (data) => {
                                 if (imgElement.src !== data.image_url) {
                                     imgElement.src = data.image_url;
@@ -208,8 +210,8 @@
                                 }
 
                                 cameraCard.dataset.latestImageTimestamp = data.latest_image_timestamp;
-                                cameraCard.dataset.reconnectDelta = data.mqtt_reconnect.replace('+', '');
-                                cameraCard.dataset.publishFailDelta = data.publish_fail.replace('+', '');
+                                cameraCard.dataset.reconnectDelta = String(data.mqtt_reconnect || '+0').replace('+', '');
+                                cameraCard.dataset.publishFailDelta = String(data.publish_fail || '+0').replace('+', '');
 
                                 // Update telemetry fields in compact view
                                 const rssiEl = document.getElementById(`telemetry-rssi-${data.camera_id}`);
@@ -284,6 +286,10 @@
                                 updateClientSideStates();
                             })
                             .listen('.telemetry.updated', (data) => {
+                                const card = document.querySelector(`.camera-card[data-camera-id="${data.camera_id}"]`);
+                                if (card) {
+                                    card.dataset.latestTelemetryTimestamp = Date.now();
+                                }
                                 // Update compact view telemetry
                                 const rssiEl = document.getElementById(`telemetry-rssi-${data.camera_id}`);
                                 const heapEl = document.getElementById(`telemetry-heap-${data.camera_id}`);
@@ -422,6 +428,15 @@
                                 updateClientSideStates();
                             });
                     }
+                window.addEventListener('beforeunload', () => {
+                    window.Echo.leave('user.' + {{ auth()->id() }} + '.detections');
+                    allCameraCards.forEach(cameraCard => {
+                        const imgElement = cameraCard.querySelector('.camera-feed-image');
+                        const channelId = imgElement ? imgElement.dataset.websocketChannel : null;
+                        if (channelId) {
+                            window.Echo.leave(channelId);
+                        }
+                    });
                 });
             }
 
@@ -632,6 +647,7 @@
                                     @php $telemetry = $camera->latestTelemetry; @endphp
                                     <div class="col-12 col-md-6 col-lg-4 col-xl-3 camera-card" data-camera-id="{{ $camera->id }}"
                                         data-latest-image-timestamp="{{ $camera->latest_image_at ? $camera->latest_image_at->timestamp * 1000 : 0 }}"
+                                        data-latest-telemetry-timestamp="{{ $telemetry ? $telemetry->created_at->timestamp * 1000 : 0 }}"
                                         data-reconnect-delta="{{ $telemetry ? $telemetry->reconnect_delta : 0 }}"
                                         data-publish-fail-delta="{{ $telemetry ? $telemetry->publish_fail_delta : 0 }}">
 
@@ -843,12 +859,12 @@
                                                                     @endif
                                                                 </td>
                                                             </tr>
-                                                            <tr class="{{ $profile && $telemetry && $profile->frame_size != $telemetry->frame_size ? 'table-warning text-danger fw-bold' : '' }}"
+                                                            <tr class="{{ $profile && $telemetry && $profile->frame_size != $telemetry->formatted_frame_size ? 'table-warning text-danger fw-bold' : '' }}"
                                                                 id="row-size-{{ $camera->id }}">
                                                                 <td class="ps-3"><strong>Frame Size</strong></td>
                                                                 <td class="pe-3 text-end" id="modal-size-{{ $camera->id }}">
-                                                                    {{ $telemetry ? $telemetry->frame_size : 'N/A' }}
-                                                                    @if($profile && $telemetry && $profile->frame_size != $telemetry->frame_size)
+                                                                    {{ $telemetry ? $telemetry->formatted_frame_size : 'N/A' }}
+                                                                    @if($profile && $telemetry && $profile->frame_size != $telemetry->formatted_frame_size)
                                                                         (Expected: {{ $profile->frame_size }})
                                                                     @endif
                                                                 </td>

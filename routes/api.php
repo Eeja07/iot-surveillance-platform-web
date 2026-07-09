@@ -125,19 +125,21 @@ Route::post('/motion-events', [\App\Http\Controllers\Api\MotionEventController::
 Route::post('/detection-events', [\App\Http\Controllers\Api\DetectionEventController::class, 'store']);
 
 
-// MQTT & EMQX Bridge
-Route::prefix('mqtt')->group(function () {
-    Route::post('/auth', [MqttAuthController::class, 'auth'])->name('api.mqtt.auth');
-    Route::post('/acl', [MqttAuthController::class, 'acl'])->name('api.mqtt.acl');
-    Route::post('/webhook', [MqttWebhookController::class, 'handle'])->name('api.mqtt.webhook');
-});
+// MQTT & EMQX Bridge (Secured via Webhook Secret)
+Route::middleware(\App\Http\Middleware\VerifyEmqxWebhookSecret::class)->group(function () {
+    Route::prefix('mqtt')->group(function () {
+        Route::post('/auth', [MqttAuthController::class, 'auth'])->name('api.mqtt.auth');
+        Route::post('/acl', [MqttAuthController::class, 'acl'])->name('api.mqtt.acl');
+        Route::post('/webhook', [MqttWebhookController::class, 'handle'])->name('api.mqtt.webhook');
+    });
 
-Route::prefix('ws-bridge')->group(function () {
-    Route::post('/telemetry', [EmqxWebSocketController::class, 'handleTelemetry'])->name('api.ws.telemetry');
-    Route::post('/image', [EmqxWebSocketController::class, 'handleImage'])->name('api.ws.image');
-    Route::post('/status', [EmqxWebSocketController::class, 'handleStatus'])->name('api.ws.status');
-    Route::post('/ota-status', [EmqxWebSocketController::class, 'handleOtaStatus'])->name('api.ws.ota-status');
-    Route::post('/config-status', [EmqxWebSocketController::class, 'handleConfigStatus'])->name('api.ws.config-status');
+    Route::prefix('ws-bridge')->group(function () {
+        Route::post('/telemetry', [EmqxWebSocketController::class, 'handleTelemetry'])->name('api.ws.telemetry');
+        Route::post('/image', [EmqxWebSocketController::class, 'handleImage'])->name('api.ws.image');
+        Route::post('/status', [EmqxWebSocketController::class, 'handleStatus'])->name('api.ws.status');
+        Route::post('/ota-status', [EmqxWebSocketController::class, 'handleOtaStatus'])->name('api.ws.ota-status');
+        Route::post('/config-status', [EmqxWebSocketController::class, 'handleConfigStatus'])->name('api.ws.config-status');
+    });
 });
 
 // Status & Sync Utils

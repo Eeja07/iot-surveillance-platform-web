@@ -176,3 +176,8 @@ Schedule::command('camera:check-offline')
     ->name('check-offline-cameras')
     ->withoutOverlapping();
 
+Schedule::command('db:prune-telemetry')
+    ->daily()
+    ->name('prune-old-telemetry')
+    ->withoutOverlapping();
+

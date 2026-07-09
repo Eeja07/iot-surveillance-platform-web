@@ -52,7 +52,7 @@ class DeviceConfigController extends Controller
             'frame_size' => 'nullable|string|in:QQVGA,QVGA,VGA,SVGA,XGA,SXGA,UXGA',
             'capture_interval_ms' => 'nullable|integer|min:100',
             'telemetry_interval_ms' => 'nullable|integer|min:1000',
-            'mqtt_buffer' => 'nullable|integer|min:0',
+            'mqtt_buffer' => 'nullable|integer|between:1024,131072',
             'image_enabled' => 'sometimes|boolean',
             'telemetry_enabled' => 'sometimes|boolean',
             'ota_enabled' => 'sometimes|boolean',
