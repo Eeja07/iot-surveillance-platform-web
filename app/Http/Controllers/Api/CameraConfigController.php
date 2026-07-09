@@ -179,4 +179,44 @@ class CameraConfigController extends Controller
             ], 400);
         }
     }
+
+    /**
+     * POST /api/cameras/{camera}/commands
+     */
+    public function commands(Request $request, Camera $camera)
+    {
+        $this->checkOwnership($request, $camera);
+
+        $validator = Validator::make($request->all(), [
+            'command' => 'required|string|in:restart,camera_reinit',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $command = $request->input('command');
+
+        try {
+            if ($command === 'restart') {
+                $this->configService->restartDevice($camera, $request->user()->id);
+            } elseif ($command === 'camera_reinit') {
+                $this->configService->sendDeviceCommand($camera, 'camera_reinit', $request->user()->id);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Command sent successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
 }
+

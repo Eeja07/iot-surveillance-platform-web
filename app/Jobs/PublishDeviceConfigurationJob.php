@@ -51,7 +51,10 @@ class PublishDeviceConfigurationJob implements ShouldQueue
         // Check restarting from history or active flag
         $recentRestart = ConfigurationHistory::where('camera_id', $this->camera->id)
             ->where('status', ConfigStatus::Sending->value)
-            ->whereJsonContains('new_config', ['action' => 'restart'])
+            ->where(function ($query) {
+                $query->whereJsonContains('new_config', ['action' => 'restart'])
+                      ->orWhereJsonContains('new_config', ['command' => 'restart']);
+            })
             ->where('created_at', '>=', now()->subMinutes(2))
             ->exists();
 
@@ -67,17 +70,23 @@ class PublishDeviceConfigurationJob implements ShouldQueue
         ]);
         broadcast(new ConfigStatusUpdated($this->camera, $this->history));
 
-        $topic = "ws/camera/{$this->camera->device_id}/config";
+        $topic = "camera/{$this->camera->device_id}/config";
         
-        $payload = [
-            'action' => 'config',
-            'config' => $this->history->new_config,
-        ];
+        if (isset($this->history->new_config['command'])) {
+            $payload = $this->history->new_config['command'];
+        } elseif (isset($this->history->new_config['action']) && in_array($this->history->new_config['action'], ['restart', 'camera_reinit', 'factory_reset'])) {
+            $payload = $this->history->new_config['action'];
+        } else {
+            $payload = [
+                'action' => 'config',
+                'config' => $this->history->new_config,
+            ];
 
-        // Format according to whether it's restart, factory_reset or config
-        if (isset($payload['config']['action'])) {
-            $payload['action'] = $payload['config']['action'];
-            unset($payload['config']);
+            // Format according to whether it's restart, factory_reset or config
+            if (isset($payload['config']['action'])) {
+                $payload['action'] = $payload['config']['action'];
+                unset($payload['config']);
+            }
         }
 
         \Illuminate\Support\Facades\Log::info('MQTT_CONFIG_PUBLISH', [
@@ -86,6 +95,7 @@ class PublishDeviceConfigurationJob implements ShouldQueue
         ]);
 
         $published = $emqxService->publish($topic, $payload);
+
 
         if ($published) {
             $this->history->update([

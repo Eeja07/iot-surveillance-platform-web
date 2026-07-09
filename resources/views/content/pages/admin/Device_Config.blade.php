@@ -465,7 +465,27 @@
                 </form>
             </div>
         </div>
+
+        <!-- Camera Maintenance Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">Camera Maintenance</h5>
+            </div>
+            <div class="card-body d-flex flex-column gap-2">
+                <div class="d-grid">
+                    <button type="button" id="btn-restart-esp" class="btn btn-outline-warning btn-sm">
+                        Restart ESP
+                    </button>
+                </div>
+                <div class="d-grid">
+                    <button type="button" id="btn-camera-reinit" class="btn btn-outline-danger btn-sm">
+                        Camera Reinit
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
+
 
     <!-- History list -->
     <div class="col-12 col-xl-8">
@@ -987,7 +1007,27 @@
         </div>
     </div>
 </div>
+
+<!-- Modal: Camera Maintenance Confirmation -->
+<div class="modal fade" id="modalMaintenanceConfirm" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="maintenance-confirm-title">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="maintenance-confirm-message" class="mb-0" style="white-space: pre-line;"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-maintenance-confirm-action">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
 
 @section('page-script')
 <script>
@@ -1325,6 +1365,148 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
     }
+
+    // Camera Maintenance Action Handlers
+    let maintenanceAction = null;
+    const maintenanceModalElement = document.getElementById('modalMaintenanceConfirm');
+    const maintenanceConfirmBtn = document.getElementById('btn-maintenance-confirm-action');
+
+    function getSelectedCameraId() {
+        const selector = document.querySelector('select[name="camera_id"]');
+        return selector ? selector.value : '';
+    }
+
+    function showToast(title, message, isSuccess = true) {
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            toastContainer.style.zIndex = '1100';
+            document.body.appendChild(toastContainer);
+        }
+
+        const toastId = 'toast-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+        const bgClass = isSuccess ? 'bg-success' : 'bg-danger';
+        const toastHTML = `
+            <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header ${bgClass} text-white">
+                    <strong class="me-auto">${title}</strong>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+        const toastElement = document.getElementById(toastId);
+        const bs = window.bootstrap || bootstrap;
+        if (bs && bs.Toast) {
+            const toast = new bs.Toast(toastElement, { delay: 5000 });
+            toast.show();
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+    }
+
+    const btnRestart = document.getElementById('btn-restart-esp');
+    if (btnRestart) {
+        btnRestart.addEventListener('click', function () {
+            const cameraId = getSelectedCameraId();
+            if (!cameraId) {
+                showToast('Error', 'Failed to send command.', false);
+                return;
+            }
+            maintenanceAction = 'restart';
+            document.getElementById('maintenance-confirm-title').textContent = 'Restart Camera';
+            document.getElementById('maintenance-confirm-message').textContent = "This will reboot the ESP32.\n\nThe camera will disconnect temporarily.\n\nContinue?";
+            maintenanceConfirmBtn.textContent = 'Restart';
+            maintenanceConfirmBtn.className = 'btn btn-warning';
+
+            const modal = new bootstrap.Modal(maintenanceModalElement);
+            modal.show();
+        });
+    }
+
+    const btnReinit = document.getElementById('btn-camera-reinit');
+    if (btnReinit) {
+        btnReinit.addEventListener('click', function () {
+            const cameraId = getSelectedCameraId();
+            if (!cameraId) {
+                showToast('Error', 'Failed to send command.', false);
+                return;
+            }
+            maintenanceAction = 'camera_reinit';
+            document.getElementById('maintenance-confirm-title').textContent = 'Reinitialize Camera';
+            document.getElementById('maintenance-confirm-message').textContent = "This will reinitialize the camera driver without rebooting the ESP32.\n\nContinue?";
+            maintenanceConfirmBtn.textContent = 'Reinitialize';
+            maintenanceConfirmBtn.className = 'btn btn-danger';
+
+            const modal = new bootstrap.Modal(maintenanceModalElement);
+            modal.show();
+        });
+    }
+
+    if (maintenanceConfirmBtn) {
+        maintenanceConfirmBtn.addEventListener('click', function () {
+            const modalInstance = bootstrap.Modal.getInstance(maintenanceModalElement);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+
+            const cameraId = getSelectedCameraId();
+            if (!cameraId) {
+                showToast('Error', 'Failed to send command.', false);
+                return;
+            }
+
+            const targetBtn = maintenanceAction === 'restart' ? btnRestart : btnReinit;
+            const originalText = maintenanceAction === 'restart' ? 'Restart ESP' : 'Camera Reinit';
+
+            targetBtn.disabled = true;
+            targetBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sending...';
+
+            fetch(`/api/cameras/${cameraId}/commands`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ command: maintenanceAction })
+            })
+            .then(async response => {
+                let data;
+                let parsed = false;
+                try {
+                    data = await response.json();
+                    parsed = true;
+                } catch (e) {
+                    // Could not parse JSON
+                }
+
+                if (!parsed) {
+                    throw new Error('Failed to send command.');
+                }
+
+                if (!response.ok || (data && data.success === false)) {
+                    throw new Error(data && data.message ? data.message : 'Failed to send command.');
+                }
+
+                showToast('Success', 'Command sent successfully.', true);
+            })
+            .catch(err => {
+                const isCustomError = err instanceof Error && err.message !== 'Failed to fetch' && err.message !== 'NetworkError' && err.message !== 'Load failed';
+                showToast('Error', isCustomError ? err.message : 'Failed to send command.', false);
+            })
+            .finally(() => {
+                targetBtn.disabled = false;
+                targetBtn.innerHTML = originalText;
+            });
+        });
+    }
 });
 </script>
 @endsection
+

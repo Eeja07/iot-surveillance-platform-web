@@ -94,9 +94,13 @@ class DeviceConfigurationService
         // 2. Reject if Camera is restarting
         $recentRestart = ConfigurationHistory::where('camera_id', $camera->id)
             ->where('status', ConfigStatus::Sending->value)
-            ->whereJsonContains('new_config', ['action' => 'restart'])
+            ->where(function ($query) {
+                $query->whereJsonContains('new_config', ['action' => 'restart'])
+                      ->orWhereJsonContains('new_config', ['command' => 'restart']);
+            })
             ->where('created_at', '>=', now()->subMinutes(2))
             ->exists();
+
         if ($recentRestart) {
             throw new \Exception("Safety Reject: Camera {$camera->name} is currently restarting.");
         }
@@ -413,17 +417,29 @@ $telemetry->save();
      */
     public function restartDevice(Camera $camera, $userId = null)
     {
-        return DB::transaction(function () use ($camera, $userId) {
+        return $this->sendDeviceCommand($camera, 'restart', $userId);
+    }
+
+    /**
+     * Send command to device.
+     */
+    public function sendDeviceCommand(Camera $camera, string $command, $userId = null)
+    {
+        return DB::transaction(function () use ($camera, $command, $userId) {
+            $message = ucfirst(str_replace('_', ' ', $command)) . ' command initiated.';
+            $queuedMessage = ucfirst(str_replace('_', ' ', $command)) . ' command queued.';
+
             $history = ConfigurationHistory::create([
                 'camera_id' => $camera->id,
                 'user_id' => $userId,
                 'old_config' => null,
-                'new_config' => ['action' => 'restart'],
-                'changed_fields' => ['action'],
+                'new_config' => ['command' => $command],
+                'changed_fields' => ['command'],
                 'status' => ConfigStatus::Pending->value,
-                'message' => 'Restart command initiated.',
+                'message' => $message,
                 'created_at' => now(),
             ]);
+
 
             $camera->update([
                 'last_config_status' => ConfigStatus::Pending->value,
@@ -435,7 +451,7 @@ $telemetry->save();
                 $camera->update(['last_config_status' => ConfigStatus::Queued->value]);
                 $history->update([
                     'status' => ConfigStatus::Queued->value,
-                    'message' => 'Restart command queued.'
+                    'message' => $queuedMessage
                 ]);
                 dispatch(new \App\Jobs\PublishDeviceConfigurationJob($camera, $history));
             }
@@ -443,6 +459,7 @@ $telemetry->save();
             return $history;
         });
     }
+
 
     /**
      * Factory reset device.
