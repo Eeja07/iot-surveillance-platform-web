@@ -51,6 +51,11 @@ class NewImageReceived implements ShouldBroadcastNow
   public function broadcastWith(): array
   {
     $this->camera->refresh();
+    \Illuminate\Support\Facades\Log::info('IMAGE_EVENT_PAYLOAD',[
+        'camera'=>$this->camera->id,
+        'image'=>$this->imageRecord->id,
+        'channel'=>$this->broadcastOn(),
+    ]);
     $telemetry = $this->camera->latestTelemetry;
     return [
       'camera_id' => $this->camera->id,

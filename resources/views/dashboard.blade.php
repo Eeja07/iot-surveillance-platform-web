@@ -213,15 +213,23 @@
                     if (channelId) {
                         window.Echo.private(channelId)
                             .listen('.image.received', (data) => {
-                                console.log('IMAGE_RECEIVED_EVENT', data);
-                                console.log('IMAGE_RECEIVED_EVENT', data);
+                                const card = cameraCard;
+                                const img = imgElement;
                                 const imageUrl = data.image_url;
                                 const cacheBuster = data.latest_image_timestamp;
-                                const finalUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 't=' + cacheBuster;
+                                const newSrc = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 't=' + cacheBuster;
 
-                                if (imgElement) {
-                                    imgElement.src = finalUrl;
+                                console.log('IMAGE EVENT', data);
+                                console.log('CARD FOUND', card);
+                                console.log('IMG FOUND', img);
+                                if (img) console.log('OLD SRC', img.src);
+                                console.log('NEW SRC', newSrc);
+
+                                if (img) {
+                                    img.src = newSrc;
                                 }
+                                console.log('IMAGE UPDATED');
+
                                 if (timestampElement) {
                                     timestampElement.textContent = 'Update: ' + data.captured_at;
                                 }
@@ -271,7 +279,7 @@
                                 if (modalWsClose) modalWsClose.textContent = data.ws_close_count;
                                 if (modalPubFail) modalPubFail.textContent = data.publish_fail;
                                 if (modalUptime) modalUptime.textContent = data.uptime;
-                                if (modalImage) modalImage.src = finalUrl;
+                                if (modalImage) modalImage.src = newSrc;
 
                                 // Also update new fields from image received if present
                                 const fEl = document.getElementById(`modal-firmware-${data.camera_id}`);

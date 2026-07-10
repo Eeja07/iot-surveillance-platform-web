@@ -73,7 +73,16 @@ class ProcessCameraImageJob implements ShouldQueue
                         'captured_at' => now()
                     ]);
 
+                    Log::info('BEFORE_IMAGE_BROADCAST', [
+                        'camera'=>$camera->id,
+                        'image'=>$imageRecord->id,
+                    ]);
+
                     broadcast(new NewImageReceived($camera, $imageRecord));
+
+                    Log::info('AFTER_IMAGE_BROADCAST',[
+                        'camera'=>$camera->id,
+                    ]);
 
                     DetectImageJob::dispatch($imageRecord);
                 }
