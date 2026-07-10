@@ -13,7 +13,6 @@ class EmqxWebSocketController extends Controller
 {
     public function handleImage(Request $request)
     {
-        Log::info("IMAGE_HANDLER_HIT", ["topic" => $request->topic]);
         $topic = $request->topic;
         $payload = $request->payload;
 
@@ -275,7 +274,6 @@ class EmqxWebSocketController extends Controller
 
     public function handleStatus(Request $request)
     {
-        Log::info("STATUS_HANDLER_HIT", ["topic" => $request->topic]);
         preg_match(
             '/ws\/camera\/(.+)\/status/',
             $request->topic ?? '',
@@ -318,7 +316,6 @@ class EmqxWebSocketController extends Controller
 
     public function handleOtaStatus(Request $request)
     {
-        Log::info("OTA_HANDLER_HIT", ["topic" => $request->topic]);
         Log::info("WS_OTA_STATUS_HANDLER_HIT",["topic"=>$request->topic,"payload"=>$request->payload]);
         Log::info("WS_OTA_RAW",["all"=>$request->all(),"json"=>$request->json()->all(),"content"=>$request->getContent()]);
 
@@ -459,7 +456,6 @@ class EmqxWebSocketController extends Controller
 
     public function handleConfigStatus(Request $request)
     {
-        Log::info("CONFIG_HANDLER_HIT", ["topic" => $request->topic]);
         Log::info('WS_CONFIG_STATUS_HANDLER_HIT', [
             'topic' => $request->topic,
             'payload' => $request->payload,
