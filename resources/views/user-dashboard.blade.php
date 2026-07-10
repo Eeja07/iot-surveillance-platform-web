@@ -9,6 +9,21 @@
         document.addEventListener('DOMContentLoaded', function () {
             const allCameraCards = document.querySelectorAll('.camera-card');
 
+            // Align server-rendered timestamps with browser clock to prevent clock drift issues
+            const serverTimeOnLoad = {{ now()->timestamp * 1000 }};
+            const clientTimeOnLoad = Date.now();
+            const timeOffset = clientTimeOnLoad - serverTimeOnLoad;
+
+            allCameraCards.forEach(card => {
+                let imgTs = parseInt(card.dataset.latestImageTimestamp) || 0;
+                let telTs = parseInt(card.dataset.latestTelemetryTimestamp) || 0;
+                let detTs = parseInt(card.dataset.latestDetectionTimestamp) || 0;
+
+                if (imgTs > 0) card.dataset.latestImageTimestamp = imgTs + timeOffset;
+                if (telTs > 0) card.dataset.latestTelemetryTimestamp = telTs + timeOffset;
+                if (detTs > 0) card.dataset.latestDetectionTimestamp = detTs + timeOffset;
+            });
+
             // 1. Client-Side State Machine & Freshness Engine
             function updateClientSideStates() {
                 let totalCount = 0;
@@ -240,7 +255,7 @@
                                     timestampElement.textContent = 'Update: ' + data.captured_at;
                                 }
 
-                                cameraCard.dataset.latestImageTimestamp = data.latest_image_timestamp;
+                                cameraCard.dataset.latestImageTimestamp = Date.now();
                                 cameraCard.dataset.reconnectDelta = String(data.mqtt_reconnect || '+0').replace('+', '');
                                 cameraCard.dataset.publishFailDelta = String(data.publish_fail || '+0').replace('+', '');
 
