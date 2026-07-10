@@ -23,6 +23,7 @@
                     const cameraId = card.dataset.cameraId;
                     const imageTimestamp = parseInt(card.dataset.latestImageTimestamp) || 0;
                     const telemetryTimestamp = parseInt(card.dataset.latestTelemetryTimestamp) || 0;
+                    const detectionTimestamp = parseInt(card.dataset.latestDetectionTimestamp) || 0;
                     const timestamp = Math.max(imageTimestamp, telemetryTimestamp);
 
                     let elapsed = 0;
@@ -37,7 +38,13 @@
                         const hasWarning = (reconnectDelta > 0 || publishFailDelta > 0);
 
                         if (elapsed <= 15) {
-                            status = hasWarning ? 'WARNING' : 'ONLINE';
+                            const detectionElapsed = (now - detectionTimestamp) / 1000;
+                            const isDetecting = (detectionTimestamp > 0 && detectionElapsed >= 0 && detectionElapsed < 15);
+                            if (isDetecting) {
+                                status = 'DETECTING';
+                            } else {
+                                status = hasWarning ? 'WARNING' : 'ONLINE';
+                            }
                         } else if (elapsed <= 60) {
                             status = 'WARNING';
                         } else {
@@ -47,9 +54,8 @@
 
                     if (status === 'ONLINE') onlineCount++;
                     else if (status === 'WARNING') warningCount++;
+                    else if (status === 'DETECTING') onlineCount++; // Detecting implies online
                     else offlineCount++;
-
-
 
                     // Update Health Status Badge
                     const healthBadge = document.getElementById(`health-badge-${cameraId}`);
@@ -60,6 +66,8 @@
                             healthBadge.classList.add('bg-label-success');
                         } else if (status === 'WARNING') {
                             healthBadge.classList.add('bg-label-warning');
+                        } else if (status === 'DETECTING') {
+                            healthBadge.classList.add('bg-label-danger');
                         } else {
                             healthBadge.classList.add('bg-label-danger');
                         }
@@ -86,6 +94,8 @@
                             modalHealth.classList.add('bg-label-success');
                         } else if (status === 'WARNING') {
                             modalHealth.classList.add('bg-label-warning');
+                        } else if (status === 'DETECTING') {
+                            modalHealth.classList.add('bg-label-danger');
                         } else {
                             modalHealth.classList.add('bg-label-danger');
                         }
@@ -140,6 +150,13 @@
                 // Subscribe to detections channel for real-time person detection updates
                 window.Echo.private('user.' + {{ auth()->id() }} + '.detections')
                     .listen('.person.detected', (data) => {
+                        // Find the camera card and update its latest detection timestamp
+                        const card = document.querySelector(`.camera-card[data-camera-id="${data.camera_id}"]`);
+                        if (card) {
+                            card.dataset.latestDetectionTimestamp = Date.now();
+                        }
+                        updateClientSideStates();
+
                         // Show browser toast
                         let toastContainer = document.querySelector('.toast-container');
                         if (!toastContainer) {
@@ -644,50 +661,29 @@
 
                             <div class="row g-2">
                                 @foreach($items as $camera)
-                                    @php $telemetry = $camera->latestTelemetry; @endphp
+                                    @php
+                                        $telemetry = $camera->latestTelemetry;
+                                        $lastDetection = \App\Models\DetectionEvent::whereHas('imageRecord', function ($q) use ($camera) {
+                                            $q->where('camera_id', $camera->id);
+                                        })->latest()->first();
+                                    @endphp
                                     <div class="col-12 col-md-6 col-lg-4 col-xl-3 camera-card" data-camera-id="{{ $camera->id }}"
                                         data-latest-image-timestamp="{{ $camera->latest_image_at ? $camera->latest_image_at->timestamp * 1000 : 0 }}"
-                                        data-latest-telemetry-timestamp="{{ $telemetry ? $telemetry->created_at->timestamp * 1000 : 0 }}"
-                                        data-reconnect-delta="{{ $telemetry ? $telemetry->reconnect_delta : 0 }}"
-                                        data-publish-fail-delta="{{ $telemetry ? $telemetry->publish_fail_delta : 0 }}">
+                                        data-latest-telemetry-timestamp="{{ $camera->last_heartbeat_at ? $camera->last_heartbeat_at->timestamp * 1000 : 0 }}"
+                                        data-latest-detection-timestamp="{{ $lastDetection ? $lastDetection->created_at->timestamp * 1000 : 0 }}"
+                                        data-reconnect-delta="0"
+                                        data-publish-fail-delta="0">
 
                                         <div class="card h-100 border shadow-none bg-transparent">
                                             <div class="card-header d-flex justify-content-between align-items-center p-2 border-0 bg-transparent">
                                                 <div class="min-w-0">
                                                     <h6 class="mb-0 text-truncate fw-bold" style="font-size: 0.85rem; max-width: 100%;">{{ $camera->name }}</h6>
                                                     <small class="text-muted d-block text-truncate" id="freshness-{{ $camera->id }}" style="font-size: 0.7rem;">
-                                                        {{ $camera->freshness_indicator }}
                                                     </small>
                                                 </div>
 
-                                                @php
-                                                    $lastDetection = \App\Models\DetectionEvent::whereHas('imageRecord', function ($q) use ($camera) {
-                                                        $q->where('camera_id', $camera->id);
-                                                    })->latest()->first();
-
-                                                    $status = $camera->operational_status;
-                                                    $badgeText = $status;
-                                                    $badgeClass = 'bg-label-secondary';
-
-                                                    if ($status === 'ONLINE') {
-                                                        if ($lastDetection && now()->diffInSeconds($lastDetection->created_at) < 15) {
-                                                            $badgeText = 'DETECTING';
-                                                            $badgeClass = 'bg-label-danger';
-                                                        } else {
-                                                            $badgeText = 'ONLINE';
-                                                            $badgeClass = 'bg-label-success';
-                                                        }
-                                                    } elseif ($status === 'WARNING') {
-                                                        $badgeText = 'WARNING';
-                                                        $badgeClass = 'bg-label-warning';
-                                                    } else {
-                                                        $badgeText = 'OFFLINE';
-                                                        $badgeClass = 'bg-label-danger';
-                                                    }
-                                                @endphp
-                                                <span class="badge {{ $badgeClass }} telemetry-health-badge"
+                                                <span class="badge bg-label-secondary telemetry-health-badge"
                                                     id="health-badge-{{ $camera->id }}" style="font-size: 0.65rem;">
-                                                    {{ $badgeText }}
                                                 </span>
                                             </div>
 
@@ -977,21 +973,11 @@
                                                         <div class="col-12 col-md-5 p-3 d-flex flex-column justify-content-between">
                                                             <div>
                                                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                                                    @php
-                                                                        $status = $camera->operational_status;
-                                                                        $badgeClass = 'bg-label-danger';
-                                                                        if ($status === 'ONLINE')
-                                                                            $badgeClass = 'bg-label-success';
-                                                                        elseif ($status === 'WARNING')
-                                                                            $badgeClass = 'bg-label-warning';
-                                                                    @endphp
-                                                                    <span class="badge {{ $badgeClass }} telemetry-health-badge"
+                                                                    <span class="badge bg-label-secondary telemetry-health-badge"
                                                                         id="modal-preview-health-{{ $camera->id }}">
-                                                                        {{ $status }}
                                                                     </span>
                                                                     <small class="text-muted fw-semibold"
                                                                         id="modal-preview-freshness-{{ $camera->id }}">
-                                                                        {{ $camera->freshness_indicator }}
                                                                     </small>
                                                                 </div>
                                                                 <div class="row g-2 text-start">
