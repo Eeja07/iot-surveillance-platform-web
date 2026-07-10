@@ -213,6 +213,8 @@
                     if (channelId) {
                         window.Echo.private(channelId)
                             .listen('.image.received', (data) => {
+                                console.log('IMAGE_RECEIVED_EVENT', data);
+                                console.log('IMAGE_RECEIVED_EVENT', data);
                                 const imageUrl = data.image_url;
                                 const cacheBuster = data.latest_image_timestamp;
                                 const finalUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 't=' + cacheBuster;
@@ -442,6 +444,7 @@
                                 updateClientSideStates();
                             });
                     }
+		});
                 window.addEventListener('beforeunload', () => {
                     window.Echo.leave('user.' + {{ auth()->id() }} + '.detections');
                     allCards.forEach(cameraCard => {
