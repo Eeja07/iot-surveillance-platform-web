@@ -50,6 +50,7 @@ class NewImageReceived implements ShouldBroadcastNow
    */
   public function broadcastWith(): array
   {
+    $this->camera->refresh();
     $telemetry = $this->camera->latestTelemetry;
     return [
       'camera_id' => $this->camera->id,

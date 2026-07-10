@@ -213,8 +213,12 @@
                     if (channelId) {
                         window.Echo.private(channelId)
                             .listen('.image.received', (data) => {
-                                if (imgElement.src !== data.image_url) {
-                                    imgElement.src = data.image_url;
+                                const imageUrl = data.image_url;
+                                const cacheBuster = data.latest_image_timestamp;
+                                const finalUrl = imageUrl + (imageUrl.includes('?') ? '&' : '?') + 't=' + cacheBuster;
+
+                                if (imgElement) {
+                                    imgElement.src = finalUrl;
                                 }
                                 if (timestampElement) {
                                     timestampElement.textContent = 'Update: ' + data.captured_at;
@@ -265,7 +269,7 @@
                                 if (modalWsClose) modalWsClose.textContent = data.ws_close_count;
                                 if (modalPubFail) modalPubFail.textContent = data.publish_fail;
                                 if (modalUptime) modalUptime.textContent = data.uptime;
-                                if (modalImage) modalImage.src = data.image_url;
+                                if (modalImage) modalImage.src = finalUrl;
 
                                 // Also update new fields from image received if present
                                 const fEl = document.getElementById(`modal-firmware-${data.camera_id}`);
