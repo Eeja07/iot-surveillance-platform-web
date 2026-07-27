@@ -251,6 +251,38 @@ class EmqxWebSocketController extends Controller
             // Delegate to config service for Desired State Management checks (Auto Heal & pending queue checks)
             app(\App\Services\DeviceConfigurationService::class)->handleTelemetryUpdate($camera, $payload);
 
+            // Verify OTA completion from post-reboot telemetry
+            $reportedVersion = $payload['fw_version'] ?? ($payload['firmware'] ?? null);
+            if (!empty($reportedVersion)) {
+                $activeCamRecord = \App\Models\OtaDeploymentCamera::with('deployment.firmware')
+                    ->where('camera_id', $camera->id)
+                    ->whereIn('status', ['Pending', 'Downloading', 'Verifying', 'Flashing'])
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if ($activeCamRecord && in_array($activeCamRecord->status, ['Pending', 'Downloading', 'Verifying', 'Flashing'], true)) {
+                    $expectedVersion = $activeCamRecord->target_version 
+                        ?? $activeCamRecord->deployment?->firmware?->version;
+
+                    if ($expectedVersion && $reportedVersion === $expectedVersion) {
+                        Log::info('OTA completion verified via telemetry', [
+                            'camera_id' => $camera->id,
+                            'reported_version' => $reportedVersion,
+                            'expected_version' => $expectedVersion,
+                            'deployment_id' => $activeCamRecord->deployment_id,
+                        ]);
+
+                        $this->completeDeploymentCamera(
+                            $camera,
+                            $activeCamRecord,
+                            $telemetryInstance,
+                            $reportedVersion,
+                            'Completed (verified via post-reboot telemetry)'
+                        );
+                    }
+                }
+            }
+
             broadcast(new \App\Events\TelemetryUpdated($camera, $telemetryInstance));
             return response()->json([
                 'status' => 'success'
@@ -387,9 +419,22 @@ class EmqxWebSocketController extends Controller
             $message = $payload['message'] ?? ($payload['reason'] ?? '');
             $version = $payload['version'] ?? ($camRecord ? $camRecord->target_version : 'Unknown');
 
+            if ($status === 'Success' && $camRecord) {
+                $this->completeDeploymentCamera(
+                    $camera,
+                    $camRecord,
+                    $camera->latestTelemetry,
+                    $version,
+                    $message
+                );
+                return response()->json([
+                    'status' => 'success'
+                ]);
+            }
+
             if ($camRecord) {
                 $duration = null;
-                if (in_array($status, ['Success', 'Failed', 'Cancelled'])) {
+                if (in_array($status, ['Failed', 'Cancelled'])) {
                     $finishedAt = now();
                     $duration = $camRecord->started_at ? $camRecord->started_at->diffInMilliseconds($finishedAt) : 0;
                     $camRecord->update([
@@ -418,11 +463,7 @@ class EmqxWebSocketController extends Controller
                     'ota_running' => $otaRunning,
                     'last_ota_result' => $lastOtaResult,
                 ];
-                if ($status === 'Success') {
-                    $updateData['firmware'] = $version;
-                    $updateData['last_ota'] = now();
-                    $updateData['current_deployment_id'] = null;
-                } elseif (in_array($status, ['Failed', 'Cancelled'])) {
+                if (in_array($status, ['Failed', 'Cancelled'])) {
                     $updateData['current_deployment_id'] = null;
                 }
                 $latestTelemetry->update($updateData);
@@ -440,7 +481,7 @@ class EmqxWebSocketController extends Controller
             broadcast(new \App\Events\OtaStatusUpdated($camera, $otaData));
 
             // If the status is terminal, trigger next batch rollout checks in the service!
-            if ($camRecord && in_array($status, ['Success', 'Failed', 'Cancelled'])) {
+            if ($camRecord && in_array($status, ['Failed', 'Cancelled'])) {
                 $otaService = app(\App\Services\OtaDeploymentService::class);
                 $otaService->startDeploymentBatch($camRecord->deployment);
             }
@@ -512,5 +553,50 @@ class EmqxWebSocketController extends Controller
                 'msg' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Mark an OTA deployment camera record as completed (Success) and trigger batch update & events.
+     */
+    private function completeDeploymentCamera(
+        Camera $camera,
+        \App\Models\OtaDeploymentCamera $camRecord,
+        ?\App\Models\CameraTelemetry $telemetry,
+        string $version,
+        string $message = ''
+    ): void {
+        $finishedAt = now();
+        $duration = $camRecord->started_at ? $camRecord->started_at->diffInMilliseconds($finishedAt) : 0;
+
+        $camRecord->update([
+            'status' => 'Success',
+            'progress' => 100,
+            'message' => $message,
+            'finished_at' => $finishedAt,
+            'duration_ms' => $duration,
+        ]);
+
+        if ($telemetry) {
+            $telemetry->update([
+                'ota_running' => false,
+                'last_ota_result' => 'Success' . ($message ? ': ' . $message : ''),
+                'firmware' => $version,
+                'last_ota' => $finishedAt,
+                'current_deployment_id' => null,
+            ]);
+            broadcast(new \App\Events\TelemetryUpdated($camera, $telemetry));
+        }
+
+        $otaData = [
+            'version' => $version,
+            'status' => 'Success',
+            'progress' => 100,
+            'message' => $message,
+            'deployment_id' => $camRecord->deployment_id,
+        ];
+        broadcast(new \App\Events\OtaStatusUpdated($camera, $otaData));
+
+        $otaService = app(\App\Services\OtaDeploymentService::class);
+        $otaService->startDeploymentBatch($camRecord->deployment);
     }
 }
