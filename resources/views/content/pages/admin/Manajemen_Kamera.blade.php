@@ -69,6 +69,70 @@
         </div>
     @endif
 
+    @if(session('newCamera'))
+        @php $newCam = session('newCamera'); @endphp
+        <div class="card border border-success mb-4 shadow-sm">
+            <div class="card-header bg-label-success d-flex justify-content-between align-items-center">
+                <h5 class="card-title text-success mb-0">
+                    <i class="ti ti-circle-check me-2"></i> Kredensial Kamera Baru Berhasil Dibuat
+                </h5>
+                <span class="badge bg-success">Simpan Kredensial Ini</span>
+            </div>
+            <div class="card-body pt-3">
+                <div class="alert alert-warning mb-3" role="alert">
+                    <i class="ti ti-alert-triangle me-1"></i> <strong>Perhatian:</strong> Password MQTT hanya ditampilkan <strong>SEKALI INI SAJA</strong> dan tidak akan dapat dilihat kembali setelah Anda meninggalkan halaman ini.
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Device ID (UUID)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-white" value="{{ $newCam->device_id }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ $newCam->device_id }}'); alert('Device ID disalin!');">
+                                <i class="ti ti-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">API Key</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-white" value="{{ $newCam->api_key }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ $newCam->api_key }}'); alert('API Key disalin!');">
+                                <i class="ti ti-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">MQTT Username</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-white" value="{{ $newCam->mqtt_username }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ $newCam->mqtt_username }}'); alert('MQTT Username disalin!');">
+                                <i class="ti ti-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">MQTT Password</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-white border-success fw-bold text-success" value="{{ $newCam->mqtt_password }}" readonly>
+                            <button class="btn btn-outline-success" type="button" onclick="navigator.clipboard.writeText('{{ $newCam->mqtt_password }}'); alert('MQTT Password disalin!');">
+                                <i class="ti ti-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">WebSocket Channel ID</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-white" value="{{ $newCam->websocket_channel_id }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText('{{ $newCam->websocket_channel_id }}'); alert('WebSocket Channel ID disalin!');">
+                                <i class="ti ti-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- 1. INDEX VIEW --}}
     @if(!isset($view) || $view == 'index')
         <div class="card">
@@ -307,8 +371,26 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">MQTT Password</label>
                             <div class="input-group">
-                                <input type="text" class="form-control bg-light" value="{{ $camera->mqtt_password }}" readonly id="cred-mqtt-pass">
-                                <button class="btn btn-outline-primary" type="button" onclick="navigator.clipboard.writeText('{{ $camera->mqtt_password }}'); alert('MQTT Password disalin!');">
+                                @if(session('newCamera') && session('newCamera')->id == $camera->id)
+                                    <input type="text" class="form-control bg-light text-success fw-bold" value="{{ session('newCamera')->mqtt_password }}" readonly id="cred-mqtt-pass">
+                                    <button class="btn btn-outline-primary" type="button" onclick="navigator.clipboard.writeText('{{ session('newCamera')->mqtt_password }}'); alert('MQTT Password disalin!');">
+                                        <i class="ti ti-copy"></i>
+                                    </button>
+                                @else
+                                    <input type="password" class="form-control bg-light" value="••••••••••••••••" readonly disabled id="cred-mqtt-pass">
+                                    <span class="input-group-text text-muted"><i class="ti ti-lock"></i></span>
+                                @endif
+                            </div>
+                            @if(!session('newCamera') || session('newCamera')->id != $camera->id)
+                                <small class="text-muted">Password disembunyikan demi keamanan (hanya tampil saat baru dibuat).</small>
+                            @endif
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">WebSocket Channel ID</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control bg-light" value="{{ $camera->websocket_channel_id }}" readonly id="cred-ws-channel">
+                                <button class="btn btn-outline-primary" type="button" onclick="navigator.clipboard.writeText('{{ $camera->websocket_channel_id }}'); alert('WebSocket Channel ID disalin!');">
                                     <i class="ti ti-copy"></i>
                                 </button>
                             </div>

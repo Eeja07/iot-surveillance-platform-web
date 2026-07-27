@@ -37,6 +37,7 @@ class Camera extends Model
             if (empty($camera->mqtt_username)) $camera->mqtt_username = 'mqtt_' . Str::random(8);
             if (empty($camera->mqtt_password)) $camera->mqtt_password = Str::random(16);
             if (empty($camera->api_key)) $camera->api_key = Str::random(40);
+            if (empty($camera->websocket_channel_id)) $camera->websocket_channel_id = 'camera-status-' . Str::random(16);
         });
     }
     public function user(): BelongsTo { return $this->belongsTo(User::class); }

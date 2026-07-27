@@ -53,7 +53,6 @@ class ManajemenKameraController extends Controller
         $camera = new Camera();
         $camera->fill($request->only('name', 'description', 'group_id'));
         $camera->user_id = Auth::id();
-        $camera->websocket_channel_id = 'camera-status-' . Str::random(16);
         $camera->save();
 
         // 2. [OTOMATISASI] Trigger sinkronisasi total ke EMQX
