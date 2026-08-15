@@ -156,7 +156,7 @@
                                 <td>
                                     <span class="fw-semibold">{{ $camera->name }}</span>
                                     @if($camera->description)
-                                        <br><small class="text-muted">{{ Str::limit($camera->description, 50) }}</small>
+                                        <br><small class="text-muted">{{ \Illuminate\Support\Str::limit($camera->description, 50) }}</small>
                                     @endif
                                 </td>
                                 <td><code>{{ $camera->device_id }}</code></td>
