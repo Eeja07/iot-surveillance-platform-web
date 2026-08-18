@@ -95,9 +95,11 @@ class UserManajemenKameraController extends Controller
   {
     $camera = Camera::findOrFail($id);
     $this->authorize('delete', $camera);
-    $admin = User::role('admin')->first();
-    $camera->user_id = $admin ? $admin->id : null;
+
+    // Lepaskan kamera dari akun pengguna (unassigned)
+    $camera->user_id = null;
     $camera->save();
+
     return redirect()->route('user.my-cameras.index')->with('success', 'Kamera berhasil dilepaskan dari akun Anda.');
   }
 }

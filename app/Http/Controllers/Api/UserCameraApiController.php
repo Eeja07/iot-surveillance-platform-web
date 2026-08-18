@@ -101,8 +101,8 @@ class UserCameraApiController extends Controller
         }
 
         // 4. Cek Kepemilikan
-        // Jika sudah ada yang punya DAN pemiliknya bukan admin (user lain), tolak.
-        if ($camera->user_id !== null && $camera->user && !$camera->user->hasRole('admin')) {
+        // Jika sudah ada pemiliknya dan bukan user yang sedang login, tolak.
+        if ($camera->user_id !== null && $camera->user_id !== auth()->id()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Kamera ini sudah terhubung dengan pengguna lain.'
@@ -159,7 +159,7 @@ class UserCameraApiController extends Controller
 
     /**
      * Unlink/Hapus Kamera dari Akun
-     * Mengembalikan kepemilikan ke Admin (seperti logika controller web Anda).
+     * Melepaskan kepemilikan kamera dari akun user (unassigned / user_id = null).
      */
     public function destroy($id)
     {
@@ -172,10 +172,8 @@ class UserCameraApiController extends Controller
             ], 404);
         }
 
-        // Cari admin untuk menampung kamera "yatim piatu"
-        $admin = User::role('admin')->first();
-
-        $camera->user_id = $admin ? $admin->id : null;
+        // Lepas kamera dari akun (unassigned)
+        $camera->user_id = null;
         $camera->save();
 
         return response()->json([
