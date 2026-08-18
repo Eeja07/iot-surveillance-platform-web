@@ -54,6 +54,51 @@
 
     <ul class="navbar-nav flex-row align-items-center ms-auto">
 
+        <!-- Notification Dropdown / Toggle Button -->
+        <li class="nav-item dropdown dropdown-notifications navbar-dropdown me-2 me-xl-1">
+            <a class="nav-link dropdown-toggle hide-arrow btn btn-text-secondary btn-icon rounded-pill position-relative"
+               id="navbar-notification-dropdown"
+               href="javascript:void(0);"
+               data-bs-toggle="dropdown"
+               data-bs-auto-close="outside"
+               aria-expanded="false"
+               title="Pengaturan Notifikasi Pop-up">
+                <i class="ti ti-bell ti-md notification-bell-icon"></i>
+                <span class="badge bg-success badge-dot position-absolute top-0 end-0 mt-1 me-1 notification-badge-dot"></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end py-0 shadow" style="min-width: 290px;">
+                <li class="dropdown-menu-header border-bottom">
+                    <div class="dropdown-header d-flex align-items-center py-3">
+                        <i class="ti ti-bell me-2 text-primary"></i>
+                        <h6 class="mb-0 me-auto">Notifikasi Pop-up</h6>
+                        <span class="badge bg-label-success ms-1 popup-notification-status-text">Aktif</span>
+                    </div>
+                </li>
+                <li class="p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-check-label fw-medium cursor-pointer" for="navbarPopupNotificationSwitch">
+                            Pop-up Toast Deteksi
+                        </label>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input cursor-pointer popup-notification-toggle-input"
+                                   type="checkbox"
+                                   id="navbarPopupNotificationSwitch"
+                                   onchange="window.setPopupNotifications(this.checked)"
+                                   checked>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mb-3" style="font-size: 0.8rem; line-height: 1.3;">
+                        Tampilkan banner pop-up peringatan secara real-time saat terdeteksi orang di kamera.
+                    </small>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="window.testPopupNotification()">
+                            <i class="ti ti-bell-ringing me-1"></i> Uji Coba Pop-up
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </li>
+
         <!-- User Profile Dropdown -->
         <li class="nav-item navbar-dropdown dropdown-user dropdown">
             <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">

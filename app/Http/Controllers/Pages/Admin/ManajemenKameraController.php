@@ -8,6 +8,7 @@ use App\Services\EmqxService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -15,12 +16,16 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 class ManajemenKameraController extends Controller
 {
     /**
-     * Menampilkan daftar semua kamera milik user yang sedang login.
+     * Menampilkan daftar semua kamera.
      */
     public function index()
     {
-        // Tetap menggunakan relasi user untuk keamanan data
-        $cameras = Auth::user()->cameras()->latest()->paginate(10);
+        $user = Auth::user();
+        $query = ($user && $user->hasRole('admin'))
+            ? Camera::with(['group', 'user'])
+            : $user->cameras()->with(['group', 'user']);
+
+        $cameras = $query->latest()->paginate(10);
 
         return view('content.pages.admin.Manajemen_Kamera', [
             'view' => 'index',
@@ -59,7 +64,7 @@ class ManajemenKameraController extends Controller
         try {
             $emqx->syncAll();
             Log::info("EMQX Auto-Sync triggered for new camera: " . $camera->name);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("EMQX Auto-Sync Failed: " . $e->getMessage());
         }
 
@@ -101,31 +106,63 @@ class ManajemenKameraController extends Controller
     }
 
     /**
-     * Menghapus kamera dari database dan membersihkan folder gambar di MinIO.
+     * Menghapus kamera dari database dan membersihkan folder gambar di MinIO / S3 & Local.
      */
     public function destroy(Camera $camera)
     {
         $this->authorize('delete', $camera);
 
-        // 1. Ambil path direktori berdasarkan device_id
-        $directoryPath = "camera/{$camera->device_id}";
+        $deviceId = $camera->device_id;
+        $directoriesToDelete = [
+            "camera/{$deviceId}",
+            "camera_images/{$deviceId}",
+        ];
 
-        try {
-            // 2. [UPDATE MINIO] Menghapus direktori dari disk S3 (MinIO)
-            // Pastikan konfigurasi 's3' di filesystems.php sudah mengarah ke MinIO
-            if (Storage::disk('s3')->exists($directoryPath)) {
-                Storage::disk('s3')->deleteDirectory($directoryPath);
-                Log::info("MinIO folder deleted for camera: {$camera->device_id}");
+        // 1. Bersihkan file di storage (S3/MinIO dan Public disk)
+        foreach ($directoriesToDelete as $dir) {
+            try {
+                if (Storage::disk('s3')->exists($dir)) {
+                    Storage::disk('s3')->deleteDirectory($dir);
+                    Log::info("MinIO folder deleted: {$dir}");
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Could not delete S3 directory {$dir}: " . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            Log::error("Failed to delete MinIO folder for camera {$camera->device_id}: " . $e->getMessage());
+
+            try {
+                if (Storage::disk('public')->exists($dir)) {
+                    Storage::disk('public')->deleteDirectory($dir);
+                    Log::info("Public disk folder deleted: {$dir}");
+                }
+            } catch (\Throwable $e) {
+                Log::warning("Could not delete public directory {$dir}: " . $e->getMessage());
+            }
         }
 
-        // 3. Hapus record dari database
-        $camera->delete();
+        // 2. Hapus record dari database secara transaksional
+        try {
+            DB::transaction(function () use ($camera) {
+                // Hapus relasi jika ada constraint
+                $camera->imageRecords()->delete();
+                $camera->configurationHistories()->delete();
+                \App\Models\CameraTelemetry::where('camera_id', $camera->id)->delete();
+                \App\Models\MotionEvent::where('camera_id', $camera->id)->delete();
+                DB::table('deployment_cameras')->where('camera_id', $camera->id)->delete();
 
-        return redirect()->route('admin.cameras.index')
-            ->with('success', 'Kamera dan seluruh data gambar di MinIO berhasil dihapus.');
+                // Hapus data kamera
+                $camera->delete();
+            });
+
+            Log::info("Camera deleted successfully: ID {$camera->id} (UUID: {$deviceId})");
+
+            return redirect()->route('admin.cameras.index')
+                ->with('success', 'Kamera dan seluruh data rekaman terkait berhasil dihapus.');
+        } catch (\Throwable $e) {
+            Log::error("Failed to delete camera ID {$camera->id}: " . $e->getMessage());
+
+            return redirect()->route('admin.cameras.index')
+                ->with('error', 'Gagal menghapus kamera: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -172,37 +172,40 @@
                         }
                         updateClientSideStates();
 
-                        // Show browser toast
-                        let toastContainer = document.querySelector('.toast-container');
-                        if (!toastContainer) {
-                            toastContainer = document.createElement('div');
-                            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-                            toastContainer.style.zIndex = '1100';
-                            document.body.appendChild(toastContainer);
-                        }
+                        // Show browser toast (if popup notifications enabled)
+                        if (typeof window.isPopupNotificationEnabled !== 'function' || window.isPopupNotificationEnabled()) {
+                            let toastContainer = document.querySelector('.toast-container');
+                            if (!toastContainer) {
+                                toastContainer = document.createElement('div');
+                                toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                                toastContainer.style.zIndex = '1100';
+                                document.body.appendChild(toastContainer);
+                            }
 
-                        const toastId = 'toast-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-                        const toastHTML = `
-                            <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                                <div class="toast-header bg-danger text-white">
-                                    <strong class="me-auto">Person detected</strong>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                            const toastId = 'toast-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                            const toastHTML = `
+                                <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="toast-header bg-danger text-white">
+                                        <i class="ti ti-alert-triangle me-2"></i>
+                                        <strong class="me-auto">Person detected</strong>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                                    </div>
+                                    <div class="toast-body">
+                                        <strong>${data.camera_name}</strong><br>
+                                        Confidence: ${data.confidence}
+                                    </div>
                                 </div>
-                                <div class="toast-body">
-                                    <strong>${data.camera_name}</strong><br>
-                                    Confidence: ${data.confidence}
-                                </div>
-                            </div>
-                        `;
-                        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
-                        const toastElement = document.getElementById(toastId);
-                        const bs = window.bootstrap || bootstrap;
-                        if (bs && bs.Toast) {
-                            const toast = new bs.Toast(toastElement, { delay: 5000 });
-                            toast.show();
-                            toastElement.addEventListener('hidden.bs.toast', () => {
-                                toastElement.remove();
-                            });
+                            `;
+                            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+                            const toastElement = document.getElementById(toastId);
+                            const bs = window.bootstrap || bootstrap;
+                            if (bs && bs.Toast) {
+                                const toast = new bs.Toast(toastElement, { delay: 5000 });
+                                toast.show();
+                                toastElement.addEventListener('hidden.bs.toast', () => {
+                                    toastElement.remove();
+                                });
+                            }
                         }
 
                         const detectionCard = document.getElementById('latest-person-detection-card');
@@ -597,9 +600,19 @@
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0 fw-bold">Recent Detection</h5>
-            <span class="badge bg-label-danger" id="detection-realtime-badge" style="font-size: 0.75rem;">
-                <span class="spinner-grow spinner-grow-sm text-danger me-1" role="status" style="width: 6px; height: 6px;"></span>Realtime Active
-            </span>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" 
+                        class="btn btn-xs btn-outline-secondary d-flex align-items-center gap-1"
+                        onclick="window.togglePopupNotifications()"
+                        title="Klik untuk Mengaktifkan / Menonaktifkan Notifikasi Pop-up">
+                    <i class="ti ti-bell notification-bell-icon" style="font-size: 0.9rem;"></i>
+                    <span class="d-none d-sm-inline">Pop-up:</span>
+                    <span class="popup-notification-status-text badge bg-label-success p-1" style="font-size: 0.7rem;">Aktif</span>
+                </button>
+                <span class="badge bg-label-danger" id="detection-realtime-badge" style="font-size: 0.75rem;">
+                    <span class="spinner-grow spinner-grow-sm text-danger me-1" role="status" style="width: 6px; height: 6px;"></span>Realtime Active
+                </span>
+            </div>
         </div>
 
         <div class="card shadow-none border">

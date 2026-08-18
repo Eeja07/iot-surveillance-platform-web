@@ -1,4 +1,5 @@
 import './bootstrap';
+import '../assets/js/popup-notifications';
 
 /*
   Add custom scripts here
@@ -8,3 +9,4 @@ import.meta.glob([
   // '../assets/json/**',
   '../assets/vendor/fonts/**'
 ]);
+
