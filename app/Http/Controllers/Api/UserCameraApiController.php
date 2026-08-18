@@ -102,7 +102,7 @@ class UserCameraApiController extends Controller
 
         // 4. Cek Kepemilikan
         // Jika sudah ada yang punya DAN pemiliknya bukan admin (user lain), tolak.
-        if ($camera->user_id !== null && !$camera->user->hasRole('admin')) {
+        if ($camera->user_id !== null && $camera->user && !$camera->user->hasRole('admin')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Kamera ini sudah terhubung dengan pengguna lain.'

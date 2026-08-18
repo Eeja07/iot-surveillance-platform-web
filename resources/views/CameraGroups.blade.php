@@ -5,6 +5,9 @@
 
 
 @section('content')
+@php
+    $routePrefix = (request()->is('admin/*') || (auth()->check() && auth()->user()->hasRole('admin'))) ? 'admin.camera-groups.' : 'user.camera-groups.';
+@endphp
 {{-- Header Halaman --}}
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
     <div>
@@ -95,7 +98,7 @@
                                 <i class="ti ti-trash me-2"></i>Hapus Grup
                             </a>
                             <form id="delete-group-{{ $group->id }}"
-                                  action="{{ route('admin.camera-groups.destroy', $group->id) }}"
+                                  action="{{ route($routePrefix . 'destroy', $group->id) }}"
                                   method="POST"
                                   class="d-none">
                                 @csrf
@@ -120,7 +123,7 @@
                                 <i class="ti ti-x"></i>
                             </button>
                             <form id="remove-camera-{{ $camera->id }}"
-                                  action="{{ route('admin.camera-groups.remove') }}"
+                                  action="{{ route($routePrefix . 'remove') }}"
                                   method="POST"
                                   class="d-none">
                                 @csrf
@@ -156,7 +159,7 @@
 <div class="modal fade" id="createGroupModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <form action="{{ route('admin.camera-groups.store') }}" method="POST">
+            <form action="{{ route($routePrefix . 'store') }}" method="POST">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Buat Grup Baru</h5>
@@ -222,7 +225,7 @@
 <div class="modal fade" id="assignCameraModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form action="{{ route('admin.camera-groups.assign') }}" method="POST">
+            <form action="{{ route($routePrefix . 'assign') }}" method="POST">
                 @csrf
                 <input type="hidden" name="camera_id" id="assign_camera_id">
                 <div class="modal-header">
@@ -264,7 +267,7 @@ document.getElementById('editGroupModal').addEventListener('show.bs.modal', func
     document.getElementById('new_group_name').value = groupName;
     const form = document.getElementById('editGroupForm');
 
-    let updateUrl = "{{ route('admin.camera-groups.update', 'ID_PLACEHOLDER') }}";
+    let updateUrl = "{{ route($routePrefix . 'update', 'ID_PLACEHOLDER') }}";
     form.action = updateUrl.replace('ID_PLACEHOLDER', groupId);
 });
 

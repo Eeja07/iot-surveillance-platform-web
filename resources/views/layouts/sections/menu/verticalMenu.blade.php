@@ -26,7 +26,29 @@
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
+        @php
+            $currentUser = Auth::user();
+        @endphp
         @foreach ($menuData[0]->menu as $menu)
+            {{-- Filter menu by role if specified --}}
+            @if (isset($menu->role))
+                @php
+                    $hasRoleAccess = false;
+                    if ($currentUser) {
+                        $allowedRoles = (array) $menu->role;
+                        foreach ($allowedRoles as $role) {
+                            if ($currentUser->hasRole($role)) {
+                                $hasRoleAccess = true;
+                                break;
+                            }
+                        }
+                    }
+                @endphp
+                @if (!$hasRoleAccess)
+                    @continue
+                @endif
+            @endif
+
             {{-- adding active and open class if child is active --}}
 
             {{-- menu headers --}}

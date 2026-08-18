@@ -6,7 +6,28 @@
 <aside id="layout-menu" class="layout-menu-horizontal menu-horizontal  menu bg-menu-theme flex-grow-0">
   <div class="{{$containerNav}} d-flex h-100">
     <ul class="menu-inner pb-2 pb-xl-0">
+      @php
+        $currentUser = Auth::user();
+      @endphp
       @foreach ($menuData[1]->menu as $menu)
+        {{-- Filter menu by role if specified --}}
+        @if (isset($menu->role))
+            @php
+                $hasRoleAccess = false;
+                if ($currentUser) {
+                    $allowedRoles = (array) $menu->role;
+                    foreach ($allowedRoles as $role) {
+                        if ($currentUser->hasRole($role)) {
+                            $hasRoleAccess = true;
+                            break;
+                        }
+                    }
+                }
+            @endphp
+            @if (!$hasRoleAccess)
+                @continue
+            @endif
+        @endif
 
       {{-- active menu method --}}
       @php

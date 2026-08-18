@@ -18,7 +18,10 @@ class RiwayatRekamanController extends Controller
    */
   public function index()
   {
-    $cameras = Auth::user()->cameras()->latest()->paginate(10);
+    $user = Auth::user();
+    $cameras = ($user && $user->hasRole('admin'))
+      ? Camera::with('user')->latest()->paginate(10)
+      : $user->cameras()->latest()->paginate(10);
     return view('content.pages.Log.Riwayat_Rekaman_index', compact('cameras'));
   }
 
@@ -34,7 +37,7 @@ class RiwayatRekamanController extends Controller
    */
   public function showExplorer(Request $request, Camera $camera, $date = null, $hour = null, $minute = null, $chunk = null)
   {
-    $this->authorize('update', $camera);
+    $this->authorize('view', $camera);
 
     // BARU: Ambil data jam & menit yang tersedia untuk filter
     $availableTimes = [];
@@ -162,12 +165,33 @@ class RiwayatRekamanController extends Controller
     }
     try {
       $formattedDate = Carbon::parse($dateToDelete)->format('Y-m-d');
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
       return back()->with('error', 'Format tanggal tidak valid.');
     }
-    ImageRecord::where('camera_id', $camera->id)->whereDate('captured_at', $formattedDate)->delete();
-    $directory = "camera_images/{$camera->device_id}/{$formattedDate}";
-    Storage::disk('public')->deleteDirectory($directory);
-    return redirect()->route('log.history.explorer', $camera->id)->with('success', 'Semua rekaman untuk tanggal ' . $formattedDate . ' berhasil dihapus.');
+
+    try {
+      ImageRecord::where('camera_id', $camera->id)->whereDate('captured_at', $formattedDate)->delete();
+      $directory = "camera_images/{$camera->device_id}/{$formattedDate}";
+
+      try {
+        if (Storage::disk('s3')->exists($directory)) {
+          Storage::disk('s3')->deleteDirectory($directory);
+        }
+      } catch (\Throwable $e) {
+        \Log::warning("S3 deleteDirectory failed for {$directory}: " . $e->getMessage());
+      }
+
+      try {
+        if (Storage::disk('public')->exists($directory)) {
+          Storage::disk('public')->deleteDirectory($directory);
+        }
+      } catch (\Throwable $e) {
+        \Log::warning("Public deleteDirectory failed for {$directory}: " . $e->getMessage());
+      }
+
+      return redirect()->route('log.history.explorer', $camera->id)->with('success', 'Semua rekaman untuk tanggal ' . $formattedDate . ' berhasil dihapus.');
+    } catch (\Throwable $e) {
+      return redirect()->route('log.history.explorer', $camera->id)->with('error', 'Gagal menghapus rekaman: ' . $e->getMessage());
+    }
   }
 }

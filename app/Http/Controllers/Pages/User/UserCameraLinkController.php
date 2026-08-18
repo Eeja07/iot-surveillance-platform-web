@@ -61,7 +61,7 @@ class UserCameraLinkController extends Controller
     $user = Auth::user();
 
     // Cek kepemilikan sebelumnya
-    if ($camera->user_id !== null && !$camera->user->hasRole('admin')) {
+    if ($camera->user_id !== null && $camera->user && !$camera->user->hasRole('admin')) {
       return back()->withErrors(['device_id' => 'Perangkat ini sudah terhubung dengan pengguna lain.'])->withInput();
     }
 

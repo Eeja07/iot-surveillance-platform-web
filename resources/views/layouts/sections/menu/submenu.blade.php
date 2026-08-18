@@ -4,7 +4,28 @@ use Illuminate\Support\Facades\Route;
 
 <ul class="menu-sub">
   @if (isset($menu))
+    @php
+      $currentUser = Auth::user();
+    @endphp
     @foreach ($menu as $submenu)
+      {{-- Filter submenu by role if specified --}}
+      @if (isset($submenu->role))
+          @php
+              $hasSubmenuRoleAccess = false;
+              if ($currentUser) {
+                  $allowedRoles = (array) $submenu->role;
+                  foreach ($allowedRoles as $role) {
+                      if ($currentUser->hasRole($role)) {
+                          $hasSubmenuRoleAccess = true;
+                          break;
+                      }
+                  }
+              }
+          @endphp
+          @if (!$hasSubmenuRoleAccess)
+              @continue
+          @endif
+      @endif
 
     {{-- active menu method --}}
     @php

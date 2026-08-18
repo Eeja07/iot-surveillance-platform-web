@@ -31,7 +31,11 @@
           "name": "Camera List",
           "slug": "admin-cameras"
         },
-
+        {
+          "url": "/admin/camera-groups",
+          "name": "Camera Groups",
+          "slug": "admin-camera-groups"
+        },
         {
           "url": "/admin/ota",
           "name": "OTA Firmware",
@@ -61,10 +65,14 @@
           "url": "/user/my-cameras",
           "name": "Device List",
           "slug": "device-list"
+        },
+        {
+          "url": "/user/camera-groups",
+          "name": "Camera Groups",
+          "slug": "user-camera-groups"
         }
       ]
     },
-
     {
       "name": "Event Logs",
       "icon": "menu-icon tf-icons ti ti-file-text",
